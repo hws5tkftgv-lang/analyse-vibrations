@@ -125,15 +125,14 @@ function drawBelt(x1, y1, r1, x2, y2, r2){
   ctx.moveTo(P1.x, P1.y);
   ctx.lineTo(G1.x, G1.y);
 
-  // arc grande poulie (court, extérieur)
-  ctx.arc(x2, y2, r2, g1, g2, true);
+  // arc grande poulie (extérieur, court)
+ctx.arc(x2, y2, r2, g1, g2, false);
 
-  // segment bas
-  ctx.lineTo(P2.x, P2.y);
+// segment bas
+ctx.lineTo(P2.x, P2.y);
 
-  // arc petite poulie (long, extérieur)
-  ctx.arc(x1, y1, r1, p2, p1, true);
-
+// arc petite poulie (extérieur, long)
+ctx.arc(x1, y1, r1, p2, p1, false);
   ctx.stroke();
 }
 function draw(){
@@ -148,7 +147,7 @@ function draw(){
   const hz2 = rpm2 / 60;
 
   // positions
-  const x1 = 100, x2 = 300, y = 120;
+  const x1 = 100, x2 = 340, y = 120;
   const r1 = 35, r2 = r1 * (d2/d1);
 
   
