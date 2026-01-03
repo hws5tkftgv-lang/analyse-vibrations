@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Analyse de vibrations – Poulies & courroie</title>
 
 <style>
@@ -10,23 +10,22 @@ body{
   margin:0;
   background:#0b1436;
   color:#eaf1ff;
-  font-family:Arial,sans-serif;
+  font-family:Arial, sans-serif;
 }
 header{
   padding:14px;
   background:#0f1a44;
-  border-bottom:1px solid rgba(255,255,255,.15);
 }
-h1{margin:0;font-size:18px}
+h1{ font-size:18px; margin:0; }
+
 .panel{
   padding:14px;
   background:#101a40;
   display:grid;
+  grid-template-columns:1fr;
   gap:14px;
 }
-label{font-size:13px;opacity:.85}
-input,select{
-  width:100%;
+input, select{
   padding:10px;
   font-size:16px;
   border-radius:10px;
@@ -34,13 +33,12 @@ input,select{
 }
 canvas{
   display:block;
-  margin:12px auto;
+  margin:0 auto;
   background:#000;
 }
 .info{
   padding:14px;
   background:#0f1a44;
-  font-size:14px;
 }
 </style>
 </head>
@@ -52,24 +50,13 @@ canvas{
 </header>
 
 <div class="panel">
-<label>RPM moteur (menante)
-<input id="rpm" type="number" value="1200">
-</label>
-
-<label>Système d’unités
-<select id="unit">
-<option value="metric">Métrique (mm)</option>
-<option value="imperial">Impérial (po)</option>
-</select>
-</label>
-
-<label>Ø poulie menante
-<input id="d1" type="number" value="100">
-</label>
-
-<label>Ø poulie menée
-<input id="d2" type="number" value="200">
-</label>
+  <input id="rpm" type="number" value="1200" placeholder="RPM menante">
+  <select id="unit">
+    <option value="metric">Métrique (mm)</option>
+    <option value="imperial">Impérial (po)</option>
+  </select>
+  <input id="d1" type="number" value="100" placeholder="Ø poulie menante">
+  <input id="d2" type="number" value="400" placeholder="Ø poulie menée">
 </div>
 
 <canvas id="scene" width="420" height="260"></canvas>
@@ -79,55 +66,49 @@ canvas{
 const canvas = document.getElementById("scene");
 const ctx = canvas.getContext("2d");
 
-let a1=0,a2=0;
+let a1=0, a2=0;
 
-function clamp(v,min,max){
-  return Math.max(min,Math.min(max,v));
+function drawPulley(x,y,r,angle,color){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.rotate(angle);
+  ctx.strokeStyle=color;
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  ctx.arc(0,0,r,0,Math.PI*2);
+  ctx.stroke();
+  ctx.fillStyle=color;
+  ctx.beginPath();
+  ctx.arc(r-4,0,4,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
 }
 
-function drawBelt(x1, y1, r1, x2, y2, r2){
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const D  = Math.hypot(dx, dy);
-  if (D <= Math.abs(r2 - r1)) return;
+// COURROIE POLYLINE (stable iPhone)
+function drawBelt(x1,y1,r1,x2,y2,r2){
+  const dx=x2-x1;
+  const dy=y2-y1;
+  const D=Math.hypot(dx,dy);
 
-  const theta = Math.atan2(dy, dx);
-  const alpha = Math.acos((r2 - r1) / D);
+  const angle=Math.atan2(dy,dx);
+  const offset=Math.asin((r2-r1)/D);
 
-  // Angles grande poulie
-  let gStart = theta + alpha;
-  let gEnd   = theta - alpha;
+  const aTop=angle+offset;
+  const aBot=angle-offset;
 
-  // Angles petite poulie (opposés)
-  let pStart = gEnd + Math.PI;
-  let pEnd   = gStart + Math.PI;
+  const p1Top={x:x1+r1*Math.cos(aTop),y:y1+r1*Math.sin(aTop)};
+  const p1Bot={x:x1+r1*Math.cos(aBot),y:y1+r1*Math.sin(aBot)};
+  const p2Top={x:x2+r2*Math.cos(aTop),y:y2+r2*Math.sin(aTop)};
+  const p2Bot={x:x2+r2*Math.cos(aBot),y:y2+r2*Math.sin(aBot)};
 
-  // NORMALISATION (clé du bug)
-  if (gEnd < gStart) gEnd += Math.PI * 2;
-  if (pEnd < pStart) pEnd += Math.PI * 2;
-
-  const G1 = { x: x2 + r2 * Math.cos(gStart), y: y2 + r2 * Math.sin(gStart) };
-  const G2 = { x: x2 + r2 * Math.cos(gEnd),   y: y2 + r2 * Math.sin(gEnd) };
-  const P1 = { x: x1 + r1 * Math.cos(pStart), y: y1 + r1 * Math.sin(pStart) };
-  const P2 = { x: x1 + r1 * Math.cos(pEnd),   y: y1 + r1 * Math.sin(pEnd) };
-
-  ctx.strokeStyle = "#777";
-  ctx.lineWidth = 4;
+  ctx.strokeStyle="#777";
+  ctx.lineWidth=4;
   ctx.beginPath();
-
-  // Segment haut
-  ctx.moveTo(P1.x, P1.y);
-  ctx.lineTo(G1.x, G1.y);
-
-  // Grande poulie — ARC EXTÉRIEUR
-  ctx.arc(x2, y2, r2, gStart, gEnd, false);
-
-  // Segment bas
-  ctx.lineTo(P2.x, P2.y);
-
-  // Petite poulie — ARC EXTÉRIEUR
-  ctx.arc(x1, y1, r1, pEnd, pStart + Math.PI * 2, false);
-
+  ctx.moveTo(p1Top.x,p1Top.y);
+  ctx.lineTo(p2Top.x,p2Top.y);
+  ctx.lineTo(p2Bot.x,p2Bot.y);
+  ctx.lineTo(p1Bot.x,p1Bot.y);
+  ctx.closePath();
   ctx.stroke();
 }
 
@@ -142,54 +123,24 @@ function draw(){
   const hz1=rpm/60;
   const hz2=rpm2/60;
 
-  const r1=32;
+  const r1=30;
   const r2=r1*(d2/d1);
 
-  const x1 = 110;
-const minSpacing = 1.6 * (r1 + r2);
-const x2 = Math.max(x1 + minSpacing, canvas.width - r2 - 20);
-const y  = canvas.height / 2;
+  const x1=80;
+  const x2=canvas.width-r2-40;
+  const y=canvas.height/2;
 
   drawBelt(x1,y,r1,x2,y,r2);
-
-  // poulie menante
-  ctx.save();
-  ctx.translate(x1,y);
-  ctx.rotate(a1);
-  ctx.strokeStyle="#00a2ff";
-  ctx.lineWidth=3;
-  ctx.beginPath();
-  ctx.arc(0,0,r1,0,Math.PI*2);
-  ctx.stroke();
-  ctx.fillStyle="#00a2ff";
-  ctx.beginPath();
-  ctx.arc(r1-4,0,4,0,Math.PI*2);
-  ctx.fill();
-  ctx.restore();
-
-  // poulie menée
-  ctx.save();
-  ctx.translate(x2,y);
-  ctx.rotate(a2);
-  ctx.strokeStyle="#ff9800";
-  ctx.lineWidth=3;
-  ctx.beginPath();
-  ctx.arc(0,0,r2,0,Math.PI*2);
-  ctx.stroke();
-  ctx.fillStyle="#ff9800";
-  ctx.beginPath();
-  ctx.arc(r2-4,0,4,0,Math.PI*2);
-  ctx.fill();
-  ctx.restore();
+  drawPulley(x1,y,r1,a1,"#00a2ff");
+  drawPulley(x2,y,r2,a2,"#ff9800");
 
   info.innerHTML=`
 🔵 Menante : ${rpm.toFixed(0)} RPM / ${hz1.toFixed(2)} Hz<br>
 🟠 Menée : ${rpm2.toFixed(0)} RPM / ${hz2.toFixed(2)} Hz
 `;
 
-  const v=hz1*2*Math.PI*r1;
-  a1+=v/r1*0.016;
-  a2+=v/r2*0.016;
+  a1+=hz1*0.04;
+  a2+=hz2*0.04;
 
   requestAnimationFrame(draw);
 }
@@ -197,8 +148,10 @@ const y  = canvas.height / 2;
 const rpmInput=document.getElementById("rpm");
 const d1Input=document.getElementById("d1");
 const d2Input=document.getElementById("d2");
+const info=document.getElementById("info");
 
 draw();
 </script>
+
 </body>
 </html>
