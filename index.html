@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>Analyse de vibrations – Poulies & courroie</title>
 
 <style>
@@ -13,31 +13,39 @@ body{
   font-family:Arial, sans-serif;
 }
 header{
-  padding:16px;
+  padding:14px;
   background:#0f1a44;
+  border-bottom:1px solid rgba(255,255,255,.15);
 }
 h1{ font-size:18px; margin:0; }
 
 .panel{
-  padding:16px;
+  padding:14px;
   background:#101a40;
   display:grid;
   grid-template-columns:1fr;
-  gap:16px;
+  gap:14px;
 }
+
+label{ font-size:13px; opacity:.85; }
+
 input, select{
-  padding:12px;
+  width:100%;
+  padding:10px;
   font-size:16px;
   border-radius:10px;
   border:none;
 }
+
 canvas{
   display:block;
   margin:0 auto;
   background:#000;
 }
+
 .info{
-  padding:16px;
+  padding:14px;
+  font-size:14px;
   background:#0f1a44;
 }
 </style>
@@ -46,17 +54,28 @@ canvas{
 <body>
 
 <header>
-<h1>🔄 Analyse de vibrations – Poulies & courroie</h1>
+  <h1>🔄 Analyse de vibrations – Poulies & courroie</h1>
 </header>
 
 <div class="panel">
-  <input id="rpm" type="number" value="1200" placeholder="RPM menante">
-  <select id="unit">
-    <option value="metric">Métrique (mm)</option>
-    <option value="imperial">Impérial (po)</option>
-  </select>
-  <input id="d1" type="number" value="100" placeholder="Ø poulie menante">
-  <input id="d2" type="number" value="400" placeholder="Ø poulie menée">
+  <label>RPM moteur (menante)
+    <input id="rpm" type="number" value="1200">
+  </label>
+
+  <label>Système d’unités
+    <select id="unit">
+      <option value="metric">Métrique (mm)</option>
+      <option value="imperial">Impérial (po)</option>
+    </select>
+  </label>
+
+  <label>Ø poulie menante
+    <input id="d1" type="number" value="100">
+  </label>
+
+  <label>Ø poulie menée
+    <input id="d2" type="number" value="400">
+  </label>
 </div>
 
 <canvas id="scene" width="420" height="260"></canvas>
@@ -68,98 +87,110 @@ const ctx = canvas.getContext("2d");
 
 let a1 = 0, a2 = 0;
 
-// ---- ARC MANUEL (pas de ctx.arc pour la courroie)
-function drawArc(cx, cy, r, aStart, aEnd){
-  const step = (aEnd > aStart ? 1 : -1) * 0.03;
-  ctx.beginPath();
-  for(let a = aStart; Math.abs(a - aEnd) > 0.02; a += step){
-    ctx.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
-  }
-  ctx.lineTo(cx + r * Math.cos(aEnd), cy + r * Math.sin(aEnd));
-  ctx.stroke();
-}
-
-// ---- COURROIE GÉOMÉTRIQUEMENT CORRECTE
+/* ===== COURROIE PHYSIQUEMENT CORRECTE ===== */
 function drawBelt(x1,y1,r1,x2,y2,r2){
-  const dx = x2-x1;
-  const dy = y2-y1;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
   const D  = Math.hypot(dx,dy);
+  if(D <= Math.abs(r2-r1)) return;
 
   const theta = Math.atan2(dy,dx);
   const alpha = Math.acos((r2-r1)/D);
 
-  const t1 = theta + alpha;
-  const t2 = theta - alpha;
+  // grande poulie → enrobage court
+  const g1 = theta + alpha;
+  const g2 = theta - alpha;
 
-  const P1t = {x:x1+r1*Math.cos(t1), y:y1+r1*Math.sin(t1)};
-  const P1b = {x:x1+r1*Math.cos(t2), y:y1+r1*Math.sin(t2)};
-  const P2t = {x:x2+r2*Math.cos(t1), y:y2+r2*Math.sin(t1)};
-  const P2b = {x:x2+r2*Math.cos(t2), y:y2+r2*Math.sin(t2)};
+  // petite poulie → enrobage long (décalage PI)
+  const p1 = theta + Math.PI - alpha;
+  const p2 = theta + Math.PI + alpha;
+
+  const P1t = { x:x1 + r1*Math.cos(p1), y:y1 + r1*Math.sin(p1) };
+  const P1b = { x:x1 + r1*Math.cos(p2), y:y1 + r1*Math.sin(p2) };
+
+  const P2t = { x:x2 + r2*Math.cos(g1), y:y2 + r2*Math.sin(g1) };
+  const P2b = { x:x2 + r2*Math.cos(g2), y:y2 + r2*Math.sin(g2) };
 
   ctx.strokeStyle="#777";
   ctx.lineWidth=4;
+  ctx.beginPath();
 
   // segment haut
-  ctx.beginPath();
   ctx.moveTo(P1t.x,P1t.y);
   ctx.lineTo(P2t.x,P2t.y);
-  ctx.stroke();
 
-  // arc grande poulie
-  drawArc(x2,y2,r2,t1,t2);
+  // grande poulie (arc court)
+  ctx.arc(x2,y2,r2,g1,g2,false);
 
   // segment bas
-  ctx.beginPath();
-  ctx.moveTo(P2b.x,P2b.y);
   ctx.lineTo(P1b.x,P1b.y);
-  ctx.stroke();
 
-  // arc petite poulie
-  drawArc(x1,y1,r1,t2,t1+Math.PI*2);
-}
+  // petite poulie (arc long)
+  ctx.arc(x1,y1,r1,p2,p1,false);
 
-function drawPulley(x,y,r,angle,color){
-  ctx.save();
-  ctx.translate(x,y);
-  ctx.rotate(angle);
-  ctx.strokeStyle=color;
-  ctx.lineWidth=3;
-  ctx.beginPath();
-  ctx.arc(0,0,r,0,Math.PI*2);
   ctx.stroke();
-  ctx.fillStyle=color;
-  ctx.beginPath();
-  ctx.arc(r-4,0,4,0,Math.PI*2);
-  ctx.fill();
-  ctx.restore();
 }
 
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
   const rpm = +rpmInput.value;
-  const d1  = +d1Input.value;
-  const d2  = +d2Input.value;
+  let d1 = +d1Input.value;
+  let d2 = +d2Input.value;
+
+  const unit = unitInput.value;
+  const unitLabel = unit==="metric" ? "mm" : "po";
 
   const rpm2 = rpm*(d1/d2);
-  const hz1  = rpm/60;
-  const hz2  = rpm2/60;
+  const hz1 = rpm/60;
+  const hz2 = rpm2/60;
 
-  const r1 = 28;
+  // mise à l’échelle stable (évite les bugs visuels)
+  const r1 = 26;
   const r2 = r1*(d2/d1);
 
-  const x1 = 80;
+  const y = canvas.height/2;
+  const x1 = 90;
   const x2 = canvas.width - r2 - 30;
-  const y  = canvas.height/2;
 
+  // courroie
   drawBelt(x1,y,r1,x2,y,r2);
-  drawPulley(x1,y,r1,a1,"#00a2ff");
-  drawPulley(x2,y,r2,a2,"#ff9800");
+
+  // poulie menante
+  ctx.save();
+  ctx.translate(x1,y);
+  ctx.rotate(a1);
+  ctx.strokeStyle="#00a2ff";
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  ctx.arc(0,0,r1,0,Math.PI*2);
+  ctx.stroke();
+  ctx.fillStyle="#00a2ff";
+  ctx.beginPath();
+  ctx.arc(r1-4,0,4,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+
+  // poulie menée
+  ctx.save();
+  ctx.translate(x2,y);
+  ctx.rotate(a2);
+  ctx.strokeStyle="#ff9800";
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  ctx.arc(0,0,r2,0,Math.PI*2);
+  ctx.stroke();
+  ctx.fillStyle="#ff9800";
+  ctx.beginPath();
+  ctx.arc(r2-4,0,4,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
 
   info.innerHTML = `
-🔵 Menante : ${rpm.toFixed(0)} RPM / ${hz1.toFixed(2)} Hz<br>
-🟠 Menée : ${rpm2.toFixed(0)} RPM / ${hz2.toFixed(2)} Hz
-`;
+  🔵 Menante : ${rpm.toFixed(0)} RPM / ${hz1.toFixed(2)} Hz<br>
+  🟠 Menée : ${rpm2.toFixed(0)} RPM / ${hz2.toFixed(2)} Hz<br>
+  📏 Unités : ${unitLabel}
+  `;
 
   a1 += hz1*0.04;
   a2 += hz2*0.04;
@@ -167,10 +198,11 @@ function draw(){
   requestAnimationFrame(draw);
 }
 
-const rpmInput = document.getElementById("rpm");
-const d1Input  = document.getElementById("d1");
-const d2Input  = document.getElementById("d2");
-const info     = document.getElementById("info");
+const rpmInput=document.getElementById("rpm");
+const d1Input=document.getElementById("d1");
+const d2Input=document.getElementById("d2");
+const unitInput=document.getElementById("unit");
+const info=document.getElementById("info");
 
 draw();
 </script>
