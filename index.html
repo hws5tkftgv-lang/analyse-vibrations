@@ -95,7 +95,7 @@ let angle2 = 0;
 function drawBelt(x1, y1, r1, x2, y2, r2){
   const dx = x2 - x1;
   const dy = y2 - y1;
-  const D = Math.hypot(dx, dy);
+  const D  = Math.hypot(dx, dy);
   if (D <= Math.abs(r2 - r1)) return;
 
   // angle entre centres
@@ -104,32 +104,35 @@ function drawBelt(x1, y1, r1, x2, y2, r2){
   // angle de tangence (courroie ouverte)
   const alpha = Math.acos((r2 - r1) / D);
 
-  // angles de tangence
-  const a1 = theta + alpha;
-  const a2 = theta - alpha;
+  // ---- GRANDE POULIE ----
+  const g1 = theta + alpha;
+  const g2 = theta - alpha;
 
-  // points de contact
-  const p1a = { x: x1 + r1 * Math.cos(a1), y: y1 + r1 * Math.sin(a1) };
-  const p2a = { x: x2 + r2 * Math.cos(a1), y: y2 + r2 * Math.sin(a1) };
-  const p1b = { x: x1 + r1 * Math.cos(a2), y: y1 + r1 * Math.sin(a2) };
-  const p2b = { x: x2 + r2 * Math.cos(a2), y: y2 + r2 * Math.sin(a2) };
+  // ---- PETITE POULIE (⚠️ + PI) ----
+  const p1 = theta + Math.PI - alpha;
+  const p2 = theta + Math.PI + alpha;
+
+  const G1 = { x: x2 + r2 * Math.cos(g1), y: y2 + r2 * Math.sin(g1) };
+  const G2 = { x: x2 + r2 * Math.cos(g2), y: y2 + r2 * Math.sin(g2) };
+  const P1 = { x: x1 + r1 * Math.cos(p1), y: y1 + r1 * Math.sin(p1) };
+  const P2 = { x: x1 + r1 * Math.cos(p2), y: y1 + r1 * Math.sin(p2) };
 
   ctx.strokeStyle = "#777";
   ctx.lineWidth = 4;
   ctx.beginPath();
 
-  // segment supérieur
-  ctx.moveTo(p1a.x, p1a.y);
-  ctx.lineTo(p2a.x, p2a.y);
+  // segment haut
+  ctx.moveTo(P1.x, P1.y);
+  ctx.lineTo(G1.x, G1.y);
 
-  // 🔥 ARC GRANDE POULIE (EXTERIEUR – COURT)
-  ctx.arc(x2, y2, r2, a1, a2, true);
+  // arc grande poulie (court, extérieur)
+  ctx.arc(x2, y2, r2, g1, g2, true);
 
-  // segment inférieur
-  ctx.lineTo(p1b.x, p1b.y);
+  // segment bas
+  ctx.lineTo(P2.x, P2.y);
 
-  // 🔥 ARC PETITE POULIE (EXTERIEUR – LONG)
-  ctx.arc(x1, y1, r1, a2, a1, true);
+  // arc petite poulie (long, extérieur)
+  ctx.arc(x1, y1, r1, p2, p1, true);
 
   ctx.stroke();
 }
