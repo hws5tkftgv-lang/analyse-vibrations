@@ -22,8 +22,8 @@ h1{ font-size:18px; margin:0; }
   padding:14px;
   background:#101a40;
   display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:10px;
+  grid-template-columns: 1fr;
+  gap:14px;
 }
 label{ font-size:13px; opacity:.85; }
 input, select{
@@ -80,46 +80,37 @@ canvas{
 const canvas = document.getElementById("scene");
 const ctx = canvas.getContext("2d");
 
-const rpmInput = document.getElementById("rpm");
-const d1Input  = document.getElementById("d1");
-const d2Input  = document.getElementById("d2");
-const unitSel  = document.getElementById("unit");
-const info     = document.getElementById("info");
-
-let angle1 = 0;
-let angle2 = 0;
-
-function toMM(v){
-  return unitSel.value === "imperial" ? v * 25.4 : v;
-}
+let a1 = 0, a2 = 0;
 
 function drawBelt(x1,y1,r1,x2,y2,r2){
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const D  = Math.hypot(dx, dy);
-  if(D <= Math.abs(r2 - r1)) return;
+  const dx = x2-x1, dy = y2-y1;
+  const D = Math.hypot(dx,dy);
+  if(D <= Math.abs(r2-r1)) return;
 
-  const theta = Math.atan2(dy, dx);
-  const alpha = Math.acos((r2 - r1) / D);
+  const theta = Math.atan2(dy,dx);
+  const alpha = Math.acos((r2-r1)/D);
 
-  const g1 = theta + alpha;
-  const g2 = theta - alpha;
-  const p1 = theta + Math.PI - alpha;
-  const p2 = theta + Math.PI + alpha;
+  // Tangences
+  const gTop = theta + alpha;
+  const gBot = theta - alpha;
+  const pTop = theta + Math.PI - alpha;
+  const pBot = theta + Math.PI + alpha;
 
-  const G1 = { x: x2 + r2*Math.cos(g1), y: y2 + r2*Math.sin(g1) };
-  const G2 = { x: x2 + r2*Math.cos(g2), y: y2 + r2*Math.sin(g2) };
-  const P1 = { x: x1 + r1*Math.cos(p1), y: y1 + r1*Math.sin(p1) };
-  const P2 = { x: x1 + r1*Math.cos(p2), y: y1 + r1*Math.sin(p2) };
+  const G1 = {x:x2+r2*Math.cos(gTop), y:y2+r2*Math.sin(gTop)};
+  const G2 = {x:x2+r2*Math.cos(gBot), y:y2+r2*Math.sin(gBot)};
+  const P1 = {x:x1+r1*Math.cos(pTop), y:y1+r1*Math.sin(pTop)};
+  const P2 = {x:x1+r1*Math.cos(pBot), y:y1+r1*Math.sin(pBot)};
 
   ctx.strokeStyle="#777";
   ctx.lineWidth=4;
   ctx.beginPath();
+
   ctx.moveTo(P1.x,P1.y);
   ctx.lineTo(G1.x,G1.y);
-  ctx.arc(x2,y2,r2,g1,g2,false);
+  ctx.arc(x2,y2,r2,gTop,gBot,false);
   ctx.lineTo(P2.x,P2.y);
-  ctx.arc(x1,y1,r1,p2,p1,false);
+  ctx.arc(x1,y1,r1,pBot,pTop,false);
+
   ctx.stroke();
 }
 
@@ -127,24 +118,23 @@ function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
   const rpm = +rpmInput.value;
-  const d1  = toMM(+d1Input.value);
-  const d2  = toMM(+d2Input.value);
+  const d1 = +d1Input.value;
+  const d2 = +d2Input.value;
 
   const rpm2 = rpm * (d1/d2);
-  const hz1  = rpm / 60;
-  const hz2  = rpm2 / 60;
+  const hz1 = rpm/60;
+  const hz2 = rpm2/60;
 
-  const x1 = 130, x2 = 320, y = 130;
-  const r1 = 32;
-  const r2 = r1 * (d2/d1);
+  const x1=110, x2=330, y=120;
+  const r1=32, r2=r1*(d2/d1);
 
-  // Courroie (TOUJOURS EN PREMIER)
+  // ✅ COURROIE D'ABORD
   drawBelt(x1,y,r1,x2,y,r2);
 
-  // Poulie menante
+  // poulie menante
   ctx.save();
   ctx.translate(x1,y);
-  ctx.rotate(angle1);
+  ctx.rotate(a1);
   ctx.strokeStyle="#00a2ff";
   ctx.lineWidth=3;
   ctx.beginPath();
@@ -156,10 +146,10 @@ function draw(){
   ctx.fill();
   ctx.restore();
 
-  // Poulie menée
+  // poulie menée
   ctx.save();
   ctx.translate(x2,y);
-  ctx.rotate(angle2);
+  ctx.rotate(a2);
   ctx.strokeStyle="#ff9800";
   ctx.lineWidth=3;
   ctx.beginPath();
@@ -173,15 +163,19 @@ function draw(){
 
   info.innerHTML = `
   🔵 Menante : ${rpm.toFixed(0)} RPM / ${hz1.toFixed(2)} Hz<br>
-  🟠 Menée : ${rpm2.toFixed(0)} RPM / ${hz2.toFixed(2)} Hz<br>
-  📐 Unités : ${unitSel.value === "metric" ? "mm" : "po"}
+  🟠 Menée : ${rpm2.toFixed(0)} RPM / ${hz2.toFixed(2)} Hz
   `;
 
-  angle1 += hz1 * 0.04;
-  angle2 += hz2 * 0.04;
+  a1 += hz1*0.05;
+  a2 += hz2*0.05;
 
   requestAnimationFrame(draw);
 }
+
+const rpmInput=document.getElementById("rpm");
+const d1Input=document.getElementById("d1");
+const d2Input=document.getElementById("d2");
+const info=document.getElementById("info");
 
 draw();
 </script>
