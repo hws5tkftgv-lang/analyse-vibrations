@@ -148,8 +148,7 @@ function draw(){
   const x1 = 100, x2 = 300, y = 120;
   const r1 = 35, r2 = r1 * (d2/d1);
 
-  // courroie
- drawBelt(x1, y, r1, x2, y, r2);
+  
 
   // poulie 1
   ctx.save();
@@ -180,6 +179,10 @@ function draw(){
   ctx.arc(r2-4,0,4,0,Math.PI*2);
   ctx.fill();
   ctx.restore();
+
+// courroie
+ drawBelt(x1, y, r1, x2, y, r2);
+
 
   // infos
   info.innerHTML = `
