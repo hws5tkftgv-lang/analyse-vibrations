@@ -20,12 +20,10 @@ h1{ font-size:18px; margin:0; }
 
 .panel{
   padding:14px;
-  background:#101a40;
   display:grid;
-  grid-template-columns:1fr;
   gap:14px;
 }
-label{ font-size:13px; }
+label{ font-size:13px; opacity:.85; }
 input,select{
   width:100%;
   padding:10px;
@@ -42,6 +40,7 @@ canvas{
 
 .info{
   padding:14px;
+  font-size:14px;
   background:#0f1a44;
 }
 </style>
@@ -81,35 +80,20 @@ canvas{
 const canvas = document.getElementById("scene");
 const ctx = canvas.getContext("2d");
 
-let a1 = 0;
-let a2 = 0;
+let ang1 = 0;
+let ang2 = 0;
 
-function drawBelt(x1,y1,r1,x2,y2,r2){
-  const dx = x2-x1;
-  const dy = y2-y1;
-  const D  = Math.hypot(dx,dy);
-
-  const phi = Math.acos((r2-r1)/D);
-  const base = Math.atan2(dy,dx);
-
-  const t1 = base + phi;
-  const t2 = base - phi;
-
-  const p1a = {x:x1+r1*Math.cos(t1),y:y1+r1*Math.sin(t1)};
-  const p1b = {x:x1+r1*Math.cos(t2),y:y1+r1*Math.sin(t2)};
-  const p2a = {x:x2+r2*Math.cos(t1),y:y2+r2*Math.sin(t1)};
-  const p2b = {x:x2+r2*Math.cos(t2),y:y2+r2*Math.sin(t2)};
+function drawBelt(x1,y,r1,x2,y2,r2){
+  const topY = y - Math.min(r1,r2)*0.6;
+  const botY = y + Math.min(r1,r2)*0.6;
 
   ctx.strokeStyle="#777";
   ctx.lineWidth=4;
   ctx.beginPath();
-
-  ctx.moveTo(p1a.x,p1a.y);
-  ctx.lineTo(p2a.x,p2a.y);
-  ctx.arc(x2,y2,r2,t1,t2,false);
-  ctx.lineTo(p1b.x,p1b.y);
-  ctx.arc(x1,y1,r1,t2,t1,false);
-
+  ctx.moveTo(x1, topY);
+  ctx.lineTo(x2, topY);
+  ctx.moveTo(x1, botY);
+  ctx.lineTo(x2, botY);
   ctx.stroke();
 }
 
@@ -117,32 +101,27 @@ function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
   const rpm = +rpmInput.value;
-  const d1  = +d1Input.value;
-  const d2  = +d2Input.value;
+  const d1 = Math.max(1,+d1Input.value);
+  const d2 = Math.max(1,+d2Input.value);
 
+  const rpm2 = rpm*(d1/d2);
   const hz1 = rpm/60;
+  const hz2 = rpm2/60;
 
-  const r1 = 26;
+  const r1 = 30;
   const r2 = r1*(d2/d1);
 
-  const y = canvas.height/2;
-  const x1 = 90;
-  const x2 = canvas.width - r2 - 30;
+  const x1 = 80;
+  const x2 = canvas.width - r2 - 20;
+  const y  = canvas.height/2;
 
-  // ✅ vitesse linéaire constante
-  const v = hz1 * r1;
-
-  // ✅ vitesses angulaires correctes
-  const w1 = v / r1;
-  const w2 = v / r2;
-
-  // courroie
+  // courroie (graphique stable)
   drawBelt(x1,y,r1,x2,y,r2);
 
   // poulie menante
   ctx.save();
   ctx.translate(x1,y);
-  ctx.rotate(a1);
+  ctx.rotate(ang1);
   ctx.strokeStyle="#00a2ff";
   ctx.lineWidth=3;
   ctx.beginPath();
@@ -157,7 +136,7 @@ function draw(){
   // poulie menée
   ctx.save();
   ctx.translate(x2,y);
-  ctx.rotate(a2);
+  ctx.rotate(ang2);
   ctx.strokeStyle="#ff9800";
   ctx.lineWidth=3;
   ctx.beginPath();
@@ -170,13 +149,12 @@ function draw(){
   ctx.restore();
 
   info.innerHTML = `
-  🔵 Menante : ${rpm.toFixed(0)} RPM / ${(hz1).toFixed(2)} Hz<br>
-  🟠 Menée : ${(hz1*(d1/d2)*60).toFixed(0)} RPM / ${(hz1*(d1/d2)).toFixed(2)} Hz
+  🔵 Menante : ${rpm.toFixed(0)} RPM / ${hz1.toFixed(2)} Hz<br>
+  🟠 Menée : ${rpm2.toFixed(0)} RPM / ${hz2.toFixed(2)} Hz
   `;
 
-  // ✅ angles cohérents peu importe le diamètre
-  a1 += w1*0.04;
-  a2 += w2*0.04;
+  ang1 += hz1*0.05;
+  ang2 += hz2*0.05;
 
   requestAnimationFrame(draw);
 }
@@ -184,7 +162,6 @@ function draw(){
 const rpmInput=document.getElementById("rpm");
 const d1Input=document.getElementById("d1");
 const d2Input=document.getElementById("d2");
-const info=document.getElementById("info");
 
 draw();
 </script>
