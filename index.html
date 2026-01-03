@@ -85,31 +85,49 @@ function clamp(v,min,max){
   return Math.max(min,Math.min(max,v));
 }
 
-function drawBelt(x1,y1,r1,x2,y2,r2){
-  const dx=x2-x1, dy=y2-y1;
-  const D=Math.hypot(dx,dy);
-  if(D<=Math.abs(r2-r1)) return;
+function drawBelt(x1, y1, r1, x2, y2, r2){
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const D  = Math.hypot(dx, dy);
+  if (D <= Math.abs(r2 - r1)) return;
 
-  const theta=Math.atan2(dy,dx);
-  const ratio=clamp((r2-r1)/D,-0.999,0.999);
-  const alpha=Math.acos(ratio);
+  const theta = Math.atan2(dy, dx);
+  const alpha = Math.acos((r2 - r1) / D);
 
-  const t1=theta+alpha;
-  const t2=theta-alpha;
+  // Angles grande poulie
+  let gStart = theta + alpha;
+  let gEnd   = theta - alpha;
 
-  const P1={x:x1+r1*Math.cos(t1),y:y1+r1*Math.sin(t1)};
-  const P2={x:x1+r1*Math.cos(t2),y:y1+r1*Math.sin(t2)};
-  const G1={x:x2+r2*Math.cos(t1),y:y2+r2*Math.sin(t1)};
-  const G2={x:x2+r2*Math.cos(t2),y:y2+r2*Math.sin(t2)};
+  // Angles petite poulie (opposés)
+  let pStart = gEnd + Math.PI;
+  let pEnd   = gStart + Math.PI;
 
-  ctx.strokeStyle="#777";
-  ctx.lineWidth=4;
+  // NORMALISATION (clé du bug)
+  if (gEnd < gStart) gEnd += Math.PI * 2;
+  if (pEnd < pStart) pEnd += Math.PI * 2;
+
+  const G1 = { x: x2 + r2 * Math.cos(gStart), y: y2 + r2 * Math.sin(gStart) };
+  const G2 = { x: x2 + r2 * Math.cos(gEnd),   y: y2 + r2 * Math.sin(gEnd) };
+  const P1 = { x: x1 + r1 * Math.cos(pStart), y: y1 + r1 * Math.sin(pStart) };
+  const P2 = { x: x1 + r1 * Math.cos(pEnd),   y: y1 + r1 * Math.sin(pEnd) };
+
+  ctx.strokeStyle = "#777";
+  ctx.lineWidth = 4;
   ctx.beginPath();
-  ctx.moveTo(P1.x,P1.y);
-  ctx.lineTo(G1.x,G1.y);
-  ctx.arc(x2,y2,r2,t1,t2,false);
-  ctx.lineTo(P2.x,P2.y);
-  ctx.arc(x1,y1,r1,t2,t1,false);
+
+  // Segment haut
+  ctx.moveTo(P1.x, P1.y);
+  ctx.lineTo(G1.x, G1.y);
+
+  // Grande poulie — ARC EXTÉRIEUR
+  ctx.arc(x2, y2, r2, gStart, gEnd, false);
+
+  // Segment bas
+  ctx.lineTo(P2.x, P2.y);
+
+  // Petite poulie — ARC EXTÉRIEUR
+  ctx.arc(x1, y1, r1, pEnd, pStart + Math.PI * 2, false);
+
   ctx.stroke();
 }
 
