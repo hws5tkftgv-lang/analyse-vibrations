@@ -1,5 +1,5 @@
 <title>Analyse de vibrations – Module pédagogique</title>
-$("infoTitle").textContent = "Sélectionne un point de mesure";
+
 
 
 <!doctype html>
@@ -91,6 +91,42 @@ const ctx = canvas.getContext("2d");
 let angle1 = 0;
 let angle2 = 0;
 
+
+function drawBelt(x1, y1, r1, x2, y2, r2){
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const dist = Math.hypot(dx, dy);
+  if(dist <= Math.abs(r2 - r1)) return;
+
+  const angle = Math.atan2(dy, dx);
+  const alpha = Math.acos((r2 - r1) / dist);
+
+  const a1 = angle + alpha;
+  const a2 = angle - alpha;
+
+  const p1a = { x: x1 + r1*Math.cos(a1), y: y1 + r1*Math.sin(a1) };
+  const p2a = { x: x2 + r2*Math.cos(a1), y: y2 + r2*Math.sin(a1) };
+  const p1b = { x: x1 + r1*Math.cos(a2), y: y1 + r1*Math.sin(a2) };
+  const p2b = { x: x2 + r2*Math.cos(a2), y: y2 + r2*Math.sin(a2) };
+
+  ctx.strokeStyle = "#555";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+
+  ctx.moveTo(p1a.x, p1a.y);
+  ctx.lineTo(p2a.x, p2a.y);
+
+  ctx.arc(x2, y2, r2, a1, a2, false);
+
+  ctx.lineTo(p1b.x, p1b.y);
+
+  ctx.arc(x1, y1, r1, a2, a1, true);
+
+  ctx.stroke();
+}
+
+
+
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
@@ -107,12 +143,7 @@ function draw(){
   const r1 = 35, r2 = r1 * (d2/d1);
 
   // courroie
-  ctx.strokeStyle="#555";
-  ctx.lineWidth=4;
-  ctx.beginPath();
-  ctx.moveTo(x1+r1,y);
-  ctx.lineTo(x2-r2,y);
-  ctx.stroke();
+ drawBelt(x1, y, r1, x2, y, r2);
 
   // poulie 1
   ctx.save();
