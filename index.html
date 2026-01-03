@@ -1,2 +1,168 @@
 <title>Analyse de vibrations – Module pédagogique</title>
 $("infoTitle").textContent = "Sélectionne un point de mesure";
+
+
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Analyse de vibrations – Poulies & courroie</title>
+
+<style>
+  body{
+    margin:0;
+    background:#0b1436;
+    color:#eaf1ff;
+    font-family:Arial, sans-serif;
+  }
+
+  header{
+    padding:14px;
+    background:#0f1a44;
+    border-bottom:1px solid rgba(255,255,255,.15);
+  }
+
+  h1{ font-size:18px; margin:0; }
+
+  .panel{
+    padding:14px;
+    background:#101a40;
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+  }
+
+  label{
+    font-size:13px;
+    opacity:.85;
+  }
+
+  input{
+    width:100%;
+    padding:8px;
+    font-size:15px;
+    border-radius:8px;
+    border:none;
+  }
+
+  canvas{
+    display:block;
+    margin:0 auto;
+    background:#000;
+  }
+
+  .info{
+    padding:14px;
+    font-size:14px;
+    background:#0f1a44;
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🔄 Analyse de vibrations – Poulies & courroie</h1>
+</header>
+
+<div class="panel">
+  <label>RPM moteur (menante)
+    <input id="rpm" type="number" value="1200">
+  </label>
+
+  <label>Ø poulie menante (mm)
+    <input id="d1" type="number" value="100">
+  </label>
+
+  <label>Ø poulie menée (mm)
+    <input id="d2" type="number" value="200">
+  </label>
+</div>
+
+<canvas id="scene" width="360" height="240"></canvas>
+
+<div class="info" id="info"></div>
+
+<script>
+const canvas = document.getElementById("scene");
+const ctx = canvas.getContext("2d");
+
+let angle1 = 0;
+let angle2 = 0;
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const rpm = +rpmInput.value;
+  const d1 = +d1Input.value;
+  const d2 = +d2Input.value;
+
+  const rpm2 = rpm * (d1 / d2);
+  const hz1 = rpm / 60;
+  const hz2 = rpm2 / 60;
+
+  // positions
+  const x1 = 120, x2 = 240, y = 120;
+  const r1 = 35, r2 = r1 * (d2/d1);
+
+  // courroie
+  ctx.strokeStyle="#555";
+  ctx.lineWidth=4;
+  ctx.beginPath();
+  ctx.moveTo(x1+r1,y);
+  ctx.lineTo(x2-r2,y);
+  ctx.stroke();
+
+  // poulie 1
+  ctx.save();
+  ctx.translate(x1,y);
+  ctx.rotate(angle1);
+  ctx.strokeStyle="#00a2ff";
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  ctx.arc(0,0,r1,0,Math.PI*2);
+  ctx.stroke();
+  ctx.fillStyle="#00a2ff";
+  ctx.beginPath();
+  ctx.arc(r1-4,0,4,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+
+  // poulie 2
+  ctx.save();
+  ctx.translate(x2,y);
+  ctx.rotate(angle2);
+  ctx.strokeStyle="#ff9800";
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  ctx.arc(0,0,r2,0,Math.PI*2);
+  ctx.stroke();
+  ctx.fillStyle="#ff9800";
+  ctx.beginPath();
+  ctx.arc(r2-4,0,4,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+
+  // infos
+  info.innerHTML = `
+    🔵 Menante : ${rpm.toFixed(0)} RPM / ${hz1.toFixed(2)} Hz<br>
+    🟠 Menée : ${rpm2.toFixed(0)} RPM / ${hz2.toFixed(2)} Hz
+  `;
+
+  angle1 += hz1 * 0.05;
+  angle2 += hz2 * 0.05;
+
+  requestAnimationFrame(draw);
+}
+
+const rpmInput = document.getElementById("rpm");
+const d1Input = document.getElementById("d1");
+const d2Input = document.getElementById("d2");
+const info = document.getElementById("info");
+
+draw();
+</script>
+
+</body>
+</html>
