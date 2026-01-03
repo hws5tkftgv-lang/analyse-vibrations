@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>Analyse de vibrations – Poulies & courroie</title>
 
 <style>
@@ -10,38 +10,37 @@ body{
   margin:0;
   background:#0b1436;
   color:#eaf1ff;
-  font-family:Arial, sans-serif;
+  font-family:Arial,sans-serif;
 }
 header{
   padding:14px;
   background:#0f1a44;
   border-bottom:1px solid rgba(255,255,255,.15);
 }
-h1{ font-size:18px; margin:0; }
+h1{margin:0;font-size:18px}
 .panel{
   padding:14px;
   background:#101a40;
   display:grid;
-  grid-template-columns: 1fr;
   gap:14px;
 }
-label{ font-size:13px; opacity:.85; }
-input, select{
+label{font-size:13px;opacity:.85}
+input,select{
   width:100%;
-  padding:8px;
-  font-size:15px;
-  border-radius:8px;
+  padding:10px;
+  font-size:16px;
+  border-radius:10px;
   border:none;
 }
 canvas{
   display:block;
-  margin:0 auto;
+  margin:12px auto;
   background:#000;
 }
 .info{
   padding:14px;
-  font-size:14px;
   background:#0f1a44;
+  font-size:14px;
 }
 </style>
 </head>
@@ -49,28 +48,28 @@ canvas{
 <body>
 
 <header>
-  <h1>🔄 Analyse de vibrations – Poulies & courroie</h1>
+<h1>🔄 Analyse de vibrations – Poulies & courroie</h1>
 </header>
 
 <div class="panel">
-  <label>RPM moteur (menante)
-    <input id="rpm" type="number" value="1200">
-  </label>
+<label>RPM moteur (menante)
+<input id="rpm" type="number" value="1200">
+</label>
 
-  <label>Système d’unités
-    <select id="unit">
-      <option value="metric">Métrique (mm)</option>
-      <option value="imperial">Impérial (po)</option>
-    </select>
-  </label>
+<label>Système d’unités
+<select id="unit">
+<option value="metric">Métrique (mm)</option>
+<option value="imperial">Impérial (po)</option>
+</select>
+</label>
 
-  <label>Ø poulie menante
-    <input id="d1" type="number" value="100">
-  </label>
+<label>Ø poulie menante
+<input id="d1" type="number" value="100">
+</label>
 
-  <label>Ø poulie menée
-    <input id="d2" type="number" value="200">
-  </label>
+<label>Ø poulie menée
+<input id="d2" type="number" value="200">
+</label>
 </div>
 
 <canvas id="scene" width="420" height="260"></canvas>
@@ -80,55 +79,58 @@ canvas{
 const canvas = document.getElementById("scene");
 const ctx = canvas.getContext("2d");
 
-let a1 = 0, a2 = 0;
+let a1=0,a2=0;
+
+function clamp(v,min,max){
+  return Math.max(min,Math.min(max,v));
+}
 
 function drawBelt(x1,y1,r1,x2,y2,r2){
-  const dx = x2-x1, dy = y2-y1;
-  const D = Math.hypot(dx,dy);
-  if(D <= Math.abs(r2-r1)) return;
+  const dx=x2-x1, dy=y2-y1;
+  const D=Math.hypot(dx,dy);
+  if(D<=Math.abs(r2-r1)) return;
 
-  const theta = Math.atan2(dy,dx);
-  const alpha = Math.acos((r2-r1)/D);
+  const theta=Math.atan2(dy,dx);
+  const ratio=clamp((r2-r1)/D,-0.999,0.999);
+  const alpha=Math.acos(ratio);
 
-  // Tangences
-  const gTop = theta + alpha;
-  const gBot = theta - alpha;
-  const pTop = theta + Math.PI - alpha;
-  const pBot = theta + Math.PI + alpha;
+  const t1=theta+alpha;
+  const t2=theta-alpha;
 
-  const G1 = {x:x2+r2*Math.cos(gTop), y:y2+r2*Math.sin(gTop)};
-  const G2 = {x:x2+r2*Math.cos(gBot), y:y2+r2*Math.sin(gBot)};
-  const P1 = {x:x1+r1*Math.cos(pTop), y:y1+r1*Math.sin(pTop)};
-  const P2 = {x:x1+r1*Math.cos(pBot), y:y1+r1*Math.sin(pBot)};
+  const P1={x:x1+r1*Math.cos(t1),y:y1+r1*Math.sin(t1)};
+  const P2={x:x1+r1*Math.cos(t2),y:y1+r1*Math.sin(t2)};
+  const G1={x:x2+r2*Math.cos(t1),y:y2+r2*Math.sin(t1)};
+  const G2={x:x2+r2*Math.cos(t2),y:y2+r2*Math.sin(t2)};
 
   ctx.strokeStyle="#777";
   ctx.lineWidth=4;
   ctx.beginPath();
-
   ctx.moveTo(P1.x,P1.y);
   ctx.lineTo(G1.x,G1.y);
-  ctx.arc(x2,y2,r2,gTop,gBot,false);
+  ctx.arc(x2,y2,r2,t1,t2,false);
   ctx.lineTo(P2.x,P2.y);
-  ctx.arc(x1,y1,r1,pBot,pTop,false);
-
+  ctx.arc(x1,y1,r1,t2,t1,false);
   ctx.stroke();
 }
 
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  const rpm = +rpmInput.value;
-  const d1 = +d1Input.value;
-  const d2 = +d2Input.value;
+  const rpm=+rpmInput.value;
+  const d1=+d1Input.value;
+  const d2=+d2Input.value;
 
-  const rpm2 = rpm * (d1/d2);
-  const hz1 = rpm/60;
-  const hz2 = rpm2/60;
+  const rpm2=rpm*(d1/d2);
+  const hz1=rpm/60;
+  const hz2=rpm2/60;
 
-  const x1=110, x2=330, y=120;
-  const r1=32, r2=r1*(d2/d1);
+  const r1=32;
+  const r2=r1*(d2/d1);
 
-  // ✅ COURROIE D'ABORD
+  const x1=110;
+  const x2=canvas.width-r2-20;
+  const y=canvas.height/2;
+
   drawBelt(x1,y,r1,x2,y,r2);
 
   // poulie menante
@@ -161,13 +163,14 @@ function draw(){
   ctx.fill();
   ctx.restore();
 
-  info.innerHTML = `
-  🔵 Menante : ${rpm.toFixed(0)} RPM / ${hz1.toFixed(2)} Hz<br>
-  🟠 Menée : ${rpm2.toFixed(0)} RPM / ${hz2.toFixed(2)} Hz
-  `;
+  info.innerHTML=`
+🔵 Menante : ${rpm.toFixed(0)} RPM / ${hz1.toFixed(2)} Hz<br>
+🟠 Menée : ${rpm2.toFixed(0)} RPM / ${hz2.toFixed(2)} Hz
+`;
 
-  a1 += hz1*0.05;
-  a2 += hz2*0.05;
+  const v=hz1*2*Math.PI*r1;
+  a1+=v/r1*0.016;
+  a2+=v/r2*0.016;
 
   requestAnimationFrame(draw);
 }
@@ -175,10 +178,8 @@ function draw(){
 const rpmInput=document.getElementById("rpm");
 const d1Input=document.getElementById("d1");
 const d2Input=document.getElementById("d2");
-const info=document.getElementById("info");
 
 draw();
 </script>
-
 </body>
 </html>
