@@ -80,20 +80,34 @@ canvas{
 const canvas = document.getElementById("scene");
 const ctx = canvas.getContext("2d");
 
-let ang1 = 0;
-let ang2 = 0;
+let a1 = 0;
+let a2 = 0;
 
 function drawBelt(x1,y,r1,x2,y2,r2){
-  const topY = y - Math.min(r1,r2)*0.6;
-  const botY = y + Math.min(r1,r2)*0.6;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const D  = Math.hypot(dx,dy);
+  if(D <= Math.abs(r2-r1)) return;
+
+  const theta = Math.atan2(dy,dx);
+  const alpha = Math.acos((r2-r1)/D);
+
+  const t1 = theta + alpha;
+  const t2 = theta - alpha;
+
+  const p1 = {x:x1+r1*Math.cos(t1), y:y1+r1*Math.sin(t1)};
+  const p2 = {x:x1+r1*Math.cos(t2), y:y1+r1*Math.sin(t2)};
+  const g1 = {x:x2+r2*Math.cos(t1), y:y2+r2*Math.sin(t1)};
+  const g2 = {x:x2+r2*Math.cos(t2), y:y2+r2*Math.sin(t2)};
 
   ctx.strokeStyle="#777";
   ctx.lineWidth=4;
   ctx.beginPath();
-  ctx.moveTo(x1, topY);
-  ctx.lineTo(x2, topY);
-  ctx.moveTo(x1, botY);
-  ctx.lineTo(x2, botY);
+  ctx.moveTo(p1.x,p1.y);
+  ctx.lineTo(g1.x,g1.y);
+  ctx.arc(x2,y2,r2,t1,t2,false);
+  ctx.lineTo(p2.x,p2.y);
+  ctx.arc(x1,y1,r1,t2,t1,false);
   ctx.stroke();
 }
 
@@ -101,27 +115,27 @@ function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
   const rpm = +rpmInput.value;
-  const d1 = Math.max(1,+d1Input.value);
-  const d2 = Math.max(1,+d2Input.value);
+  const d1  = Math.max(1,+d1Input.value);
+  const d2  = Math.max(1,+d2Input.value);
 
   const rpm2 = rpm*(d1/d2);
-  const hz1 = rpm/60;
-  const hz2 = rpm2/60;
+  const hz1  = rpm/60;
+  const hz2  = rpm2/60;
 
-  const r1 = 30;
-  const r2 = r1*(d2/d1);
+  const baseR = 28;
+  const r1 = baseR;
+  const r2 = baseR*(d2/d1);
 
-  const x1 = 80;
+  const x1 = 70;
   const x2 = canvas.width - r2 - 20;
   const y  = canvas.height/2;
 
-  // courroie (graphique stable)
   drawBelt(x1,y,r1,x2,y,r2);
 
   // poulie menante
   ctx.save();
   ctx.translate(x1,y);
-  ctx.rotate(ang1);
+  ctx.rotate(a1);
   ctx.strokeStyle="#00a2ff";
   ctx.lineWidth=3;
   ctx.beginPath();
@@ -136,7 +150,7 @@ function draw(){
   // poulie menée
   ctx.save();
   ctx.translate(x2,y);
-  ctx.rotate(ang2);
+  ctx.rotate(a2);
   ctx.strokeStyle="#ff9800";
   ctx.lineWidth=3;
   ctx.beginPath();
@@ -153,8 +167,8 @@ function draw(){
   🟠 Menée : ${rpm2.toFixed(0)} RPM / ${hz2.toFixed(2)} Hz
   `;
 
-  ang1 += hz1*0.05;
-  ang2 += hz2*0.05;
+  a1 += hz1*0.05;
+  a2 += hz2*0.05;
 
   requestAnimationFrame(draw);
 }
