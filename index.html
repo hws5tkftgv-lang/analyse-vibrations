@@ -98,37 +98,40 @@ function drawBelt(x1, y1, r1, x2, y2, r2){
   const dist = Math.hypot(dx, dy);
   if(dist <= Math.abs(r2 - r1)) return;
 
-  const angle = Math.atan2(dy, dx);
-  const alpha = Math.acos((r2 - r1) / dist);
+  // angle entre centres
+  const baseAngle = Math.atan2(dy, dx);
 
-  const t1 = angle + alpha;
-  const t2 = angle - alpha;
+  // angle de tangence
+  const phi = Math.acos((r2 - r1) / dist);
 
-  const p1a = { x: x1 + r1*Math.cos(t1), y: y1 + r1*Math.sin(t1) };
-  const p2a = { x: x2 + r2*Math.cos(t1), y: y2 + r2*Math.sin(t1) };
-  const p1b = { x: x1 + r1*Math.cos(t2), y: y1 + r1*Math.sin(t2) };
-  const p2b = { x: x2 + r2*Math.cos(t2), y: y2 + r2*Math.sin(t2) };
+  // points de tangence
+  const aTop = baseAngle + phi;
+  const aBot = baseAngle - phi;
 
-  ctx.strokeStyle = "#555";
+  const p1Top = { x: x1 + r1 * Math.cos(aTop), y: y1 + r1 * Math.sin(aTop) };
+  const p2Top = { x: x2 + r2 * Math.cos(aTop), y: y2 + r2 * Math.sin(aTop) };
+  const p1Bot = { x: x1 + r1 * Math.cos(aBot), y: y1 + r1 * Math.sin(aBot) };
+  const p2Bot = { x: x2 + r2 * Math.cos(aBot), y: y2 + r2 * Math.sin(aBot) };
+
+  ctx.strokeStyle = "#666";
   ctx.lineWidth = 4;
   ctx.beginPath();
 
   // segment haut
-  ctx.moveTo(p1a.x, p1a.y);
-  ctx.lineTo(p2a.x, p2a.y);
+  ctx.moveTo(p1Top.x, p1Top.y);
+  ctx.lineTo(p2Top.x, p2Top.y);
 
-  // grande poulie (arc court)
-  ctx.arc(x2, y2, r2, t1, t2, false);
+  // grande poulie → ARC COURT
+  ctx.arc(x2, y2, r2, aTop, aBot, false);
 
   // segment bas
-  ctx.lineTo(p1b.x, p1b.y);
+  ctx.lineTo(p1Bot.x, p1Bot.y);
 
-  // petite poulie (arc long)
-  ctx.arc(x1, y1, r1, t2, t1 + Math.PI*2, false);
+  // petite poulie → ARC LONG (clé visuelle)
+  ctx.arc(x1, y1, r1, aBot, aTop + Math.PI * 2, false);
 
   ctx.stroke();
 }
-
 
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
