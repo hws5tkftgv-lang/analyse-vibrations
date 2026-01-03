@@ -127,9 +127,10 @@ function draw(){
   const r1=32;
   const r2=r1*(d2/d1);
 
-  const x1=110;
-  const x2=canvas.width-r2-20;
-  const y=canvas.height/2;
+  const x1 = 110;
+const minSpacing = 1.6 * (r1 + r2);
+const x2 = Math.max(x1 + minSpacing, canvas.width - r2 - 20);
+const y  = canvas.height / 2;
 
   drawBelt(x1,y,r1,x2,y,r2);
 
