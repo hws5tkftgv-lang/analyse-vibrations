@@ -95,44 +95,44 @@ let angle2 = 0;
 function drawBelt(x1, y1, r1, x2, y2, r2){
   const dx = x2 - x1;
   const dy = y2 - y1;
-  const dist = Math.hypot(dx, dy);
-  if(dist <= Math.abs(r2 - r1)) return;
+  const D = Math.hypot(dx, dy);
+  if (D <= Math.abs(r2 - r1)) return;
 
   // angle entre centres
-  const baseAngle = Math.atan2(dy, dx);
+  const theta = Math.atan2(dy, dx);
 
-  // angle de tangence
-  const phi = Math.acos((r2 - r1) / dist);
+  // angle de tangence (courroie ouverte)
+  const alpha = Math.acos((r2 - r1) / D);
 
-  // points de tangence
-  const aTop = baseAngle + phi;
-  const aBot = baseAngle - phi;
+  // angles de tangence
+  const a1 = theta + alpha;
+  const a2 = theta - alpha;
 
-  const p1Top = { x: x1 + r1 * Math.cos(aTop), y: y1 + r1 * Math.sin(aTop) };
-  const p2Top = { x: x2 + r2 * Math.cos(aTop), y: y2 + r2 * Math.sin(aTop) };
-  const p1Bot = { x: x1 + r1 * Math.cos(aBot), y: y1 + r1 * Math.sin(aBot) };
-  const p2Bot = { x: x2 + r2 * Math.cos(aBot), y: y2 + r2 * Math.sin(aBot) };
+  // points de contact
+  const p1a = { x: x1 + r1 * Math.cos(a1), y: y1 + r1 * Math.sin(a1) };
+  const p2a = { x: x2 + r2 * Math.cos(a1), y: y2 + r2 * Math.sin(a1) };
+  const p1b = { x: x1 + r1 * Math.cos(a2), y: y1 + r1 * Math.sin(a2) };
+  const p2b = { x: x2 + r2 * Math.cos(a2), y: y2 + r2 * Math.sin(a2) };
 
-  ctx.strokeStyle = "#666";
+  ctx.strokeStyle = "#777";
   ctx.lineWidth = 4;
   ctx.beginPath();
 
-  // segment haut
-  ctx.moveTo(p1Top.x, p1Top.y);
-  ctx.lineTo(p2Top.x, p2Top.y);
+  // segment supérieur
+  ctx.moveTo(p1a.x, p1a.y);
+  ctx.lineTo(p2a.x, p2a.y);
 
-  // grande poulie → ARC COURT
-  ctx.arc(x2, y2, r2, aTop, aBot, false);
+  // 🔥 ARC GRANDE POULIE (EXTERIEUR – COURT)
+  ctx.arc(x2, y2, r2, a1, a2, true);
 
-  // segment bas
-  ctx.lineTo(p1Bot.x, p1Bot.y);
+  // segment inférieur
+  ctx.lineTo(p1b.x, p1b.y);
 
-  // petite poulie → ARC LONG (clé visuelle)
-  ctx.arc(x1, y1, r1, aBot, aTop + Math.PI * 2, false);
+  // 🔥 ARC PETITE POULIE (EXTERIEUR – LONG)
+  ctx.arc(x1, y1, r1, a2, a1, true);
 
   ctx.stroke();
 }
-
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
