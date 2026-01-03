@@ -15,7 +15,6 @@ body{
 header{
   padding:14px;
   background:#0f1a44;
-  border-bottom:1px solid rgba(255,255,255,.15);
 }
 h1{ font-size:18px; margin:0; }
 
@@ -26,10 +25,8 @@ h1{ font-size:18px; margin:0; }
   grid-template-columns:1fr;
   gap:14px;
 }
-
-label{ font-size:13px; opacity:.85; }
-
-input, select{
+label{ font-size:13px; }
+input,select{
   width:100%;
   padding:10px;
   font-size:16px;
@@ -45,7 +42,6 @@ canvas{
 
 .info{
   padding:14px;
-  font-size:14px;
   background:#0f1a44;
 }
 </style>
@@ -85,48 +81,34 @@ canvas{
 const canvas = document.getElementById("scene");
 const ctx = canvas.getContext("2d");
 
-let a1 = 0, a2 = 0;
+let a1 = 0;
+let a2 = 0;
 
-/* ===== COURROIE PHYSIQUEMENT CORRECTE ===== */
 function drawBelt(x1,y1,r1,x2,y2,r2){
-  const dx = x2 - x1;
-  const dy = y2 - y1;
+  const dx = x2-x1;
+  const dy = y2-y1;
   const D  = Math.hypot(dx,dy);
-  if(D <= Math.abs(r2-r1)) return;
 
-  const theta = Math.atan2(dy,dx);
-  const alpha = Math.acos((r2-r1)/D);
+  const phi = Math.acos((r2-r1)/D);
+  const base = Math.atan2(dy,dx);
 
-  // grande poulie → enrobage court
-  const g1 = theta + alpha;
-  const g2 = theta - alpha;
+  const t1 = base + phi;
+  const t2 = base - phi;
 
-  // petite poulie → enrobage long (décalage PI)
-  const p1 = theta + Math.PI - alpha;
-  const p2 = theta + Math.PI + alpha;
-
-  const P1t = { x:x1 + r1*Math.cos(p1), y:y1 + r1*Math.sin(p1) };
-  const P1b = { x:x1 + r1*Math.cos(p2), y:y1 + r1*Math.sin(p2) };
-
-  const P2t = { x:x2 + r2*Math.cos(g1), y:y2 + r2*Math.sin(g1) };
-  const P2b = { x:x2 + r2*Math.cos(g2), y:y2 + r2*Math.sin(g2) };
+  const p1a = {x:x1+r1*Math.cos(t1),y:y1+r1*Math.sin(t1)};
+  const p1b = {x:x1+r1*Math.cos(t2),y:y1+r1*Math.sin(t2)};
+  const p2a = {x:x2+r2*Math.cos(t1),y:y2+r2*Math.sin(t1)};
+  const p2b = {x:x2+r2*Math.cos(t2),y:y2+r2*Math.sin(t2)};
 
   ctx.strokeStyle="#777";
   ctx.lineWidth=4;
   ctx.beginPath();
 
-  // segment haut
-  ctx.moveTo(P1t.x,P1t.y);
-  ctx.lineTo(P2t.x,P2t.y);
-
-  // grande poulie (arc court)
-  ctx.arc(x2,y2,r2,g1,g2,false);
-
-  // segment bas
-  ctx.lineTo(P1b.x,P1b.y);
-
-  // petite poulie (arc long)
-  ctx.arc(x1,y1,r1,p2,p1,false);
+  ctx.moveTo(p1a.x,p1a.y);
+  ctx.lineTo(p2a.x,p2a.y);
+  ctx.arc(x2,y2,r2,t1,t2,false);
+  ctx.lineTo(p1b.x,p1b.y);
+  ctx.arc(x1,y1,r1,t2,t1,false);
 
   ctx.stroke();
 }
@@ -135,23 +117,24 @@ function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
   const rpm = +rpmInput.value;
-  let d1 = +d1Input.value;
-  let d2 = +d2Input.value;
+  const d1  = +d1Input.value;
+  const d2  = +d2Input.value;
 
-  const unit = unitInput.value;
-  const unitLabel = unit==="metric" ? "mm" : "po";
-
-  const rpm2 = rpm*(d1/d2);
   const hz1 = rpm/60;
-  const hz2 = rpm2/60;
 
-  // mise à l’échelle stable (évite les bugs visuels)
   const r1 = 26;
   const r2 = r1*(d2/d1);
 
   const y = canvas.height/2;
   const x1 = 90;
   const x2 = canvas.width - r2 - 30;
+
+  // ✅ vitesse linéaire constante
+  const v = hz1 * r1;
+
+  // ✅ vitesses angulaires correctes
+  const w1 = v / r1;
+  const w2 = v / r2;
 
   // courroie
   drawBelt(x1,y,r1,x2,y,r2);
@@ -187,13 +170,13 @@ function draw(){
   ctx.restore();
 
   info.innerHTML = `
-  🔵 Menante : ${rpm.toFixed(0)} RPM / ${hz1.toFixed(2)} Hz<br>
-  🟠 Menée : ${rpm2.toFixed(0)} RPM / ${hz2.toFixed(2)} Hz<br>
-  📏 Unités : ${unitLabel}
+  🔵 Menante : ${rpm.toFixed(0)} RPM / ${(hz1).toFixed(2)} Hz<br>
+  🟠 Menée : ${(hz1*(d1/d2)*60).toFixed(0)} RPM / ${(hz1*(d1/d2)).toFixed(2)} Hz
   `;
 
-  a1 += hz1*0.04;
-  a2 += hz2*0.04;
+  // ✅ angles cohérents peu importe le diamètre
+  a1 += w1*0.04;
+  a2 += w2*0.04;
 
   requestAnimationFrame(draw);
 }
@@ -201,7 +184,6 @@ function draw(){
 const rpmInput=document.getElementById("rpm");
 const d1Input=document.getElementById("d1");
 const d2Input=document.getElementById("d2");
-const unitInput=document.getElementById("unit");
 const info=document.getElementById("info");
 
 draw();
