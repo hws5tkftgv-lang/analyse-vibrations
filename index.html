@@ -101,30 +101,33 @@ function drawBelt(x1, y1, r1, x2, y2, r2){
   const angle = Math.atan2(dy, dx);
   const alpha = Math.acos((r2 - r1) / dist);
 
-  const a1 = angle + alpha;
-  const a2 = angle - alpha;
+  const t1 = angle + alpha;
+  const t2 = angle - alpha;
 
-  const p1a = { x: x1 + r1*Math.cos(a1), y: y1 + r1*Math.sin(a1) };
-  const p2a = { x: x2 + r2*Math.cos(a1), y: y2 + r2*Math.sin(a1) };
-  const p1b = { x: x1 + r1*Math.cos(a2), y: y1 + r1*Math.sin(a2) };
-  const p2b = { x: x2 + r2*Math.cos(a2), y: y2 + r2*Math.sin(a2) };
+  const p1a = { x: x1 + r1*Math.cos(t1), y: y1 + r1*Math.sin(t1) };
+  const p2a = { x: x2 + r2*Math.cos(t1), y: y2 + r2*Math.sin(t1) };
+  const p1b = { x: x1 + r1*Math.cos(t2), y: y1 + r1*Math.sin(t2) };
+  const p2b = { x: x2 + r2*Math.cos(t2), y: y2 + r2*Math.sin(t2) };
 
   ctx.strokeStyle = "#555";
   ctx.lineWidth = 4;
   ctx.beginPath();
 
+  // segment haut
   ctx.moveTo(p1a.x, p1a.y);
   ctx.lineTo(p2a.x, p2a.y);
 
-  ctx.arc(x2, y2, r2, a1, a2, false);
+  // grande poulie (arc court)
+  ctx.arc(x2, y2, r2, t1, t2, false);
 
+  // segment bas
   ctx.lineTo(p1b.x, p1b.y);
 
-  ctx.arc(x1, y1, r1, a2, a1, true);
+  // petite poulie (arc long)
+  ctx.arc(x1, y1, r1, t2, t1 + Math.PI*2, false);
 
   ctx.stroke();
 }
-
 
 
 function draw(){
