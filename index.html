@@ -13,20 +13,20 @@ body{
   font-family:Arial, sans-serif;
 }
 header{
-  padding:14px;
+  padding:16px;
   background:#0f1a44;
 }
 h1{ font-size:18px; margin:0; }
 
 .panel{
-  padding:14px;
+  padding:16px;
   background:#101a40;
   display:grid;
   grid-template-columns:1fr;
-  gap:14px;
+  gap:16px;
 }
 input, select{
-  padding:10px;
+  padding:12px;
   font-size:16px;
   border-radius:10px;
   border:none;
@@ -37,7 +37,7 @@ canvas{
   background:#000;
 }
 .info{
-  padding:14px;
+  padding:16px;
   background:#0f1a44;
 }
 </style>
@@ -66,7 +66,57 @@ canvas{
 const canvas = document.getElementById("scene");
 const ctx = canvas.getContext("2d");
 
-let a1=0, a2=0;
+let a1 = 0, a2 = 0;
+
+// ---- ARC MANUEL (pas de ctx.arc pour la courroie)
+function drawArc(cx, cy, r, aStart, aEnd){
+  const step = (aEnd > aStart ? 1 : -1) * 0.03;
+  ctx.beginPath();
+  for(let a = aStart; Math.abs(a - aEnd) > 0.02; a += step){
+    ctx.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+  }
+  ctx.lineTo(cx + r * Math.cos(aEnd), cy + r * Math.sin(aEnd));
+  ctx.stroke();
+}
+
+// ---- COURROIE GÉOMÉTRIQUEMENT CORRECTE
+function drawBelt(x1,y1,r1,x2,y2,r2){
+  const dx = x2-x1;
+  const dy = y2-y1;
+  const D  = Math.hypot(dx,dy);
+
+  const theta = Math.atan2(dy,dx);
+  const alpha = Math.acos((r2-r1)/D);
+
+  const t1 = theta + alpha;
+  const t2 = theta - alpha;
+
+  const P1t = {x:x1+r1*Math.cos(t1), y:y1+r1*Math.sin(t1)};
+  const P1b = {x:x1+r1*Math.cos(t2), y:y1+r1*Math.sin(t2)};
+  const P2t = {x:x2+r2*Math.cos(t1), y:y2+r2*Math.sin(t1)};
+  const P2b = {x:x2+r2*Math.cos(t2), y:y2+r2*Math.sin(t2)};
+
+  ctx.strokeStyle="#777";
+  ctx.lineWidth=4;
+
+  // segment haut
+  ctx.beginPath();
+  ctx.moveTo(P1t.x,P1t.y);
+  ctx.lineTo(P2t.x,P2t.y);
+  ctx.stroke();
+
+  // arc grande poulie
+  drawArc(x2,y2,r2,t1,t2);
+
+  // segment bas
+  ctx.beginPath();
+  ctx.moveTo(P2b.x,P2b.y);
+  ctx.lineTo(P1b.x,P1b.y);
+  ctx.stroke();
+
+  // arc petite poulie
+  drawArc(x1,y1,r1,t2,t1+Math.PI*2);
+}
 
 function drawPulley(x,y,r,angle,color){
   ctx.save();
@@ -84,71 +134,43 @@ function drawPulley(x,y,r,angle,color){
   ctx.restore();
 }
 
-// COURROIE POLYLINE (stable iPhone)
-function drawBelt(x1,y1,r1,x2,y2,r2){
-  const dx=x2-x1;
-  const dy=y2-y1;
-  const D=Math.hypot(dx,dy);
-
-  const angle=Math.atan2(dy,dx);
-  const offset=Math.asin((r2-r1)/D);
-
-  const aTop=angle+offset;
-  const aBot=angle-offset;
-
-  const p1Top={x:x1+r1*Math.cos(aTop),y:y1+r1*Math.sin(aTop)};
-  const p1Bot={x:x1+r1*Math.cos(aBot),y:y1+r1*Math.sin(aBot)};
-  const p2Top={x:x2+r2*Math.cos(aTop),y:y2+r2*Math.sin(aTop)};
-  const p2Bot={x:x2+r2*Math.cos(aBot),y:y2+r2*Math.sin(aBot)};
-
-  ctx.strokeStyle="#777";
-  ctx.lineWidth=4;
-  ctx.beginPath();
-  ctx.moveTo(p1Top.x,p1Top.y);
-  ctx.lineTo(p2Top.x,p2Top.y);
-  ctx.lineTo(p2Bot.x,p2Bot.y);
-  ctx.lineTo(p1Bot.x,p1Bot.y);
-  ctx.closePath();
-  ctx.stroke();
-}
-
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  const rpm=+rpmInput.value;
-  const d1=+d1Input.value;
-  const d2=+d2Input.value;
+  const rpm = +rpmInput.value;
+  const d1  = +d1Input.value;
+  const d2  = +d2Input.value;
 
-  const rpm2=rpm*(d1/d2);
-  const hz1=rpm/60;
-  const hz2=rpm2/60;
+  const rpm2 = rpm*(d1/d2);
+  const hz1  = rpm/60;
+  const hz2  = rpm2/60;
 
-  const r1=30;
-  const r2=r1*(d2/d1);
+  const r1 = 28;
+  const r2 = r1*(d2/d1);
 
-  const x1=80;
-  const x2=canvas.width-r2-40;
-  const y=canvas.height/2;
+  const x1 = 80;
+  const x2 = canvas.width - r2 - 30;
+  const y  = canvas.height/2;
 
   drawBelt(x1,y,r1,x2,y,r2);
   drawPulley(x1,y,r1,a1,"#00a2ff");
   drawPulley(x2,y,r2,a2,"#ff9800");
 
-  info.innerHTML=`
+  info.innerHTML = `
 🔵 Menante : ${rpm.toFixed(0)} RPM / ${hz1.toFixed(2)} Hz<br>
 🟠 Menée : ${rpm2.toFixed(0)} RPM / ${hz2.toFixed(2)} Hz
 `;
 
-  a1+=hz1*0.04;
-  a2+=hz2*0.04;
+  a1 += hz1*0.04;
+  a2 += hz2*0.04;
 
   requestAnimationFrame(draw);
 }
 
-const rpmInput=document.getElementById("rpm");
-const d1Input=document.getElementById("d1");
-const d2Input=document.getElementById("d2");
-const info=document.getElementById("info");
+const rpmInput = document.getElementById("rpm");
+const d1Input  = document.getElementById("d1");
+const d2Input  = document.getElementById("d2");
+const info     = document.getElementById("info");
 
 draw();
 </script>
