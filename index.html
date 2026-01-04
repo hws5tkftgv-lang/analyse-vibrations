@@ -152,8 +152,12 @@ const infoEl = document.getElementById("info");
 const TAU = Math.PI * 2;
 const IN_TO_MM = 25.4;
 
+
+let lockedWidth = null;
 let lastTS=null;
 let t=0;
+
+
 
 function lerp(p,q,u){
   return { x:p.x+(q.x-p.x)*u, y:p.y+(q.y-p.y)*u };
@@ -177,11 +181,16 @@ window.addEventListener("orientationchange", () => {
 
 function resize(){
   const vw = window.innerWidth;
-  const vh = stableVH || window.innerHeight;
+  const vh = window.innerHeight;
 
   if(vw < 200 || vh < 300) return;
 
-  const w = Math.min(vw - 24, 720);
+  // 🔒 verrouillage largeur en portrait
+  if(lockedWidth === null){
+    lockedWidth = Math.min(vw - 24, 720);
+  }
+
+  const w = lockedWidth;
   const h = w * 0.6;
 
   const dpr = Math.min(3, window.devicePixelRatio || 1);
