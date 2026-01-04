@@ -430,7 +430,7 @@ canvas{
       sPos -= lenBot;
       const u = sPos / arcSmall;
       // petite poulie arc court de -phi à +phi
-      const a = aL_top - u * (aL_top - aL_bot);
+      const a = aL_bot + u * (aL_top - aL_bot);
       P = {
   x: x1 + r1 * Math.cos(a),
   y: y + r1 * Math.sin(a)
