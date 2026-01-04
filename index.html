@@ -120,7 +120,10 @@ const hzMenee  = rpmMenee / 60;
 // COURROIE – vitesse linéaire physique (mm/s)
 const v_mm_s = (rpmMotor * Math.PI * d1mm) / 60;
  const r1mm=d1mm/2,r2mm=d2mm/2;
- const Cmm=Math.max(ccmm,Math.abs(r2mm-r1mm)+1e-6);
+ const Cmm = Math.max(
+  ccmm,
+  1.2 * (r1mm + r2mm)
+);
  const s=Math.min((W-80)/(Cmm+r1mm+r2mm),(H-80)/(2*Math.max(r1mm,r2mm)));
  const r1=r1mm*s,r2=r2mm*s,C=Cmm*s;
  const x1=40+r1,x2=x1+C,y=H/2;
