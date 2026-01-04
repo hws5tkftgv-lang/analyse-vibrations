@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
-<title>Analyse de vibrations — Poulies & courroie</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Poulies & courroie — animation réelle</title>
 
 <style>
 :root{
@@ -46,10 +46,7 @@ h1{ margin:0; font-size:18px; }
   .row2{ grid-template-columns:1fr; }
 }
 
-label{
-  font-size:13px;
-  color:var(--muted);
-}
+label{ font-size:13px; color:var(--muted); }
 .field{
   margin-top:6px;
   width:100%;
@@ -95,13 +92,12 @@ canvas{
 
 <body>
 <header>
-  <h1>🔄 Analyse de vibrations — Poulies & courroie</h1>
+  <h1>🔄 Poulies & courroie — géométrie réelle</h1>
 </header>
 
 <div class="panel">
-
   <label>RPM moteur (menante)
-    <input id="rpm" class="field" type="number" value="1200">
+    <input id="rpm" class="field" type="number" value="120">
   </label>
 
   <label>Système d’unités
@@ -121,15 +117,13 @@ canvas{
   </div>
 
   <label>Distance centre-à-centre
-    <input id="cc" class="field" type="number" value="320">
+    <input id="cc" class="field" type="number" value="600">
   </label>
 
-  <!-- CONTROLE RALENTI -->
   <label>Ralenti animation
     <input id="slow" type="range" min="0.25" max="2" step="0.25" value="1">
     <div class="sliderVal" id="slowVal">×1.00</div>
   </label>
-
 </div>
 
 <div class="stageWrap">
@@ -155,132 +149,157 @@ const infoEl = document.getElementById("info");
 const TAU = Math.PI * 2;
 const IN_TO_MM = 25.4;
 
-let lastTS = null;
-let t = 0;
+let lastTS=null;
+let t=0;
 
-// === CANVAS RESPONSIVE ===
+function lerp(p,q,u){
+  return { x:p.x+(q.x-p.x)*u, y:p.y+(q.y-p.y)*u };
+}
+
 function resize(){
-  const w = Math.min(window.innerWidth - 24, 720);
-  const h = w * 0.6;
-  const dpr = Math.min(3, window.devicePixelRatio || 1);
-  canvas.style.width = w + "px";
-  canvas.style.height = h + "px";
-  canvas.width = w * dpr;
-  canvas.height = h * dpr;
+  const w=Math.min(window.innerWidth-24,720);
+  const h=w*0.6;
+  const dpr=Math.min(3,window.devicePixelRatio||1);
+  canvas.style.width=w+"px";
+  canvas.style.height=h+"px";
+  canvas.width=w*dpr;
+  canvas.height=h*dpr;
   ctx.setTransform(dpr,0,0,dpr,0,0);
 }
-window.addEventListener("resize", resize);
+window.addEventListener("resize",resize);
 resize();
 
-// === BOUCLE ===
 function loop(ts){
-  if(!lastTS) lastTS = ts;
-  const dt = (ts - lastTS) / 1000;
-  lastTS = ts;
-  t += dt / parseFloat(slowEl.value);
+  if(!lastTS) lastTS=ts;
+  const dt=(ts-lastTS)/1000;
+  lastTS=ts;
+  t+=dt/parseFloat(slowEl.value);
   draw();
   requestAnimationFrame(loop);
 }
 
-// === DESSIN ===
 function draw(){
-  const rpm = +rpmEl.value || 0;
-  let d1 = +d1El.value || 1;
-  let d2 = +d2El.value || 1;
-  let cc = +ccEl.value || 1;
+  const rpm=+rpmEl.value||0;
+  let d1=+d1El.value||1;
+  let d2=+d2El.value||1;
+  let cc=+ccEl.value||1;
 
-  if(unitEl.value === "imperial"){
-    d1 *= IN_TO_MM;
-    d2 *= IN_TO_MM;
-    cc *= IN_TO_MM;
+  if(unitEl.value==="imperial"){
+    d1*=IN_TO_MM; d2*=IN_TO_MM; cc*=IN_TO_MM;
   }
 
-  const f1 = rpm / 60;
-  const rpm2 = rpm * (d1 / d2);
-  const f2 = rpm2 / 60;
+  const f1=rpm/60;
+  const rpm2=rpm*(d1/d2);
+  const f2=rpm2/60;
 
-  const w1 = TAU * f1;
-  const w2 = TAU * f2;
+  const w1=TAU*f1;
+  const w2=TAU*f2;
 
-  const ang1 = -w1 * t;
-  const ang2 = -w2 * t;
+  const ang1=-w1*t;
+  const ang2=-w2*t;
 
-  // fond
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle = "#000";
-  ctx.fillRect(0,0,canvas.width,canvas.height);
+  const W=parseFloat(canvas.style.width);
+  const H=parseFloat(canvas.style.height);
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle="#000";
+  ctx.fillRect(0,0,W,H);
 
-  // géométrie simple
-  const W = parseFloat(canvas.style.width);
-  const H = parseFloat(canvas.style.height);
+  const margin=40;
+  const r1mm=d1/2;
+  const r2mm=d2/2;
+  const minCC=Math.abs(r2mm-r1mm)+1;
+  const Cmm=Math.max(cc,minCC);
 
-  const r1 = Math.max(25, d1 * 0.25);
-  const r2 = Math.max(25, d2 * 0.25);
-
-  const x1 = W * 0.3;
-  const x2 = W * 0.7;
-  const y  = H * 0.5;
-
-  // courroie simple
-  ctx.strokeStyle = "#888";
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.moveTo(x1, y - r1);
-  ctx.lineTo(x2, y - r2);
-  ctx.lineTo(x2, y + r2);
-  ctx.lineTo(x1, y + r1);
-  ctx.closePath();
-  ctx.stroke();
-
-  // poulie menante
-  ctx.strokeStyle = "#00a2ff";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.arc(x1, y, r1, 0, TAU);
-  ctx.stroke();
-
-  ctx.fillStyle = "#00a2ff";
-  ctx.beginPath();
-  ctx.arc(
-    x1 + r1 * Math.cos(ang1),
-    y + r1 * Math.sin(ang1),
-    6, 0, TAU
+  const scale=Math.min(
+    (W-2*margin)/(Cmm+r1mm+r2mm),
+    (H-2*margin)/(2*Math.max(r1mm,r2mm))
   );
+
+  const r1=r1mm*scale;
+  const r2=r2mm*scale;
+  const C=Cmm*scale;
+
+  const x1=margin+r1;
+  const x2=x1+C;
+  const y=H/2;
+
+  const phi=Math.acos(Math.min(1,Math.max(-1,(r2-r1)/C)));
+
+  const aL_top= phi, aL_bot=-phi;
+  const aR_top=Math.PI-phi, aR_bot=Math.PI+phi;
+
+  const Ltop={x:x1+r1*Math.cos(aL_top),y:y+r1*Math.sin(aL_top)};
+  const Lbot={x:x1+r1*Math.cos(aL_bot),y:y+r1*Math.sin(aL_bot)};
+  const Rtop={x:x2+r2*Math.cos(aR_top),y:y+r2*Math.sin(aR_top)};
+  const Rbot={x:x2+r2*Math.cos(aR_bot),y:y+r2*Math.sin(aR_bot)};
+
+  ctx.strokeStyle="#9a9a9a";
+  ctx.lineWidth=4;
+  ctx.beginPath();
+  ctx.moveTo(Ltop.x,Ltop.y);
+  ctx.lineTo(Rtop.x,Rtop.y);
+  ctx.arc(x2,y,r2,aR_top,aR_bot,false);
+  ctx.lineTo(Lbot.x,Lbot.y);
+  ctx.arc(x1,y,r1,aL_bot,aL_top,false);
+  ctx.stroke();
+
+  function drawPulley(cx,cy,r,col,a){
+    ctx.strokeStyle=col;
+    ctx.lineWidth=3;
+    ctx.beginPath();
+    ctx.arc(cx,cy,r,0,TAU);
+    ctx.stroke();
+    ctx.fillStyle=col;
+    ctx.beginPath();
+    ctx.arc(cx+(r-6)*Math.cos(a),cy+(r-6)*Math.sin(a),6,0,TAU);
+    ctx.fill();
+  }
+
+  drawPulley(x1,y,r1,"#00a2ff",ang1);
+  drawPulley(x2,y,r2,"#ff9800",ang2);
+
+  const v=Math.abs(w1)*r1;
+  const lenTop=Math.hypot(Rtop.x-Ltop.x,Rtop.y-Ltop.y);
+  const lenBot=Math.hypot(Lbot.x-Rbot.x,Lbot.y-Rbot.y);
+  const lenArcR=r2*(TAU-2*phi);
+  const lenArcL=r1*(TAU-2*phi);
+  const beltLen=lenTop+lenArcR+lenBot+lenArcL;
+
+  let s=(v*t)%beltLen, P;
+
+  if(s<=lenTop) P=lerp(Ltop,Rtop,s/lenTop);
+  else if((s-=lenTop)<=lenArcR){
+    const u=s/lenArcR;
+    const a=aR_top-u*(TAU-2*phi);
+    P={x:x2+r2*Math.cos(a),y:y+r2*Math.sin(a)};
+  }
+  else if((s-=lenArcR)<=lenBot) P=lerp(Rbot,Lbot,s/lenBot);
+  else{
+    s-=lenBot;
+    const u=s/lenArcL;
+    const a=aL_bot-u*(TAU-2*phi);
+    P={x:x1+r1*Math.cos(a),y:y+r1*Math.sin(a)};
+  }
+
+  ctx.fillStyle="#fff";
+  ctx.beginPath();
+  ctx.arc(P.x,P.y,5,0,TAU);
   ctx.fill();
 
-  // poulie menée
-  ctx.strokeStyle = "#ff9800";
-  ctx.beginPath();
-  ctx.arc(x2, y, r2, 0, TAU);
-  ctx.stroke();
-
-  ctx.fillStyle = "#ff9800";
-  ctx.beginPath();
-  ctx.arc(
-    x2 + r2 * Math.cos(ang2),
-    y + r2 * Math.sin(ang2),
-    6, 0, TAU
-  );
-  ctx.fill();
-
-  // infos
-  const v_mm_min = rpm * Math.PI * d1;
-  const v_mm_s = v_mm_min / 60;
-  const f_lin = v_mm_s / (Math.PI * d1);
-
-  infoEl.innerHTML = `
-  <div>🔵 <b>Poulie menante</b> : ${rpm.toFixed(0)} RPM | ${f1.toFixed(2)} Hz | ${(f1*60).toFixed(0)} CPM</div>
-  <div>🟠 <b>Poulie menée</b> : ${rpm2.toFixed(0)} RPM | ${f2.toFixed(2)} Hz | ${(f2*60).toFixed(0)} CPM</div>
-  <div style="margin-top:6px;">
-    ⚪ <b>Courroie (linéaire)</b><br>
-    ${v_mm_min.toFixed(0)} ${unitEl.value==="imperial"?"po":"mm"}/min<br>
-    ${f_lin.toFixed(2)} Hz | ${(f_lin*60).toFixed(0)} CPM
+  const v_mm_min=rpm*Math.PI*d1;
+  infoEl.innerHTML=`
+  <div><span class="dot blue"></span><b>Poulie menante</b> :
+  ${rpm.toFixed(0)} RPM | ${f1.toFixed(2)} Hz | ${(f1*60).toFixed(0)} CPM</div>
+  <div><span class="dot orange"></span><b>Poulie menée</b> :
+  ${rpm2.toFixed(0)} RPM | ${f2.toFixed(2)} Hz | ${(f2*60).toFixed(0)} CPM</div>
+  <div class="muted" style="margin-top:6px;">
+  <span class="dot white"></span><b>Courroie (linéaire)</b><br>
+  ${v_mm_min.toFixed(0)} ${unitEl.value==="imperial"?"po":"mm"}/min
   </div>`;
 }
 
-// slider
 slowEl.addEventListener("input",()=>{
-  slowVal.textContent = "×" + parseFloat(slowEl.value).toFixed(2);
+  slowVal.textContent="×"+parseFloat(slowEl.value).toFixed(2);
 });
 
 requestAnimationFrame(loop);
