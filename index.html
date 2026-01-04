@@ -129,9 +129,8 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
   }
 
   function draw(){
-    const dpr = devicePixelRatio || 1;
-    const W = canvas.width / dpr;
-    const H = canvas.height / dpr;
+    const W = canvas.width/(devicePixelRatio||1);
+    const H = canvas.height/(devicePixelRatio||1);
 
     ctx.clearRect(0,0,W,H);
     ctx.fillStyle="#000";
@@ -159,7 +158,7 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
     const r1mm = d1mm/2, r2mm = d2mm/2;
     const Cmm  = ccmm;
 
-    // ✅ VALIDATION (pas d’auto-correction cachée)
+    // validation (pas d’auto-correction cachée)
     const minCC = Math.abs(r2mm - r1mm);
     if(Cmm <= minCC){
       infoEl.innerHTML = `
@@ -170,7 +169,7 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
       return;
     }
 
-    // ✅ span physique (tangente)
+    // span + phi en physique
     const span2 = Cmm*Cmm - (r2mm - r1mm)*(r2mm - r1mm);
     if(!(span2 > 0) || !isFinite(span2)){
       infoEl.innerHTML = `<span class="bad">⛔ span impossible (vérifie tes valeurs).</span>`;
@@ -178,7 +177,6 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
     }
     const span_mm = Math.sqrt(span2);
 
-    // ✅ phi : IMPORTANT -> calculé sur valeurs physiques
     const ratio = (r2mm - r1mm) / Cmm;
     if(!isFinite(ratio) || ratio < -1 || ratio > 1){
       infoEl.innerHTML = `<span class="bad">⛔ acos invalide (ratio hors [-1,1]).</span>`;
@@ -213,16 +211,20 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
     ctx.beginPath();
     ctx.moveTo(Ltop.x,Ltop.y);
     ctx.lineTo(Rtop.x,Rtop.y);
-    ctx.arc(x2,y,r2,aR_top,aR_bot,false); // grande poulie : arc long
+
+    // ✅ IMPORTANT: grande poulie = ARC LONG (TAU-2phi)
+    // => on doit dessiner l’arc “dans l’autre sens”
+    ctx.arc(x2,y,r2,aR_top,aR_bot,true);   // <-- true = arc long
+
     ctx.lineTo(Lbot.x,Lbot.y);
-    ctx.arc(x1,y,r1,aL_bot,aL_top,false); // petite poulie : arc court (2*phi)
+
+    // petite poulie = ARC COURT (2phi)
+    ctx.arc(x1,y,r1,aL_bot,aL_top,false);  // <-- arc court
     ctx.stroke();
 
     // --- poulies + marqueurs ---
-    const f1 = rpmMotor/60;
-    const w1 = TAU*f1;
-    const f2 = rpmMenee/60;
-    const w2 = TAU*f2;
+    const f1 = rpmMotor/60, w1 = TAU*f1;
+    const f2 = rpmMenee/60,  w2 = TAU*f2;
 
     const ang1 = -w1*t;
     const ang2 = -w2*t;
@@ -243,8 +245,9 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
 
     const lenTop  = Math.hypot(Rtop.x-Ltop.x, Rtop.y-Ltop.y);
     const lenBot  = Math.hypot(Lbot.x-Rbot.x, Lbot.y-Rbot.y);
-    const lenArcR = r2 * (TAU - 2*phi); // grande : long
-    const lenArcL = r1 * (2*phi);       // ✅ petite : court (FIX du sens/vitesse)
+
+    const lenArcR = r2 * (TAU - 2*phi); // grande = long
+    const lenArcL = r1 * (2*phi);       // petite = court
 
     const beltLen_px = lenTop + lenArcR + lenBot + lenArcL;
     if(!(beltLen_px > 0) || !isFinite(beltLen_px)) return;
@@ -255,17 +258,18 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
     if(sPos <= lenTop){
       P = lerp(Ltop, Rtop, sPos/lenTop);
     } else if((sPos -= lenTop) <= lenArcR){
+      // grande poulie: arc long (sens horaire)
       const u = sPos/lenArcR;
       const a = aR_top - u*(TAU - 2*phi);
       P = { x:x2 + r2*Math.cos(a), y:y + r2*Math.sin(a) };
     } else if((sPos -= lenArcR) <= lenBot){
       P = lerp(Rbot, Lbot, sPos/lenBot);
     } else {
+      // ✅ FIX PRINCIPAL: petite poulie doit aller de Lbot -> Ltop (sens anti-horaire)
       sPos -= lenBot;
-      // longueur parcourue sur l’arc → angle réel
-const dTheta = sPos / r1;          // Δθ = s / r
-const a = aL_top - dTheta;         // sens cohérent
-P = { x:x1 + r1*Math.cos(a), y:y + r1*Math.sin(a) };
+      const u = sPos/lenArcL;
+      const a = aL_bot + u*(2*phi);   // <-- AVANT: aL_top - u*(2*phi) (mauvais sens)
+      P = { x:x1 + r1*Math.cos(a), y:y + r1*Math.sin(a) };
     }
 
     ctx.fillStyle="#fff";
@@ -274,7 +278,6 @@ P = { x:x1 + r1*Math.cos(a), y:y + r1*Math.sin(a) };
     ctx.fill();
 
     // --- longueur courroie (physique) cohérente avec le dessin ---
-    // 2*span + arc court petite (2*phi) + arc long grande (TAU-2*phi)
     const beltLength_mm =
       2*span_mm +
       r1mm*(2*phi) +
@@ -284,8 +287,8 @@ P = { x:x1 + r1*Math.cos(a), y:y + r1*Math.sin(a) };
       ? (beltLength_mm/IN_TO_MM).toFixed(2) + " po"
       : beltLength_mm.toFixed(1) + " mm";
 
-    // --- fréquence “courroie” (passe de courroie) = v / L ---
-    const v_mm_s = (rpmMotor * Math.PI * d1mm) / 60;   // mm/s (vitesse linéaire)
+    // --- fréquence courroie = v / L ---
+    const v_mm_s = (rpmMotor * Math.PI * d1mm) / 60;   // mm/s
     const beltHz = (beltLength_mm > 0) ? (v_mm_s / beltLength_mm) : 0;
     const beltRPM = beltHz * 60;
 
