@@ -6,181 +6,246 @@
 <title>Courroie & poulies — trajectoire correcte</title>
 
 <style>
-body{
-  margin:0;
-  background:#0b1436;
-  font-family:Arial,system-ui,sans-serif;
-  color:#eaf1ff;
+:root{
+  --bg:#0b1436;
+  --text:#eaf1ff;
+  --muted:rgba(234,241,255,.65);
+  --blue:#00a2ff;
+  --orange:#ff9800;
+  --belt:#9a9a9a;
+  --btn:#1c2b6a;
+  --bad:#ff4d4d;
 }
-header{
-  padding:14px;
-  font-size:18px;
-  font-weight:700;
-}
-.stage{
-  padding:12px;
-}
-canvas{
-  width:100%;
-  max-width:720px;
-  display:block;
-  margin:auto;
-  background:#000;
-  border-radius:14px;
-}
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ margin:0; background:var(--bg); color:var(--text); font-family:Arial,system-ui,sans-serif; }
+header{ padding:10px 14px; font-size:16px; font-weight:700; }
+.controls{ padding:10px 14px; display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+.controls label{ font-size:12px; color:var(--muted); }
+.controls input,.controls select{ width:100%; padding:7px 9px; font-size:14px; border-radius:10px; border:none; }
+.controls .full{ grid-column:1/-1; }
+.buttons{ display:flex; gap:10px; padding:0 14px 10px; }
+button{ flex:1; padding:10px; font-size:15px; border:none; border-radius:12px; background:var(--btn); color:white; }
+.stage{ padding:10px 14px; }
+canvas{ width:100%; background:#000; border-radius:12px; display:block; }
+.results{ padding:10px 14px 18px; font-size:14px; line-height:1.45; }
+.bad{color:var(--bad); font-weight:700;}
 </style>
 </head>
 
 <body>
-<header>Courroie & poulies — trajectoire correcte</header>
+<header>🔄 Courroie & poulies — trajectoire correcte</header>
 
-<div class="stage">
-  <canvas id="scene"></canvas>
+<div class="controls">
+  <label>RPM menante <input id="rpm" type="number" inputmode="decimal" value="1500"></label>
+  <label>Unités
+    <select id="unit">
+      <option value="imperial" selected>po</option>
+      <option value="metric">mm</option>
+    </select>
+  </label>
+  <label>Ø menante <input id="d1" type="number" inputmode="decimal" value="4"></label>
+  <label>Ø menée <input id="d2" type="number" inputmode="decimal" value="9"></label>
+  <label class="full">C-C <input id="cc" type="number" inputmode="decimal" value="21"></label>
+  <div class="full">
+    <label style="display:block;margin-bottom:4px;">Ralenti (plus grand = plus lent)</label>
+    <input id="slow" type="range" min="1" max="20" value="8">
+  </div>
 </div>
+
+<div class="buttons">
+  <button id="play">Play</button>
+  <button id="pause">Pause</button>
+  <button id="reset">Reset</button>
+</div>
+
+<div class="stage"><canvas id="scene"></canvas></div>
+<div class="results" id="info"></div>
 
 <script>
 (() => {
+  const canvas = document.getElementById("scene");
+  const ctx    = canvas.getContext("2d");
 
-const canvas = document.getElementById("scene");
-const ctx = canvas.getContext("2d");
+  const rpmEl  = document.getElementById("rpm");
+  const d1El   = document.getElementById("d1");
+  const d2El   = document.getElementById("d2");
+  const ccEl   = document.getElementById("cc");
+  const unitEl = document.getElementById("unit");
+  const slowEl = document.getElementById("slow");
+  const infoEl = document.getElementById("info");
 
-const TAU = Math.PI * 2;
-let t = 0;
-let lastTS = null;
+  const playBtn  = document.getElementById("play");
+  const pauseBtn = document.getElementById("pause");
+  const resetBtn = document.getElementById("reset");
 
-function resize(){
-  const w = Math.min(innerWidth - 24, 720);
-  const h = w * 0.45;
-  const dpr = Math.min(3, devicePixelRatio || 1);
+  const TAU = Math.PI * 2;
+  const IN_TO_MM = 25.4;
+  const BASE_TIME_SCALE = 0.06;
 
-  canvas.style.width = w + "px";
-  canvas.style.height = h + "px";
-  canvas.width = w * dpr;
-  canvas.height = h * dpr;
+  let t = 0, running = false, lastTS = null, lockedWidth = null;
 
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-}
-addEventListener("resize", resize);
-resize();
+  const lerp  = (p,q,u)=>({x:p.x+(q.x-p.x)*u, y:p.y+(q.y-p.y)*u});
+  const clamp = (v,a,b)=>Math.max(a, Math.min(b, v));
 
-function lerp(a,b,u){
-  return { x:a.x+(b.x-a.x)*u, y:a.y+(b.y-a.y)*u };
-}
+  function resize(){
+    if(!lockedWidth) lockedWidth = Math.min(innerWidth - 24, 720);
+    const w = lockedWidth, h = w * 0.6, dpr = Math.min(3, devicePixelRatio || 1);
+    canvas.style.width = w + "px";
+    canvas.style.height= h + "px";
+    canvas.width  = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  addEventListener("resize", resize);
+  resize();
 
-function loop(ts){
-  if(!lastTS) lastTS = ts;
-  const dt = (ts - lastTS)/1000;
-  lastTS = ts;
-  t += dt * 0.6;
-  draw();
-  requestAnimationFrame(loop);
-}
+  function read(){
+    let rpm = parseFloat(rpmEl.value);
+    let d1  = parseFloat(d1El.value);
+    let d2  = parseFloat(d2El.value);
+    let cc  = parseFloat(ccEl.value);
 
-function draw(){
-  const W = canvas.width / devicePixelRatio;
-  const H = canvas.height / devicePixelRatio;
+    if(!isFinite(rpm) || !isFinite(d1) || !isFinite(d2) || !isFinite(cc)) return null;
+    if(rpm <= 0 || d1 <= 0 || d2 <= 0 || cc <= 0) return null;
 
-  ctx.clearRect(0,0,W,H);
-  ctx.fillStyle="#000";
-  ctx.fillRect(0,0,W,H);
+    if(unitEl.value === "imperial"){ d1*=IN_TO_MM; d2*=IN_TO_MM; cc*=IN_TO_MM; }
+    return { rpm, d1mm:d1, d2mm:d2, ccmm:cc };
+  }
 
-  // paramètres fixes (test visuel)
-  const rSmall = 45;
-  const rBig   = 85;
-  const C      = 220;
+  function loop(ts){
+    if(lastTS === null) lastTS = ts;
+    const dt = (ts - lastTS)/1000;
+    lastTS = ts;
 
-  const xL = 90;
-  const xR = xL + C;
-  const y  = H/2;
+    if(running){
+      const slow = parseFloat(slowEl.value) || 1;
+      t += dt * BASE_TIME_SCALE / slow;
+    }
+    draw();
+    requestAnimationFrame(loop);
+  }
 
-  const phi = Math.acos((rBig - rSmall)/C);
+  function draw(){
+    const W = canvas.width/(devicePixelRatio||1);
+    const H = canvas.height/(devicePixelRatio||1);
 
-  const aLt =  phi;
-  const aLb = -phi;
-  const aRt = Math.PI - phi;
-  const aRb = Math.PI + phi;
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle="#000";
+    ctx.fillRect(0,0,W,H);
 
-  const Ltop = { x:xL + rSmall*Math.cos(aLt), y:y + rSmall*Math.sin(aLt) };
-  const Lbot = { x:xL + rSmall*Math.cos(aLb), y:y + rSmall*Math.sin(aLb) };
-  const Rtop = { x:xR + rBig*Math.cos(aRt),   y:y + rBig*Math.sin(aRt) };
-  const Rbot = { x:xR + rBig*Math.cos(aRb),   y:y + rBig*Math.sin(aRb) };
+    const inp = read();
+    if(!inp){
+      infoEl.innerHTML = `<span class="bad">⛔ Entre RPM, Ø menante, Ø menée et C-C puis Play.</span>`;
+      return;
+    }
 
-  // === COURROIE ===
-  ctx.strokeStyle="#9a9a9a";
-  ctx.lineWidth=4;
-  ctx.lineCap="butt";      // ✅ IMPORTANT
-  ctx.lineJoin="miter";    // ✅ IMPORTANT
+    const { rpm, d1mm, d2mm, ccmm } = inp;
 
-  ctx.beginPath();
-  ctx.moveTo(Ltop.x, Ltop.y);
-  ctx.lineTo(Rtop.x, Rtop.y);
+    // géométrie physique
+    const r1mm = d1mm/2, r2mm = d2mm/2;
+    const Cmm  = ccmm;
 
-  // grande poulie (arc long)
-  ctx.arc(
-    xR, y, rBig,
-    aRt + 0.002,            // ✅ micro-offset anti-trace
-    aRb - 0.002,
-    false
-  );
+    const minCC = Math.abs(r2mm - r1mm);
+    if(Cmm <= minCC){
+      infoEl.innerHTML = `<span class="bad">⛔ Géométrie impossible : C-C doit être > |R2 − R1|.</span>`;
+      return;
+    }
 
-  ctx.lineTo(Lbot.x, Lbot.y);
+    const margin = 40;
+    const s = Math.min(
+      (W - 2*margin) / (Cmm + r1mm + r2mm),
+      (H - 2*margin) / (2 * Math.max(r1mm, r2mm))
+    );
 
-  // petite poulie (arc court)
-  ctx.arc(
-    xL, y, rSmall,
-    aLb + 0.002,
-    aLt - 0.002,
-    false
-  );
-  ctx.stroke();
+    const r1 = r1mm*s, r2 = r2mm*s, C = Cmm*s;
+    const x1 = margin + r1, x2 = x1 + C, y = H/2;
 
-  // === POULIES ===
-  function drawPulley(cx,cy,r,color){
-    ctx.strokeStyle=color;
-    ctx.lineWidth=3;
+    // IMPORTANT (canvas = Y vers le bas) -> top = angle NEGATIF
+    const phi = Math.acos(clamp((r2 - r1)/C, -1, 1));
+
+    const aL_top = -phi, aL_bot =  phi;
+    const aR_top = Math.PI + phi, aR_bot = Math.PI - phi;
+
+    const Ltop={x:x1+r1*Math.cos(aL_top), y:y+r1*Math.sin(aL_top)};
+    const Lbot={x:x1+r1*Math.cos(aL_bot), y:y+r1*Math.sin(aL_bot)};
+    const Rtop={x:x2+r2*Math.cos(aR_top), y:y+r2*Math.sin(aR_top)};
+    const Rbot={x:x2+r2*Math.cos(aR_bot), y:y+r2*Math.sin(aR_bot)};
+
+    // === courroie (bon wrap) ===
+    ctx.strokeStyle="#9a9a9a";
+    ctx.lineWidth=4;
+    ctx.lineCap="round";
+    ctx.lineJoin="round";
     ctx.beginPath();
-    ctx.arc(cx,cy,r,0,TAU);
+    ctx.moveTo(Ltop.x,Ltop.y);
+    ctx.lineTo(Rtop.x,Rtop.y);
+
+    // grande poulie = arc long (TAU-2phi) : de aR_top -> aR_bot en passant par 0 (sens + avec wrap)
+    ctx.arc(x2, y, r2, aR_top, aR_bot + TAU, false);
+
+    ctx.lineTo(Lbot.x,Lbot.y);
+
+    // petite poulie = arc court (2phi) : de aL_bot -> aL_top (sens inverse)
+    ctx.arc(x1, y, r1, aL_bot, aL_top, true);
+
     ctx.stroke();
+
+    // === poulies ===
+    function drawPulley(cx,cy,r,col){
+      ctx.strokeStyle=col; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.arc(cx,cy,r,0,TAU); ctx.stroke();
+    }
+    drawPulley(x1,y,r1,"#00a2ff");
+    drawPulley(x2,y,r2,"#ff9800");
+
+    // === point sur courroie (même logique que le dessin) ===
+    const lenTop  = Math.hypot(Rtop.x-Ltop.x, Rtop.y-Ltop.y);
+    const lenBot  = Math.hypot(Lbot.x-Rbot.x, Lbot.y-Rbot.y);
+    const lenArcR = r2 * (TAU - 2*phi); // long sur la grande
+    const lenArcL = r1 * (2*phi);       // court sur la petite
+    const beltLen = lenTop + lenArcR + lenBot + lenArcL;
+
+    const rpmMotor = rpm;
+    const w1 = TAU*(rpmMotor/60);
+    const v_px_s = Math.abs(w1) * r1;   // vitesse linéaire
+
+    let sPos = (v_px_s * t) % beltLen;
+    let P;
+
+    if(sPos <= lenTop){
+      P = lerp(Ltop, Rtop, sPos/lenTop);
+    }
+    else if((sPos -= lenTop) <= lenArcR){
+      const u = sPos/lenArcR;
+      const a = aR_top + u*(TAU - 2*phi);  // suit EXACTEMENT l’arc dessiné (avec wrap)
+      P = { x:x2 + r2*Math.cos(a), y:y + r2*Math.sin(a) };
+    }
+    else if((sPos -= lenArcR) <= lenBot){
+      P = lerp(Rbot, Lbot, sPos/lenBot);
+    }
+    else{
+      sPos -= lenBot;
+      const u = sPos/lenArcL;
+      const a = aL_bot - u*(2*phi);        // ✅ ICI : sens inverse (plus de "rebrousse")
+      P = { x:x1 + r1*Math.cos(a), y:y + r1*Math.sin(a) };
+    }
+
+    ctx.fillStyle="#fff";
+    ctx.beginPath();
+    ctx.arc(P.x,P.y,5,0,TAU);
+    ctx.fill();
+
+    infoEl.innerHTML = `✅ Trajectoire corrigée : la boule ne change plus de sens sur la bleue.`;
   }
 
-  drawPulley(xL,y,rSmall,"#00a2ff");
-  drawPulley(xR,y,rBig,"#ff9800");
+  playBtn.onclick  = () => { running = !!read(); };
+  pauseBtn.onclick = () => { running = false; };
+  resetBtn.onclick = () => {
+    t=0; running=false; lastTS=null;
+    draw();
+  };
 
-  // === POINT SUR COURROIE ===
-  const lenTop = Math.hypot(Rtop.x-Ltop.x, Rtop.y-Ltop.y);
-  const lenBot = Math.hypot(Lbot.x-Rbot.x, Lbot.y-Rbot.y);
-  const lenArcR = rBig*(TAU - 2*phi);
-  const lenArcL = rSmall*(2*phi);
-  const beltLen = lenTop + lenArcR + lenBot + lenArcL;
-
-  let s = (t*120) % beltLen;
-  let P;
-
-  if(s <= lenTop){
-    P = lerp(Ltop, Rtop, s/lenTop);
-  }
-  else if((s -= lenTop) <= lenArcR){
-    const u = s/lenArcR;
-    const a = aRt - u*(TAU - 2*phi);
-    P = { x:xR + rBig*Math.cos(a), y:y + rBig*Math.sin(a) };
-  }
-  else if((s -= lenArcR) <= lenBot){
-    P = lerp(Rbot, Lbot, s/lenBot);
-  }
-  else{
-    s -= lenBot;
-    const u = s/lenArcL;
-    const a = aLb + u*(2*phi);
-    P = { x:xL + rSmall*Math.cos(a), y:y + rSmall*Math.sin(a) };
-  }
-
-  ctx.fillStyle="#fff";
-  ctx.beginPath();
-  ctx.arc(P.x,P.y,5,0,TAU);
-  ctx.fill();
-}
-
-requestAnimationFrame(loop);
+  requestAnimationFrame(loop);
 })();
 </script>
 </body>
