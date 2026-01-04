@@ -1,505 +1,155 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>Analyse de vibrations – Poulies & courroie (iPhone)</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Poulies & courroie — Animation physique correcte</title>
 
 <style>
-  :root { color-scheme: dark; }
-  *{ box-sizing:border-box; }
-  html,body{ margin:0; background:#0b1436; color:#eaf1ff; font-family:Arial,system-ui,-apple-system,Segoe UI,sans-serif; }
+body{
+  margin:0;
+  background:#0b1436;
+  color:#eaf1ff;
+  font-family:Arial, sans-serif;
+}
+header{
+  padding:14px;
+  background:#0f1a44;
+}
+h1{ margin:0; font-size:18px; }
 
-  header{
-    padding:14px;
-    background:#0f1a44;
-    border-bottom:1px solid rgba(255,255,255,.15);
-  }
-  h1{ font-size:18px; margin:0; }
-
-  .panel{
-    padding:14px;
-    background:#101a40;
-    display:grid;
-    grid-template-columns: 1fr;
-    gap:14px;
-  }
-
-  label{ font-size:13px; opacity:.9; display:block; }
-  .field{
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-  }
-
-  input, select{
-    width:100%;
-    padding:12px 12px;
-    font-size:16px;            /* IMPORTANT iPhone: évite le zoom */
-    border-radius:10px;
-    border:none;
-    outline:none;
-  }
-
-  .stage{
-    padding:14px 0;
-    background:#0b1436;
-  }
-
-  canvas{
-    display:block;
-    margin:0 auto;
-    background:#000;
-    border-radius:0;
-    touch-action: none;
-  }
-
-  .info{
-    padding:14px;
-    font-size:14px;
-    background:#0f1a44;
-    border-top:1px solid rgba(255,255,255,.12);
-  }
+.panel{
+  padding:14px;
+  background:#101a40;
+  display:grid;
+  gap:12px;
+}
+input{
+  width:100%;
+  padding:10px;
+  font-size:16px;
+  border-radius:8px;
+  border:none;
+}
+canvas{
+  display:block;
+  margin:auto;
+  background:black;
+}
+.info{
+  padding:12px;
+  background:#0f1a44;
+  font-size:14px;
+}
 </style>
 </head>
 
 <body>
+
 <header>
-  <h1>🔄 Analyse de vibrations – Poulies & courroie</h1>
+  <h1>🔄 Poulies & courroie — Animation réelle</h1>
 </header>
 
 <div class="panel">
-  <div class="field">
-    <label for="rpm">RPM moteur (menante)</label>
-    <input id="rpm" type="number" inputmode="decimal" value="1200" min="0" step="1">
-  </div>
-
-  <div class="field">
-    <label for="unit">Système d’unités</label>
-    <select id="unit">
-      <option value="metric">Métrique (mm)</option>
-      <option value="imperial">Impérial (po)</option>
-    </select>
-  </div>
-
-  <div class="field">
-    <label for="d1">Ø poulie menante</label>
-    <input id="d1" type="number" inputmode="decimal" value="100" min="0" step="0.1">
-  </div>
-
-  <div class="field">
-    <label for="d2">Ø poulie menée</label>
-    <input id="d2" type="number" inputmode="decimal" value="400" min="0" step="0.1">
-  </div>
+  <label>RPM moteur (menante)
+    <input id="rpm" type="number" value="1200">
+  </label>
+  <label>Ø poulie menante (mm)
+    <input id="d1" type="number" value="100">
+  </label>
+  <label>Ø poulie menée (mm)
+    <input id="d2" type="number" value="400">
+  </label>
 </div>
 
-<div class="stage">
-  <canvas id="scene"></canvas>
-</div>
-
+<canvas id="c" width="420" height="260"></canvas>
 <div class="info" id="info"></div>
 
 <script>
-(() => {
-  const canvas = document.getElementById("scene");
-  const ctx = canvas.getContext("2d", { alpha: false });
-
-  const rpmInput = document.getElementById("rpm");
-  const d1Input  = document.getElementById("d1");
-  const d2Input  = document.getElementById("d2");
-  const unitSel  = document.getElementById("unit");
-  const info     = document.getElementById("info");
-
-  // iPhone/Safari: canvas "net" + stable
-  function setupCanvasSize(){
-    const maxW = Math.min(window.innerWidth, 980);
-    const cssW = Math.max(320, Math.floor(maxW));
-    const cssH = Math.floor(cssW * 0.62); // ratio proche de tes captures
-
-    const dpr = Math.min(window.devicePixelRatio || 1, 2); // limite pour perf
-    canvas.style.width  = cssW + "px";
-    canvas.style.height = cssH + "px";
-    canvas.width  = Math.floor(cssW * dpr);
-    canvas.height = Math.floor(cssH * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // coordonnées en CSS px
-  }
-  window.addEventListener("resize", setupCanvasSize, { passive:true });
-  setupCanvasSize();
-
-  // --- Physique / animation ---
-  let lastT = performance.now();
-  let sBelt = 0; // position curviligne sur la courroie (en px)
-  let aSmall = 0; // angle poulie menante
-  let aLarge = 0; // angle poulie menée
-
-  // Segments du chemin de courroie recalculés quand diamètres changent
-  let belt = { segments: [], total: 1, valid: false };
-  let geom = { x1:0,y1:0,r1:0,x2:0,y2:0,r2:0 };
-
-  // Helpers
-  const TAU = Math.PI * 2;
-
-  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
-
-  function normAngle(a){
-    a = a % TAU;
-    if(a < 0) a += TAU;
-    return a;
-  }
-
-  // Longueur d'un arc de (a0->a1) en sens CW/CCW
-  function arcLen(radius, a0, a1, ccw){
-    a0 = normAngle(a0); a1 = normAngle(a1);
-    let da;
-    if(ccw){
-      da = a1 - a0;
-      if(da < 0) da += TAU;
-    }else{
-      da = a0 - a1;
-      if(da < 0) da += TAU;
-    }
-    return radius * da;
-  }
-
-  function pointOnLine(p0, p1, t){
-    return { x: p0.x + (p1.x - p0.x) * t, y: p0.y + (p1.y - p0.y) * t };
-  }
-
-  // IMPORTANT: Courroie ouverte = tangentes externes.
-  // On construit un chemin fermé: ligne haut -> arc grande -> ligne bas -> arc petite.
-  function buildBeltPath(x1,y1,r1,x2,y2,r2){
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    const D  = Math.hypot(dx, dy);
-    const dr = (r2 - r1);
-
-    // Si géométrie impossible (poulies se chevauchent trop)
-    if(D <= Math.abs(dr) + 1){
-      return { segments: [], total: 1, valid: false, reason: "geometrie" };
-    }
-
-    const theta = Math.atan2(dy, dx);
-    const alpha = Math.acos(clamp(dr / D, -1, 1));
-
-    // Tangence sur petite poulie (côté vers la grande)
-    const tTopSmall = theta + alpha; // angle
-    const tBotSmall = theta - alpha;
-
-    // Tangence sur grande poulie
-    const tTopLarge = theta + alpha;
-    const tBotLarge = theta - alpha;
-
-    const Ptop = { x: x1 + r1*Math.cos(tTopSmall), y: y1 + r1*Math.sin(tTopSmall) };
-    const Pbot = { x: x1 + r1*Math.cos(tBotSmall), y: y1 + r1*Math.sin(tBotSmall) };
-    const Gtop = { x: x2 + r2*Math.cos(tTopLarge), y: y2 + r2*Math.sin(tTopLarge) };
-    const Gbot = { x: x2 + r2*Math.cos(tBotLarge), y: y2 + r2*Math.sin(tBotLarge) };
-
-    const lenTop = Math.hypot(Gtop.x - Ptop.x, Gtop.y - Ptop.y);
-    const lenBot = Math.hypot(Pbot.x - Gbot.x, Pbot.y - Gbot.y);
-
-    // Arc grande poulie: de Gtop à Gbot en suivant l'extérieur (sens CW si y augmente vers le bas)
-    // Ici on dessine comme canvas: y vers le bas. On veut l'arc "extérieur" côté droit.
-    // Le plus simple: on prend l'arc "court" du côté droit: de tTopLarge à tBotLarge en sens CW (ccw=false)
-    const lenArcLarge = arcLen(r2, tTopLarge, tBotLarge, false);
-
-    // Arc petite poulie: de Pbot à Ptop en suivant l'extérieur côté gauche (arc long).
-    // On veut passer par la gauche, donc on prend de tBotSmall à tTopSmall en sens CW ? (ça dépend)
-    // On choisit l'arc "long" : on prend le complément du court.
-    const lenArcSmallShort = arcLen(r1, tTopSmall, tBotSmall, false); // petit arc côté droit
-    const lenArcSmall = r1*TAU - lenArcSmallShort; // long arc côté gauche
-
-    // Segments paramétriques (sens de parcours):
-    // 1) Ligne haut: Ptop -> Gtop
-    // 2) Arc grande: tTopLarge -> tBotLarge (CW)
-    // 3) Ligne bas: Gbot -> Pbot
-    // 4) Arc petite LONG: de tBotSmall -> tTopSmall mais en passant par la gauche.
-    //    Pour faire un "long" arc, on parcourt CCW du bas vers le haut (ccw=true) sur un angle > PI
-    //    On paramètre ça explicitement via "mode long".
-    const segs = [];
-
-    segs.push({
-      type: "line",
-      p0: Ptop, p1: Gtop,
-      len: lenTop,
-      pointAt: (s) => pointOnLine(Ptop, Gtop, s/lenTop)
-    });
-
-    segs.push({
-      type: "arc",
-      cx: x2, cy: y2, r: r2,
-      a0: tTopLarge, a1: tBotLarge,
-      ccw: false,
-      len: lenArcLarge,
-      pointAt: (s) => {
-        const frac = s / lenArcLarge;
-        // CW: angle diminue de a0 vers a1 en passant le bon sens
-        let a0n = normAngle(tTopLarge), a1n = normAngle(tBotLarge);
-        let da = a0n - a1n; if(da < 0) da += TAU; // CW sweep
-        const a = a0n - da * frac;
-        return { x: x2 + r2*Math.cos(a), y: y2 + r2*Math.sin(a) };
-      }
-    });
-
-    segs.push({
-      type: "line",
-      p0: Gbot, p1: Pbot,
-      len: lenBot,
-      pointAt: (s) => pointOnLine(Gbot, Pbot, s/lenBot)
-    });
-
-    segs.push({
-      type: "arc_long_small",
-      cx: x1, cy: y1, r: r1,
-      aFrom: tBotSmall, aTo: tTopSmall,
-      len: lenArcSmall,
-      pointAt: (s) => {
-        const frac = s / lenArcSmall;
-        // Long arc: on va CCW du bas vers le haut, mais en prenant la grande portion.
-        // CCW sweep total = 2π - (CCW short sweep)
-        let aFn = normAngle(tBotSmall), aTn = normAngle(tTopSmall);
-        // CCW short sweep:
-        let daShort = aTn - aFn; if(daShort < 0) daShort += TAU;
-        const daLong = TAU - daShort;
-        const a = aFn + daLong * frac; // CCW long sweep
-        return { x: x1 + r1*Math.cos(a), y: y1 + r1*Math.sin(a) };
-      }
-    });
-
-    const total = segs.reduce((sum, sg) => sum + sg.len, 0);
-
-    return {
-      segments: segs,
-      total: Math.max(total, 1),
-      valid: true,
-      tangency: { Ptop,Pbot,Gtop,Gbot, tTopSmall,tBotSmall,tTopLarge,tBotLarge }
-    };
-  }
-
-  function pointOnBelt(s){
-    if(!belt.valid || belt.segments.length === 0) return { x:0, y:0 };
-    s = ((s % belt.total) + belt.total) % belt.total;
-    for(const seg of belt.segments){
-      if(s <= seg.len) return seg.pointAt(s);
-      s -= seg.len;
-    }
-    // fallback
-    const last = belt.segments[belt.segments.length-1];
-    return last.pointAt(last.len);
-  }
-
-  function drawPulley(cx, cy, r, ang, stroke, markerFill){
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(ang);
-
-    ctx.strokeStyle = stroke;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(0,0,r,0,TAU);
-    ctx.stroke();
-
-    // marqueur sur la poulie (toujours visible)
-    ctx.fillStyle = markerFill;
-    ctx.beginPath();
-    ctx.arc(r-5, 0, 5, 0, TAU);
-    ctx.fill();
-
-    ctx.restore();
-  }
-
-  function drawBelt(){
-    if(!belt.valid){
-      // simple indicateur si géométrie invalide
-      ctx.strokeStyle = "#666";
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.moveTo(geom.x1, geom.y1);
-      ctx.lineTo(geom.x2, geom.y2);
-      ctx.stroke();
-      return;
-    }
-
-    // Dessin courroie: ligne haut, arc grande, ligne bas, arc petite long
-    const t = belt.tangency;
-    ctx.strokeStyle = "#777";
-    ctx.lineWidth = 4;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-
-    ctx.beginPath();
-    // ligne haut
-    ctx.moveTo(t.Ptop.x, t.Ptop.y);
-    ctx.lineTo(t.Gtop.x, t.Gtop.y);
-
-    // arc grande (court, extérieur)
-    ctx.arc(geom.x2, geom.y2, geom.r2, t.tTopLarge, t.tBotLarge, false);
-
-    // ligne bas
-    ctx.lineTo(t.Pbot.x, t.Pbot.y);
-
-    // arc petite (LONG) : on ne peut pas faire "long arc" direct via arc() facilement sans ambiguïté
-    // On approxime en 40 segments (stable et propre sur iPhone).
-    const steps = 40;
-    let aFn = normAngle(t.tBotSmall), aTn = normAngle(t.tTopSmall);
-    let daShort = aTn - aFn; if(daShort < 0) daShort += TAU;
-    const daLong = TAU - daShort;
-    for(let i=1;i<=steps;i++){
-      const a = aFn + daLong*(i/steps);
-      const x = geom.x1 + geom.r1*Math.cos(a);
-      const y = geom.y1 + geom.r1*Math.sin(a);
-      ctx.lineTo(x,y);
-    }
-
-    ctx.stroke();
-  }
-
-  function recalcGeometry(){
-    const rpm = Math.max(0, +rpmInput.value || 0);
-
-    // unités: on ne change PAS le ratio (rpm2), seulement l’affichage et la valeur entrée
-    // On garde les diamètres tels que saisis; si l’utilisateur change d’unité, on convertit les champs.
-    const unit = unitSel.value;
-
-    let d1 = Math.max(0.001, +d1Input.value || 0.001);
-    let d2 = Math.max(0.001, +d2Input.value || 0.001);
-
-    // Convertir diamètres en mm interne pour affichage, mais l'animation dépend seulement du ratio d2/d1
-    // Ici on utilise les valeurs entrées comme "unités utilisateur".
-    // Ratio identique, donc OK.
-
-    // Canvas CSS px
-    const W = parseFloat(canvas.style.width)  || 420;
-    const H = parseFloat(canvas.style.height) || 260;
-
-    // Mise à l'échelle des rayons dans le canvas:
-    // r1 fixe visuel, r2 basé sur ratio, mais clamp pour ne jamais sortir du canvas.
-    const margin = 26;
-    let r1 = 34;
-    let r2 = r1 * (d2 / d1);
-
-    // clamp r2 pour rester visible
-    const maxR2 = Math.max(40, (Math.min(W, H) * 0.42));
-    if(r2 > maxR2){
-      const scale = maxR2 / r2;
-      r1 *= scale;
-      r2 *= scale;
-    }
-
-    // Centres
-    const x1 = margin + r1 + 10;
-    const x2 = W - margin - r2 - 10;
-    const y  = Math.round(H * 0.52);
-
-    geom = { x1,y1:y,r1, x2,y2:y,r2 };
-
-    belt = buildBeltPath(x1,y,r1,x2,y,r2);
-
-    // IMPORTANT: ne jamais "geler" le point quand on change diamètre.
-    // On conserve sBelt mais on le remap dans la nouvelle longueur:
-    sBelt = ((sBelt % belt.total) + belt.total) % belt.total;
-
-    // Angles: on garde continuité
-    aSmall = normAngle(aSmall);
-    aLarge = normAngle(aLarge);
-
-    // Affichage unités
-    const unitLabel = (unit === "metric") ? "mm" : "po";
-    return { rpm, d1, d2, unitLabel };
-  }
-
-  // Conversion unité (mm <-> po)
-  function convertFields(toUnit){
-    const from = (toUnit === "metric") ? "imperial" : "metric";
-    const k = 25.4; // 1 po = 25.4 mm
-    let d1 = +d1Input.value || 0;
-    let d2 = +d2Input.value || 0;
-
-    if(from === "metric" && toUnit === "imperial"){
-      d1 = d1 / k;
-      d2 = d2 / k;
-    } else if(from === "imperial" && toUnit === "metric"){
-      d1 = d1 * k;
-      d2 = d2 * k;
-    }
-    // arrondi lisible
-    d1Input.value = (Math.round(d1*1000)/1000).toString();
-    d2Input.value = (Math.round(d2*1000)/1000).toString();
-  }
-
-  // Events
-  let lastUnit = unitSel.value;
-  unitSel.addEventListener("change", () => {
-    const now = unitSel.value;
-    if(now !== lastUnit){
-      convertFields(now);
-      lastUnit = now;
-    }
-  });
-
-  // iPhone: input "live" sans lag
-  [rpmInput,d1Input,d2Input].forEach(el => {
-    el.addEventListener("input", () => { /* recalcul au draw */ }, { passive:true });
-  });
-
-  function frame(now){
-    const dt = Math.min(0.05, (now - lastT) / 1000); // secondes
-    lastT = now;
-
-    const { rpm, d1, d2, unitLabel } = recalcGeometry();
-
-    // Calcul vitesses
-    const rpm2 = (d2 > 0) ? (rpm * (d1 / d2)) : 0;
-    const hz1 = rpm / 60;
-    const hz2 = rpm2 / 60;
-
-    // Vitesse linéaire (en "unités entrée" par seconde). On la convertit en px/s via r1 visuel.
-    // v = ω * r  (ω en rad/s)
-    const omega1 = TAU * hz1;           // rad/s
-    const v_px = omega1 * geom.r1;      // px/s (car r1 est en px)
-
-    // Avance du point sur la courroie (TOUJOURS, même si d2 change)
-    if(belt.valid){
-      sBelt = (sBelt + v_px * dt) % belt.total;
-    }
-
-    // Rotation des poulies (angles continus)
-    aSmall = (aSmall + omega1 * dt) % TAU;
-    const omega2 = TAU * hz2;
-    aLarge = (aLarge + omega2 * dt) % TAU;
-
-    // --- DRAW ---
-    // fond noir
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-
-    // courroie
-    drawBelt();
-
-    // poulies
-    drawPulley(geom.x1, geom.y1, geom.r1, aSmall, "#00a2ff", "#00a2ff");
-    drawPulley(geom.x2, geom.y2, geom.r2, aLarge, "#ff9800", "#ff9800");
-
-    // Point sur la courroie (vérité physique)
-    if(belt.valid){
-      const p = pointOnBelt(sBelt);
-      ctx.fillStyle = "#ffffff";
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 4.5, 0, TAU);
-      ctx.fill();
-    }
-
-    // Infos
-    info.innerHTML =
-      `🔵 Menante : ${rpm.toFixed(0)} RPM / ${(hz1||0).toFixed(2)} Hz<br>` +
-      `🟠 Menée : ${rpm2.toFixed(0)} RPM / ${(hz2||0).toFixed(2)} Hz<br>` +
-      `📏 Unités : ${unitLabel}` +
-      (belt.valid ? "" : `<br>⚠️ Géométrie impossible (diamètres/entraxe)`);
-
-    requestAnimationFrame(frame);
-  }
-
-  requestAnimationFrame(frame);
-})();
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+const rpmInput = document.getElementById("rpm");
+const d1Input  = document.getElementById("d1");
+const d2Input  = document.getElementById("d2");
+const info     = document.getElementById("info");
+
+let beltDistance = 0; // distance linéaire cumulée
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const rpm = +rpmInput.value;
+  const d1 = +d1Input.value;
+  const d2 = +d2Input.value;
+
+  const r1 = 30;
+  const r2 = r1 * (d2/d1);
+
+  const x1 = 110;
+  const x2 = canvas.width - r2 - 30;
+  const y  = canvas.height/2;
+
+  // vitesse linéaire courroie (mm/s simulé)
+  const v = rpm * Math.PI * d1 / 60;
+  beltDistance += v * 0.002;
+
+  // angles physiques CORRECTS
+  const a1 = -beltDistance / (d1/2);
+  const a2 = -beltDistance / (d2/2);
+
+  // courroie
+  ctx.strokeStyle="#aaa";
+  ctx.lineWidth=4;
+  ctx.beginPath();
+  ctx.moveTo(x1, y-r1);
+  ctx.lineTo(x2, y-r2);
+  ctx.moveTo(x1, y+r1);
+  ctx.lineTo(x2, y+r2);
+  ctx.stroke();
+
+  // poulie menante
+  ctx.save();
+  ctx.translate(x1,y);
+  ctx.rotate(a1);
+  ctx.strokeStyle="#00a2ff";
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  ctx.arc(0,0,r1,0,Math.PI*2);
+  ctx.stroke();
+  ctx.fillStyle="#00a2ff";
+  ctx.beginPath();
+  ctx.arc(r1,0,4,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+
+  // poulie menée
+  ctx.save();
+  ctx.translate(x2,y);
+  ctx.rotate(a2);
+  ctx.strokeStyle="#ff9800";
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  ctx.arc(0,0,r2,0,Math.PI*2);
+  ctx.stroke();
+  ctx.fillStyle="#ff9800";
+  ctx.beginPath();
+  ctx.arc(r2,0,4,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+
+  const rpm2 = rpm * (d1/d2);
+
+  info.innerHTML = `
+  🔵 Menante : ${rpm.toFixed(0)} RPM / ${(rpm/60).toFixed(2)} Hz<br>
+  🟠 Menée : ${rpm2.toFixed(0)} RPM / ${(rpm2/60).toFixed(2)} Hz
+  `;
+
+  requestAnimationFrame(draw);
+}
+
+draw();
 </script>
+
 </body>
 </html>
