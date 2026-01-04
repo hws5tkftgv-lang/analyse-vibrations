@@ -3,44 +3,180 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>Test Canvas iPhone</title>
+<title>Analyse de vibrations – Poulies & courroie</title>
 
 <style>
 body{
   margin:0;
   background:#0b1436;
-  color:white;
-  font-family:Arial;
+  color:#eaf1ff;
+  font-family:Arial,sans-serif;
 }
+header{
+  padding:14px;
+  background:#0f1a44;
+}
+h1{ margin:0; font-size:18px; }
+
+.panel{
+  padding:14px;
+  background:#101a40;
+  display:grid;
+  gap:14px;
+}
+label{ font-size:13px; }
+input,select{
+  width:100%;
+  padding:10px;
+  font-size:16px;
+  border-radius:10px;
+  border:none;
+}
+
 canvas{
   display:block;
   width:100%;
   height:260px;
   background:#000;
 }
+
+.info{
+  padding:14px;
+  background:#0f1a44;
+  font-size:14px;
+}
 </style>
 </head>
 
 <body>
 
+<header>
+  <h1>🔄 Analyse de vibrations – Poulies & courroie</h1>
+</header>
+
+<div class="panel">
+  <label>RPM moteur (menante)
+    <input id="rpm" type="number" value="1200">
+  </label>
+
+  <label>Système d’unités
+    <select id="unit">
+      <option value="mm">Métrique (mm)</option>
+      <option value="in">Impérial (po)</option>
+    </select>
+  </label>
+
+  <label>Ø poulie menante
+    <input id="d1" type="number" value="100">
+  </label>
+
+  <label>Ø poulie menée
+    <input id="d2" type="number" value="400">
+  </label>
+</div>
+
 <canvas id="scene"></canvas>
+<div class="info" id="info"></div>
 
 <script>
 window.onload = () => {
 
-  const canvas = document.getElementById("scene");
-  const ctx = canvas.getContext("2d");
+const canvas = document.getElementById("scene");
+const ctx = canvas.getContext("2d");
 
-  // ⚠️ CRITIQUE SUR iPHONE
-  canvas.width  = canvas.offsetWidth;
-  canvas.height = canvas.offsetHeight;
+canvas.width  = canvas.offsetWidth;
+canvas.height = canvas.offsetHeight;
 
-  // TEST VISUEL IMMEDIAT
-  ctx.fillStyle = "#00a2ff";
+let a1 = 0, a2 = 0;
+
+function drawBelt(x1,y,r1,x2,y2,r2){
+  const dx = x2-x1;
+  const dy = y2-y;
+  const D = Math.hypot(dx,dy);
+  if(D <= Math.abs(r2-r1)) return;
+
+  const θ = Math.atan2(dy,dx);
+  const α = Math.acos((r2-r1)/D);
+
+  const t1 = θ+α;
+  const t2 = θ-α;
+
+  const P1 = {x:x1+r1*Math.cos(t1), y:y+r1*Math.sin(t1)};
+  const P2 = {x:x1+r1*Math.cos(t2), y:y+r1*Math.sin(t2)};
+  const G1 = {x:x2+r2*Math.cos(t1), y:y+r2*Math.sin(t1)};
+  const G2 = {x:x2+r2*Math.cos(t2), y:y+r2*Math.sin(t2)};
+
+  ctx.strokeStyle="#777";
+  ctx.lineWidth=4;
   ctx.beginPath();
-  ctx.arc(canvas.width/2, canvas.height/2, 40, 0, Math.PI*2);
-  ctx.fill();
+  ctx.moveTo(P1.x,P1.y);
+  ctx.lineTo(G1.x,G1.y);
+  ctx.arc(x2,y,r2,t1,t2,false);
+  ctx.lineTo(P2.x,P2.y);
+  ctx.arc(x1,y,r1,t2,t1,false);
+  ctx.stroke();
+}
 
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const rpm = +rpmInput.value;
+  const d1  = +d1Input.value;
+  const d2  = +d2Input.value;
+
+  const rpm2 = rpm*(d1/d2);
+  const hz1 = rpm/60;
+  const hz2 = rpm2/60;
+
+  const y = canvas.height/2;
+  const r1 = 30;
+  const r2 = r1*(d2/d1);
+  const x1 = 80;
+  const x2 = canvas.width - r2 - 30;
+
+  drawBelt(x1,y,r1,x2,y,r2);
+
+  // poulie menante
+  ctx.save();
+  ctx.translate(x1,y);
+  ctx.rotate(a1);
+  ctx.strokeStyle="#00a2ff";
+  ctx.lineWidth=3;
+  ctx.beginPath(); ctx.arc(0,0,r1,0,Math.PI*2); ctx.stroke();
+  ctx.fillStyle="#00a2ff";
+  ctx.beginPath(); ctx.arc(r1-4,0,4,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  // poulie menée
+  ctx.save();
+  ctx.translate(x2,y);
+  ctx.rotate(a2);
+  ctx.strokeStyle="#ff9800";
+  ctx.lineWidth=3;
+  ctx.beginPath(); ctx.arc(0,0,r2,0,Math.PI*2); ctx.stroke();
+  ctx.fillStyle="#ff9800";
+  ctx.beginPath(); ctx.arc(r2-4,0,4,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  info.innerHTML = `
+  🔵 Menante : ${rpm.toFixed(0)} RPM / ${hz1.toFixed(2)} Hz<br>
+  🟠 Menée : ${rpm2.toFixed(0)} RPM / ${hz2.toFixed(2)} Hz<br>
+  📏 Unités : ${unit.value}
+  `;
+
+  a1 += hz1*0.05;
+  a2 += hz2*0.05;
+
+  requestAnimationFrame(draw);
+}
+
+const rpmInput=document.getElementById("rpm");
+const d1Input=document.getElementById("d1");
+const d2Input=document.getElementById("d2");
+const unit=document.getElementById("unit");
+const info=document.getElementById("info");
+
+draw();
 };
 </script>
 
