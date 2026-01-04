@@ -1,435 +1,456 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
-<title>Analyse de vibrations — Poulies & courroie</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Analyse de vibrations – Poulies & courroie (RPM / CPM / Hz)</title>
 
 <style>
-  :root{
-    --bg:#0b1436;
-    --panel:#101a40;
-    --panel2:#0f1a44;
-    --text:#eaf1ff;
-    --muted:rgba(234,241,255,.78);
-    --field:#0b0f18;
-    --fieldText:#ffffff;
-    --stroke:#8b8b8b;
-    --blue:#00a2ff;
-    --orange:#ff9800;
+  :root{ color-scheme: dark; }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    background:#0b1436;
+    color:#eaf1ff;
+    font-family:Arial, sans-serif;
   }
-  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html,body{ margin:0; background:var(--bg); color:var(--text); font-family:Arial,system-ui,-apple-system,Segoe UI,sans-serif; }
-
   header{
     padding:14px 14px 12px;
-    background:linear-gradient(180deg, #0f1a44, #0b1436);
-    border-bottom:1px solid rgba(255,255,255,.12);
+    background:#0f1a44;
+    border-bottom:1px solid rgba(255,255,255,.15);
   }
-  h1{ margin:0; font-size:18px; font-weight:700; letter-spacing:.2px; }
+  h1{ font-size:18px; margin:0; }
+  .sub{ margin-top:6px; font-size:12px; opacity:.8; line-height:1.2; }
 
   .panel{
     padding:14px;
-    background:var(--panel);
+    background:#101a40;
     display:grid;
     grid-template-columns: 1fr;
     gap:14px;
   }
 
-  .row2{
+  .row{
     display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:12px;
-  }
-  @media (max-width: 520px){
-    .row2{ grid-template-columns: 1fr; }
+    grid-template-columns: 1fr;
+    gap:10px;
   }
 
-  label{ display:block; font-size:13px; color:var(--muted); }
-  .field{
-    margin-top:6px;
+  label{
+    font-size:13px;
+    opacity:.9;
+    display:grid;
+    gap:8px;
+  }
+
+  input, select{
     width:100%;
-    padding:12px 12px;
-    font-size:16px;
-    border-radius:12px;
-    border:1px solid rgba(255,255,255,.08);
-    background:rgba(255,255,255,.92);
-    color:#111;
+    padding:12px 12px;             /* ✅ plus grand iPhone */
+    font-size:16px;                 /* ✅ évite zoom iOS */
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,.18);
+    background:#0f1a44;
+    color:#eaf1ff;
     outline:none;
   }
-  select.field{ appearance:auto; }
 
-  .stageWrap{
-    padding:12px 14px 0;
+  .grid2{
+    display:grid;
+    grid-template-columns: 1fr 1fr; /* ✅ pas collé */
+    gap:12px;
   }
+
+  .wrap{
+    padding:12px 14px 18px;
+  }
+
   canvas{
-    width:100%;
-    height:auto;
     display:block;
+    width:100%;
+    max-width:560px;
     margin:0 auto;
     background:#000;
-    border-radius:14px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.15);
+    touch-action:none;
   }
 
   .info{
     margin-top:12px;
-    padding:14px;
-    background:var(--panel2);
-    border-top:1px solid rgba(255,255,255,.12);
-    font-size:15px;
-    line-height:1.45;
+    padding:12px;
+    background:#0f1a44;
+    border:1px solid rgba(255,255,255,.15);
+    border-radius:12px;
+    font-size:14px;
+    line-height:1.35;
+    max-width:560px;
+    margin-left:auto;
+    margin-right:auto;
   }
 
-  .dot{
-    display:inline-block; width:14px; height:14px; border-radius:50%; margin-right:8px; vertical-align:-2px;
+  .ok{ color:#9cffb0; font-weight:800; }
+  .bad{ color:#ffb3b3; font-weight:900; }
+
+  .tiny{ font-size:12px; opacity:.8; margin-top:8px; }
+  .pill{
+    display:inline-block;
+    padding:4px 8px;
+    border-radius:999px;
+    background:rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.15);
+    font-size:12px;
+    opacity:.9;
   }
-  .dot.blue{ background:var(--blue); }
-  .dot.orange{ background:var(--orange); }
-  .dot.white{ background:#fff; }
-  .muted{ color:rgba(234,241,255,.72); }
 </style>
 </head>
 
 <body>
 <header>
-  <h1>🔄 Analyse de vibrations — Poulies & courroie</h1>
+  <h1>🔄 Poulies & courroie – RPM / CPM / Hz</h1>
+  <div class="sub">
+    Courroie ouverte • Animation basée sur la <b>vitesse linéaire</b> (physiquement correcte)
+  </div>
 </header>
 
 <div class="panel">
-  <label>RPM moteur (menante)
-    <input id="rpm" class="field" type="number" inputmode="decimal" value="1200" min="0" step="1">
-  </label>
-
   <label>Système d’unités
-    <select id="unit" class="field">
+    <select id="unit">
       <option value="metric">Métrique (mm)</option>
       <option value="imperial">Impérial (po)</option>
     </select>
   </label>
 
-  <div class="row2">
-    <label>Ø poulie menante <span class="muted" id="u1">(mm)</span>
-      <input id="d1" class="field" type="number" inputmode="decimal" value="100" min="0.01" step="0.01">
+  <div class="grid2">
+    <label>RPM menante
+      <input id="rpm1" type="number" value="1200" min="0" step="1">
     </label>
 
-    <label>Ø poulie menée <span class="muted" id="u2">(mm)</span>
-      <input id="d2" class="field" type="number" inputmode="decimal" value="400" min="0.01" step="0.01">
+    <label>Ralenti (×)
+      <input id="slow" type="number" value="6" min="1" step="1">
     </label>
   </div>
 
-  <label>Distance centre-à-centre (C-C) <span class="muted" id="u3">(mm)</span>
-    <input id="cc" class="field" type="number" inputmode="decimal" value="320" min="0.01" step="0.01">
+  <div class="grid2">
+    <label>Ø menante (<span id="u1">mm</span>)
+      <input id="d1" type="number" value="100" min="1" step="0.1">
+    </label>
+
+    <label>Ø menée (<span id="u2">mm</span>)
+      <input id="d2" type="number" value="200" min="1" step="0.1">
+    </label>
+  </div>
+
+  <label>Distance centre-à-centre C (<span id="u3">mm</span>)
+    <input id="c" type="number" value="250" min="1" step="0.1">
   </label>
+
+  <div class="tiny">
+    Règle : <span class="pill">C &gt; R₁ + R₂</span> sinon la configuration est impossible (poulies qui se chevauchent).
+  </div>
 </div>
 
-<div class="stageWrap">
+<div class="wrap">
   <canvas id="scene"></canvas>
+  <div class="info" id="info"></div>
 </div>
-
-<div class="info" id="info"></div>
 
 <script>
-(() => {
-  const canvas = document.getElementById("scene");
-  const ctx = canvas.getContext("2d");
+/* =============================
+   Canvas responsive (iPhone OK)
+   ============================= */
+const canvas = document.getElementById("scene");
+const ctx = canvas.getContext("2d");
 
-  const rpmEl = document.getElementById("rpm");
-  const unitEl = document.getElementById("unit");
-  const d1El = document.getElementById("d1");
-  const d2El = document.getElementById("d2");
-  const ccEl = document.getElementById("cc");
-  const infoEl = document.getElementById("info");
+function resizeCanvas(){
+  const maxW = Math.min(window.innerWidth - 28, 560);
+  const w = Math.max(320, Math.floor(maxW));
+  const h = Math.floor(w * 0.62);
+  canvas.width = w;
+  canvas.height = h;
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
 
-  const u1 = document.getElementById("u1");
-  const u2 = document.getElementById("u2");
-  const u3 = document.getElementById("u3");
+/* =============================
+   Inputs
+   ============================= */
+const unitEl = document.getElementById("unit");
+const rpm1El = document.getElementById("rpm1");
+const d1El = document.getElementById("d1");
+const d2El = document.getElementById("d2");
+const cEl  = document.getElementById("c");
+const slowEl = document.getElementById("slow");
+const infoEl = document.getElementById("info");
 
-  // ---- constantes visuelles
-  const BLUE = "#00a2ff";
-  const ORANGE = "#ff9800";
-  const BELT = "#7e7e7e";
-  const MARK = "#ffffff";
+const u1 = document.getElementById("u1");
+const u2 = document.getElementById("u2");
+const u3 = document.getElementById("u3");
 
-  // ---- temps maître (comme ton Python)
-  let lastTS = null;
-  let t = 0;                 // secondes
-  const TIME_SLOWDOWN = 1.0; // tu peux mettre 2,3,6 si tu veux plus lent
+function setUnitLabels(){
+  const isMetric = unitEl.value === "metric";
+  const lab = isMetric ? "mm" : "po";
+  u1.textContent = lab; u2.textContent = lab; u3.textContent = lab;
+}
+unitEl.addEventListener("change", setUnitLabels);
+setUnitLabels();
 
-  // ---- helpers
-  const TAU = Math.PI * 2;
-  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
-  function mod2pi(a){
-    a = a % TAU;
-    if (a < 0) a += TAU;
-    return a;
+/* =============================
+   Helpers
+   ============================= */
+const TAU = Math.PI * 2;
+
+function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+function mod2pi(a){
+  a = a % TAU;
+  return a < 0 ? a + TAU : a;
+}
+function sweep(start, end, anticw){
+  // return sweep length in [0,2π)
+  start = mod2pi(start);
+  end = mod2pi(end);
+  if(!anticw){
+    // clockwise in canvas API? (anticlockwise=false means "clockwise" in screen coords)
+    // We treat it as forward end-start modulo 2π
+    return mod2pi(end - start);
+  }else{
+    return mod2pi(start - end);
   }
+}
+function bestArcFlag(start, end, targetSweep){
+  // choose anticlockwise boolean that makes sweep closest to target
+  const sFalse = sweep(start, end, false);
+  const sTrue  = sweep(start, end, true);
+  const dFalse = Math.abs(sFalse - targetSweep);
+  const dTrue  = Math.abs(sTrue  - targetSweep);
+  return (dTrue < dFalse); // anticlockwise = true
+}
 
-  // Long arc helper (on force l’arc "extérieur" long)
-  function arcLong(cx, cy, r, start, end){
-    start = mod2pi(start);
-    end = mod2pi(end);
-    let delta = end - start;
-    if (delta < 0) delta += TAU;      // delta dans [0,2π)
-    const anticlockwise = (delta <= Math.PI); // si c’est le court, on prend l’autre sens = long
-    ctx.arc(cx, cy, r, start, end, anticlockwise);
-  }
+function fmt(n, dec=2){
+  if(!isFinite(n)) return "—";
+  return Number(n).toFixed(dec);
+}
 
-  function setCanvasSize(){
-    // Canvas responsive + retina
-    const maxW = Math.min(window.innerWidth - 28, 760);
-    const w = Math.max(320, maxW);
-    const h = Math.round(w * 0.62); // ratio stable
+/* =============================
+   Physique + animation
+   - on anime via vitesse linéaire V
+   ============================= */
+let lastT = performance.now();
+let sTravel = 0; // distance parcourue sur la courroie (unités internes: pixels équivalents)
 
-    const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
-    canvas.style.width = w + "px";
-    canvas.style.height = h + "px";
-    canvas.width = Math.round(w * dpr);
-    canvas.height = Math.round(h * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // repère en "px CSS"
-  }
+function compute(){
+  const rpm1 = Math.max(0, +rpm1El.value || 0);
+  const slow = clamp(+slowEl.value || 1, 1, 999);
 
-  // Unit conversion: on travaille en mm en interne
-  const IN_TO_MM = 25.4;
-  function getInputsMM(){
-    const rpm = Math.max(0, +rpmEl.value || 0);
+  const D1 = Math.max(0.0001, +d1El.value || 0);
+  const D2 = Math.max(0.0001, +d2El.value || 0);
+  const C  = Math.max(0.0001, +cEl.value  || 0);
 
-    const unit = unitEl.value;
-    let d1 = +d1El.value || 0;
-    let d2 = +d2El.value || 0;
-    let cc = +ccEl.value || 0;
+  // Convert inputs to a single base unit for calculations (meters internally)
+  // metric: mm -> m ; imperial: inches -> m
+  const isMetric = unitEl.value === "metric";
+  const toM = isMetric ? (v => v / 1000) : (v => v * 0.0254);
 
-    if(unit === "imperial"){
-      d1 *= IN_TO_MM;
-      d2 *= IN_TO_MM;
-      cc *= IN_TO_MM;
-    }
-    // sécurités
-    d1 = Math.max(0.01, d1);
-    d2 = Math.max(0.01, d2);
-    cc = Math.max(0.01, cc);
+  const D1m = toM(D1);
+  const D2m = toM(D2);
+  const Cm  = toM(C);
 
-    return { rpm, d1, d2, cc, unit };
-  }
+  const R1m = D1m / 2;
+  const R2m = D2m / 2;
 
-  function updateUnitLabels(){
-    const unit = unitEl.value;
-    const lab = unit === "imperial" ? "(po)" : "(mm)";
-    u1.textContent = lab;
-    u2.textContent = lab;
-    u3.textContent = lab;
-  }
+  // Validité physique
+  const minC = R1m + R2m;
+  const ok = (Cm > minC);
 
-  // conversion automatique des champs quand tu changes unité (pour garder les mêmes dimensions physiques)
-  function convertDisplayedValues(oldUnit, newUnit){
-    if(oldUnit === newUnit) return;
-    const factor = (oldUnit === "metric" && newUnit === "imperial") ? (1/IN_TO_MM)
-                 : (oldUnit === "imperial" && newUnit === "metric") ? IN_TO_MM
-                 : 1;
+  // RPM, Hz, CPM
+  const rpm2 = rpm1 * (D1m / D2m);
+  const hz1 = rpm1 / 60;
+  const hz2 = rpm2 / 60;
+  const cpm1 = rpm1;     // 1 cycle / tour
+  const cpm2 = rpm2;
 
-    d1El.value = (+d1El.value * factor).toFixed(3).replace(/\.?0+$/,'');
-    d2El.value = (+d2El.value * factor).toFixed(3).replace(/\.?0+$/,'');
-    ccEl.value = (+ccEl.value * factor).toFixed(3).replace(/\.?0+$/,'');
-  }
+  // Vitesse linéaire V (m/s)
+  const V = (Math.PI * D1m * rpm1) / 60; // m/s
 
-  function drawFrame(dt){
-    // dt en secondes (limité pour éviter sauts si Safari "freeze")
-    dt = clamp(dt, 0, 0.05);
-    t += dt / TIME_SLOWDOWN;
+  return { rpm1, rpm2, hz1, hz2, cpm1, cpm2, V, ok, minC, D1m, D2m, R1m, R2m, Cm, slow, isMetric };
+}
 
-    const W = parseFloat(canvas.style.width);
-    const H = parseFloat(canvas.style.height);
+/* =============================
+   Dessin de la courroie (ouverte)
+   - arc grande poulie: contact long = π + 2α
+   - arc petite poulie: contact court = π - 2α
+   ============================= */
+function drawBeltOpen(x1,y1,R1, x2,y2,R2){
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const C  = Math.hypot(dx, dy);
 
-    // fond
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, W, H);
+  // tangence existe si C > |R2-R1|
+  if(C <= Math.abs(R2 - R1)) return {alpha:null};
 
-    const { rpm, d1, d2, cc, unit } = getInputsMM();
+  const theta = Math.atan2(dy, dx);
+  const alpha = Math.acos((R2 - R1) / C); // pour courroie ouverte
 
-    // cinématique (comme python) : vitesse linéaire courroie constante
-    const f1 = rpm / 60;               // Hz
-    const rpm2 = rpm * (d1 / d2);
-    const f2 = rpm2 / 60;
+  // angles de tangence (sur la direction theta)
+  const tTop = theta + alpha;
+  const tBot = theta - alpha;
 
-    const w1 = TAU * f1;               // rad/s
-    const w2 = TAU * f2;
+  // points tangents (petite et grande)
+  const Ptop = { x: x1 + R1*Math.cos(tTop), y: y1 + R1*Math.sin(tTop) };
+  const Pbot = { x: x1 + R1*Math.cos(tBot), y: y1 + R1*Math.sin(tBot) };
 
-    // angles (pilotés par t, pas par +=)
-    const ang1 = -w1 * t;
-    const ang2 = -w2 * t;
+  const Gtop = { x: x2 + R2*Math.cos(tTop), y: y2 + R2*Math.sin(tTop) };
+  const Gbot = { x: x2 + R2*Math.cos(tBot), y: y2 + R2*Math.sin(tBot) };
 
-    // rayon "physique" mm
-    const r1mm = d1 / 2;
-    const r2mm = d2 / 2;
+  // contact angles
+  const sweepSmallTarget = Math.PI - 2*alpha; // court
+  const sweepLargeTarget = Math.PI + 2*alpha; // long
 
-    // IMPORTANT: géométrie possible uniquement si cc >= |r2-r1| + marge
-    const minCC = Math.abs(r2mm - r1mm) + 1; // +1mm de marge
-    const ccSafe = Math.max(cc, minCC);
+  // Dessin
+  ctx.strokeStyle = "#bfc7d6";
+  ctx.lineWidth = 5;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.beginPath();
 
-    // Mise à l’échelle pour tenir dans le canvas
-    const margin = 28;
-    const usableW = W - 2*margin;
-    const usableH = H - 2*margin;
+  // segment haut
+  ctx.moveTo(Ptop.x, Ptop.y);
+  ctx.lineTo(Gtop.x, Gtop.y);
 
-    // on veut tenir: largeur ≈ cc + r1 + r2, hauteur ≈ 2*max(r1,r2)
-    const scaleW = usableW / (ccSafe + r1mm + r2mm);
-    const scaleH = usableH / (2 * Math.max(r1mm, r2mm));
-    const s = Math.max(0.05, Math.min(scaleW, scaleH));
+  // arc grande poulie de Gtop -> Gbot (long)
+  // angles sur la poulie = tTop -> tBot
+  const largeAnti = bestArcFlag(tTop, tBot, sweepLargeTarget);
+  ctx.arc(x2, y2, R2, tTop, tBot, largeAnti);
 
-    const r1 = r1mm * s;
-    const r2 = r2mm * s;
-    const C  = ccSafe * s;
+  // segment bas vers petite
+  ctx.lineTo(Pbot.x, Pbot.y);
 
-    const x1 = margin + r1;
-    const x2 = x1 + C;
-    const y  = H / 2;
+  // arc petite poulie de Pbot -> Ptop (court)
+  // angles = tBot -> tTop (court)
+  const smallAnti = bestArcFlag(tBot, tTop, sweepSmallTarget);
+  ctx.arc(x1, y1, R1, tBot, tTop, smallAnti);
 
-    // ---- COURROIE (tangence externe stable)
-    // phi = acos((r2 - r1) / C)
-    const ratio = clamp((r2 - r1) / C, -1, 1);
-    const phi = Math.acos(ratio);
+  ctx.stroke();
 
-    // angles des points de tangence (centres alignés horizontalement)
-    const aL_top = +phi;
-    const aL_bot = -phi;
+  return {alpha};
+}
 
-    const aR_top = Math.PI - phi;
-    const aR_bot = Math.PI + phi;
+/* =============================
+   Animation (stable, iPhone)
+   ============================= */
+function drawFrame(now){
+  const dtReal = (now - lastT) / 1000;
+  lastT = now;
 
-    const Ltop = { x: x1 + r1*Math.cos(aL_top), y: y + r1*Math.sin(aL_top) };
-    const Lbot = { x: x1 + r1*Math.cos(aL_bot), y: y + r1*Math.sin(aL_bot) };
-    const Rtop = { x: x2 + r2*Math.cos(aR_top), y: y + r2*Math.sin(aR_top) };
-    const Rbot = { x: x2 + r2*Math.cos(aR_bot), y: y + r2*Math.sin(aR_bot) };
+  const s = compute();
 
-    ctx.strokeStyle = BELT;
-    ctx.lineWidth = 4;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.beginPath();
-    ctx.moveTo(Ltop.x, Ltop.y);
-    ctx.lineTo(Rtop.x, Rtop.y);
-    // arc sur grande poulie (extérieur long)
-    arcLong(x2, y, r2, aR_top, aR_bot);
-    ctx.lineTo(Lbot.x, Lbot.y);
-    // arc sur petite poulie (extérieur long)
-    arcLong(x1, y, r1, aL_bot, aL_top);
-    ctx.stroke();
+  // Fond
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    // ---- POULIES
-    function drawPulley(cx, cy, r, color, ang){
-      // cercle
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, TAU);
-      ctx.stroke();
+  // Layout
+  // Convert “mètres” vers pixels: on fixe une échelle pour que ça reste à l’écran.
+  // On dessine dans un repère pixels basé sur D2 et C.
+  const pad = 24;
+  const W = canvas.width;
+  const H = canvas.height;
 
-      // marqueur sur poulie (couleur poulie)
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(cx + (r-4)*Math.cos(ang), cy + (r-4)*Math.sin(ang), 5, 0, TAU);
-      ctx.fill();
-    }
-
-    drawPulley(x1, y, r1, BLUE, ang1);
-    drawPulley(x2, y, r2, ORANGE, ang2);
-
-    // ---- POINT BLANC "sur la courroie" (optionnel, mais stable)
-    // On le fait avancer avec la vitesse linéaire: v = w1*r1 (px/s)
-    const v = Math.abs(w1) * r1;          // px/s
-    const beltLength = (Math.hypot(Rtop.x-Ltop.x, Rtop.y-Ltop.y)) +
-                       (Math.hypot(Rbot.x-Lbot.x, Rbot.y-Lbot.y)) +
-                       (r1*(TAU - 2*phi)) +
-                       (r2*(TAU - 2*phi)); // approx longueur totale (extérieur)
-    const sPos = (v * t) % beltLength;
-
-    // on parcourt le chemin (top line -> right arc -> bottom line -> left arc)
-    function lerp(p, q, u){ return { x: p.x + (q.x-p.x)*u, y: p.y + (q.y-p.y)*u }; }
-    let rem = sPos;
-    let P = {x:Ltop.x, y:Ltop.y};
-
-    const lenTop = Math.hypot(Rtop.x-Ltop.x, Rtop.y-Ltop.y);
-    const lenBot = Math.hypot(Lbot.x-Rbot.x, Lbot.y-Rbot.y);
-    const lenArcR = r2*(TAU - 2*phi);
-    const lenArcL = r1*(TAU - 2*phi);
-
-    if(rem <= lenTop){
-      P = lerp(Ltop, Rtop, rem/lenTop);
-    } else {
-      rem -= lenTop;
-      if(rem <= lenArcR){
-        // arc long sur droite: de aR_top -> aR_bot dans le sens "long"
-        // on prend un paramètre u sur [0,1] et on avance sur l’angle long
-        const u = rem/lenArcR;
-        // angle long = TAU - 2*phi
-        const ang = aR_top - u*(TAU - 2*phi); // (sens long)
-        P = { x: x2 + r2*Math.cos(ang), y: y + r2*Math.sin(ang) };
-      } else {
-        rem -= lenArcR;
-        if(rem <= lenBot){
-          P = lerp(Rbot, Lbot, rem/lenBot);
-        } else {
-          rem -= lenBot;
-          const u = (lenArcL <= 0) ? 0 : rem/lenArcL;
-          const ang = aL_bot - u*(TAU - 2*phi); // sens long
-          P = { x: x1 + r1*Math.cos(ang), y: y + r1*Math.sin(ang) };
-        }
-      }
-    }
-
-    ctx.fillStyle = MARK;
-    ctx.beginPath();
-    ctx.arc(P.x, P.y, 5, 0, TAU);
-    ctx.fill();
-
-    // ---- INFOS + unités
-    let unitLabel = (unit === "imperial") ? "po" : "mm";
-
-    // vitesse linéaire courroie (comme ton Python): v = rpm * π * D
-    // en unité/min de l’unité choisie:
-    let v_unit_per_min;
-    if(unit === "imperial"){
-      // D en pouces (donc on reconvertit)
-      const d1_in = d1 / IN_TO_MM;
-      v_unit_per_min = rpm * Math.PI * d1_in; // po/min
-    } else {
-      v_unit_per_min = rpm * Math.PI * d1;    // mm/min
-    }
-
+  // si invalide, on affiche seulement message + arrête la progression
+  if(!s.ok){
     infoEl.innerHTML = `
-      <div><span class="dot blue"></span><b>Menante</b> : ${rpm.toFixed(0)} RPM / ${f1.toFixed(2)} Hz</div>
-      <div><span class="dot orange"></span><b>Menée</b> : ${rpm2.toFixed(0)} RPM / ${f2.toFixed(2)} Hz</div>
-      <div class="muted" style="margin-top:6px;">
-        <span class="dot white"></span>Vitesse linéaire courroie ≈ ${v_unit_per_min.toFixed(1)} ${unitLabel}/min
-        ${cc < minCC ? `<br>⚠️ C-C trop petit → corrigé automatiquement à ${(unit==="imperial"?(minCC/IN_TO_MM):minCC).toFixed(2)} ${unitLabel} (sinon géométrie impossible).` : ``}
+      <div class="bad">❌ Configuration impossible</div>
+      <div style="margin-top:6px;">
+        Condition requise : <b>C &gt; R₁ + R₂</b><br>
+        Ici : C = <b>${fmt(s.isMetric ? (s.Cm*1000) : (s.Cm/0.0254), 2)} ${s.isMetric ? "mm" : "po"}</b><br>
+        Minimum : R₁ + R₂ = <b>${fmt(s.isMetric ? (s.minC*1000) : (s.minC/0.0254), 2)} ${s.isMetric ? "mm" : "po"}</b>
       </div>
+      <div class="tiny">Ajuste C ou les diamètres. L’animation est suspendue volontairement.</div>
     `;
+    requestAnimationFrame(drawFrame);
+    return;
   }
 
-  function loop(ts){
-    if(lastTS === null) lastTS = ts;
-    const dt = (ts - lastTS) / 1000;
-    lastTS = ts;
-    drawFrame(dt);
-    requestAnimationFrame(loop);
+  // Échelle pixels
+  // on veut que: C + R1 + R2 tienne sur largeur
+  const spanM = s.Cm + s.R1m + s.R2m;
+  const pxPerM = (W - 2*pad) / spanM;
+
+  const R1 = s.R1m * pxPerM;
+  const R2 = s.R2m * pxPerM;
+  const Cpx = s.Cm  * pxPerM;
+
+  // positions centres
+  const x1 = pad + R1;
+  const x2 = x1 + Cpx;
+  const y  = Math.floor(H * 0.52);
+
+  // ✅ vitesse linéaire → distance parcourue (m), puis convertie en “pixels” pour animation
+  const slow = s.slow;
+  const dt = dtReal / slow;
+
+  // si on change diamètres, on garde sTravel; l’angle recalculé reste cohérent
+  sTravel += (s.V * dt); // mètres parcourus
+
+  const ang1 = - (sTravel / s.R1m); // rad
+  const ang2 = - (sTravel / s.R2m); // rad
+
+  // courroie (ouverte)
+  drawBeltOpen(x1, y, R1, x2, y, R2);
+
+  // poulies
+  function drawPulley(cx, cy, R, stroke){
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, TAU);
+    ctx.stroke();
   }
+  drawPulley(x1, y, R1, "#00a2ff");
+  drawPulley(x2, y, R2, "#ff9800");
 
-  // Events
-  let prevUnit = unitEl.value;
-  unitEl.addEventListener("change", () => {
-    const newUnit = unitEl.value;
-    convertDisplayedValues(prevUnit, newUnit);
-    prevUnit = newUnit;
-    updateUnitLabels();
-  });
+  // points (marqueurs) -> tournent toujours (même si diamètres changent)
+  function drawMarker(cx, cy, R, a){
+    const mx = cx + (R-6) * Math.cos(a);
+    const my = cy + (R-6) * Math.sin(a);
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.arc(mx, my, 5, 0, TAU);
+    ctx.fill();
+  }
+  drawMarker(x1, y, R1, ang1);
+  drawMarker(x2, y, R2, ang2);
 
-  window.addEventListener("resize", () => setCanvasSize());
+  // texte (RPM/CPM/Hz) + vitesse linéaire
+  const V_mps = s.V;
+  const V_ftmin = V_mps * 196.8503937; // 1 m/s = 196.8503937 ft/min
 
-  // init
-  updateUnitLabels();
-  setCanvasSize();
-  requestAnimationFrame(loop);
-})();
+  const D1disp = s.isMetric ? (s.D1m*1000) : (s.D1m/0.0254);
+  const D2disp = s.isMetric ? (s.D2m*1000) : (s.D2m/0.0254);
+  const Cdisp  = s.isMetric ? (s.Cm*1000)  : (s.Cm/0.0254);
+  const uLab = s.isMetric ? "mm" : "po";
+
+  infoEl.innerHTML = `
+    <div class="ok">✅ Configuration valide</div>
+    <div style="margin-top:8px;">
+      <b>Entrées</b> : Ø1=${fmt(D1disp,2)} ${uLab} • Ø2=${fmt(D2disp,2)} ${uLab} • C=${fmt(Cdisp,2)} ${uLab} • Ralenti×${fmt(s.slow,0)}
+    </div>
+    <hr style="border:none;border-top:1px solid rgba(255,255,255,.15); margin:10px 0;">
+    <div>
+      🔵 <b>Menante</b> : ${fmt(s.rpm1,1)} RPM • ${fmt(s.cpm1,1)} CPM • ${fmt(s.hz1,3)} Hz<br>
+      🟠 <b>Menée</b> : ${fmt(s.rpm2,1)} RPM • ${fmt(s.cpm2,1)} CPM • ${fmt(s.hz2,3)} Hz
+    </div>
+    <div style="margin-top:8px;">
+      🧵 <b>Vitesse linéaire courroie</b> : ${fmt(V_mps,3)} m/s • ${fmt(V_ftmin,1)} ft/min
+    </div>
+    <div class="tiny">
+      Note: CPM = cycles/min. Ici, 1 cycle = 1 tour (donc CPM = RPM).
+    </div>
+  `;
+
+  requestAnimationFrame(drawFrame);
+}
+
+requestAnimationFrame(drawFrame);
 </script>
 </body>
 </html>
