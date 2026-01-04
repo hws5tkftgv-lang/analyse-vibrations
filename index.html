@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Courroie seule — géométrie correcte</title>
+<title>Courroie seule — forme elliptique</title>
 
 <style>
 html,body{
@@ -12,7 +12,7 @@ html,body{
 }
 canvas{
   display:block;
-  margin:20px auto;
+  margin:30px auto;
   background:#000;
   border-radius:14px;
 }
@@ -20,80 +20,70 @@ canvas{
 </head>
 
 <body>
-<canvas id="c" width="800" height="400"></canvas>
+<canvas id="c" width="800" height="300"></canvas>
 
 <script>
 const c = document.getElementById("c");
 const ctx = c.getContext("2d");
 
-const TAU = Math.PI*2;
+const W = c.width;
+const H = c.height;
 
 // ===============================
-// PARAMÈTRES PHYSIQUES
+// PARAMÈTRES VISUELS
 // ===============================
-const d1 = 4 * 25.4;   // Ø menante (mm)
-const d2 = 9 * 25.4;   // Ø menée (mm)
-const C  = 21 * 25.4;  // centre-centre (mm)
+const beltThickness = 8;
+const beltColor = "#b0b0b0";
 
-// ===============================
-// MISE À L'ÉCHELLE ÉCRAN
-// ===============================
-const r1mm = d1/2;
-const r2mm = d2/2;
+// longueur droite entre demi-cercles
+const straightLength = 520;
 
-const margin = 60;
-const scale = Math.min(
-  (c.width - 2*margin) / (C + r1mm + r2mm),
-  (c.height - 2*margin) / (2*Math.max(r1mm,r2mm))
-);
+// rayon des extrémités (demi-cercles)
+const r = 40;
 
-const r1 = r1mm * scale;
-const r2 = r2mm * scale;
-const Cpx = C * scale;
-
-const x1 = margin + r1;
-const x2 = x1 + Cpx;
-const y  = c.height/2;
+const cx = W/2;
+const cy = H/2;
 
 // ===============================
-// GÉOMÉTRIE DES TANGENTES EXTERNES
+// DESSIN COURROIE (ELLIPSE)
 // ===============================
-const phi = Math.acos( (r2mm - r1mm) / C );
-
-const aL_top =  Math.PI/2 - phi;
-const aL_bot = -Math.PI/2 + phi;
-
-const aR_top =  Math.PI/2 + phi;
-const aR_bot = 3*Math.PI/2 - phi;
-
-const Ltop = { x:x1 + r1*Math.cos(aL_top), y:y + r1*Math.sin(aL_top) };
-const Lbot = { x:x1 + r1*Math.cos(aL_bot), y:y + r1*Math.sin(aL_bot) };
-const Rtop = { x:x2 + r2*Math.cos(aR_top), y:y + r2*Math.sin(aR_top) };
-const Rbot = { x:x2 + r2*Math.cos(aR_bot), y:y + r2*Math.sin(aR_bot) };
-
-// ===============================
-// DESSIN COURROIE (CHEMIN UNIQUE)
-// ===============================
-ctx.strokeStyle="#b0b0b0";
-ctx.lineWidth=6;
-ctx.lineJoin="round";
-ctx.lineCap="round";
+ctx.strokeStyle = beltColor;
+ctx.lineWidth = beltThickness;
+ctx.lineCap = "round";
+ctx.lineJoin = "round";
 
 ctx.beginPath();
 
-// segment supérieur
-ctx.moveTo(Ltop.x, Ltop.y);
-ctx.lineTo(Rtop.x, Rtop.y);
+// départ en haut à gauche
+ctx.moveTo(cx - straightLength/2, cy - r);
 
-// arc grande poulie (extérieur)
-ctx.arc(x2, y, r2, aR_top, aR_bot, false);
+// segment haut
+ctx.lineTo(cx + straightLength/2, cy - r);
 
-// segment inférieur
-ctx.lineTo(Lbot.x, Lbot.y);
+// demi-cercle droit
+ctx.arc(
+  cx + straightLength/2,
+  cy,
+  r,
+  -Math.PI/2,
+  Math.PI/2,
+  false
+);
 
-// arc petite poulie (extérieur)
-ctx.arc(x1, y, r1, aL_bot, aL_top, false);
+// segment bas
+ctx.lineTo(cx - straightLength/2, cy + r);
 
+// demi-cercle gauche
+ctx.arc(
+  cx - straightLength/2,
+  cy,
+  r,
+  Math.PI/2,
+  -Math.PI/2,
+  false
+);
+
+ctx.closePath();
 ctx.stroke();
 </script>
 </body>
