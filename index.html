@@ -97,26 +97,27 @@ canvas{
 
 <div class="controls">
   <label>RPM moteur
-    <input id="rpm" type="number" value="0">
+    <input id="rpm" type="number" placeholder="RPM">
   </label>
 
   <label>Unités
     <select id="unit">
-      <option value="metric">mm</option>
+    
       <option value="imperial">po</option>
+        <option value="metric">mm</option>
     </select>
   </label>
 
   <label>Ø menante
-    <input id="d1" type="number" value="0">
+  <input id="d1" type="number" placeholder="Ø menante">
   </label>
 
   <label>Ø menée
-    <input id="d2" type="number" value="0">
+  <input id="d2" type="number" placeholder="Ø menée">
   </label>
 
   <label>C-C
-    <input id="cc" type="number" value="0">
+    <input id="cc" type="number" placeholder="C-C">
   </label>
 </div>
 
@@ -156,6 +157,14 @@ let running = false;
 let lastTS = null;
 let lockedWidth = null;
 
+function lerp(p, q, u){
+  return {
+    x: p.x + (q.x - p.x) * u,
+    y: p.y + (q.y - p.y) * u
+  };
+}
+
+
 function resize(){
   if(lockedWidth===null){
     lockedWidth = Math.min(window.innerWidth-24,720);
@@ -177,9 +186,13 @@ playBtn.onclick = ()=> running=true;
 pauseBtn.onclick = ()=> running=false;
 resetBtn.onclick = ()=>{
   running=false;
-  t=0;
-  rpmEl.value=d1El.value=d2El.value=ccEl.value=0;
-  draw();
+  rpmEl.value = "";
+d1El.value = "";
+d2El.value = "";
+ccEl.value = "";
+running = false;
+t = 0;
+draw();
 };
 
 function loop(ts){
