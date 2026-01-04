@@ -6,14 +6,15 @@
 <title>Courroie & poulies — trajectoire correcte</title>
 
 <style>
-html,body{
+body{
   margin:0;
   background:#0b1436;
-  color:#eaf1ff;
   font-family:Arial,system-ui,sans-serif;
+  color:#eaf1ff;
 }
 header{
-  padding:12px;
+  padding:14px;
+  font-size:18px;
   font-weight:700;
 }
 .stage{
@@ -21,9 +22,11 @@ header{
 }
 canvas{
   width:100%;
-  background:#000;
-  border-radius:12px;
+  max-width:720px;
   display:block;
+  margin:auto;
+  background:#000;
+  border-radius:14px;
 }
 </style>
 </head>
@@ -37,72 +40,101 @@ canvas{
 
 <script>
 (() => {
+
 const canvas = document.getElementById("scene");
 const ctx = canvas.getContext("2d");
 
 const TAU = Math.PI * 2;
-
 let t = 0;
 let lastTS = null;
 
-// ===== Resize =====
 function resize(){
-  const w = Math.min(window.innerWidth - 24, 500);
-  const h = w * 0.4;
-  const dpr = Math.min(2, devicePixelRatio || 1);
+  const w = Math.min(innerWidth - 24, 720);
+  const h = w * 0.45;
+  const dpr = Math.min(3, devicePixelRatio || 1);
 
-  canvas.style.width = w+"px";
-  canvas.style.height = h+"px";
+  canvas.style.width = w + "px";
+  canvas.style.height = h + "px";
   canvas.width = w * dpr;
   canvas.height = h * dpr;
 
   ctx.setTransform(dpr,0,0,dpr,0,0);
 }
-window.addEventListener("resize", resize);
+addEventListener("resize", resize);
 resize();
 
-// ===== Dessin =====
+function lerp(a,b,u){
+  return { x:a.x+(b.x-a.x)*u, y:a.y+(b.y-a.y)*u };
+}
+
+function loop(ts){
+  if(!lastTS) lastTS = ts;
+  const dt = (ts - lastTS)/1000;
+  lastTS = ts;
+  t += dt * 0.6;
+  draw();
+  requestAnimationFrame(loop);
+}
+
 function draw(){
-  const W = canvas.width / (devicePixelRatio||1);
-  const H = canvas.height / (devicePixelRatio||1);
+  const W = canvas.width / devicePixelRatio;
+  const H = canvas.height / devicePixelRatio;
 
   ctx.clearRect(0,0,W,H);
   ctx.fillStyle="#000";
   ctx.fillRect(0,0,W,H);
 
-  // ===== Géométrie =====
-  const margin = 40;
-  const R = 30;                // rayon petite poulie
-  const Rbig = 50;             // rayon grande poulie
+  // paramètres fixes (test visuel)
+  const rSmall = 45;
+  const rBig   = 85;
+  const C      = 220;
 
-  const xL = margin + R;
-  const xR = W - margin - Rbig;
+  const xL = 90;
+  const xR = xL + C;
   const y  = H/2;
 
-  // Points clés courroie
-  const topL = {x:xL, y:y-R};
-  const topR = {x:xR, y:y-Rbig};
-  const botR = {x:xR, y:y+Rbig};
-  const botL = {x:xL, y:y+R};
+  const phi = Math.acos((rBig - rSmall)/C);
 
-  // ===== COURROIE =====
+  const aLt =  phi;
+  const aLb = -phi;
+  const aRt = Math.PI - phi;
+  const aRb = Math.PI + phi;
+
+  const Ltop = { x:xL + rSmall*Math.cos(aLt), y:y + rSmall*Math.sin(aLt) };
+  const Lbot = { x:xL + rSmall*Math.cos(aLb), y:y + rSmall*Math.sin(aLb) };
+  const Rtop = { x:xR + rBig*Math.cos(aRt),   y:y + rBig*Math.sin(aRt) };
+  const Rbot = { x:xR + rBig*Math.cos(aRb),   y:y + rBig*Math.sin(aRb) };
+
+  // === COURROIE ===
   ctx.strokeStyle="#9a9a9a";
   ctx.lineWidth=4;
-  ctx.lineCap="round";
-  ctx.lineJoin="round";
+  ctx.lineCap="butt";      // ✅ IMPORTANT
+  ctx.lineJoin="miter";    // ✅ IMPORTANT
 
   ctx.beginPath();
-  ctx.moveTo(topL.x, topL.y);
-  ctx.lineTo(topR.x, topR.y);
+  ctx.moveTo(Ltop.x, Ltop.y);
+  ctx.lineTo(Rtop.x, Rtop.y);
 
-  ctx.arc(xR, y, Rbig, -Math.PI/2, Math.PI/2, false);
+  // grande poulie (arc long)
+  ctx.arc(
+    xR, y, rBig,
+    aRt + 0.002,            // ✅ micro-offset anti-trace
+    aRb - 0.002,
+    false
+  );
 
-  ctx.lineTo(botL.x, botL.y);
+  ctx.lineTo(Lbot.x, Lbot.y);
 
-  ctx.arc(xL, y, R, Math.PI/2, -Math.PI/2, false);
+  // petite poulie (arc court)
+  ctx.arc(
+    xL, y, rSmall,
+    aLb + 0.002,
+    aLt - 0.002,
+    false
+  );
   ctx.stroke();
 
-  // ===== POULIES (visuelles uniquement) =====
+  // === POULIES ===
   function drawPulley(cx,cy,r,color){
     ctx.strokeStyle=color;
     ctx.lineWidth=3;
@@ -111,62 +143,43 @@ function draw(){
     ctx.stroke();
   }
 
-  drawPulley(xL,y,R,"#00a2ff");   // poulie menante
-  drawPulley(xR,y,Rbig,"#ff9800"); // poulie menée
+  drawPulley(xL,y,rSmall,"#00a2ff");
+  drawPulley(xR,y,rBig,"#ff9800");
 
-  // ===== LONGUEURS =====
-  const lenTop = Math.hypot(topR.x-topL.x, topR.y-topL.y);
-  const lenBot = Math.hypot(botL.x-botR.x, botL.y-botR.y);
-  const lenArcL = Math.PI * R;
-  const lenArcR = Math.PI * Rbig;
+  // === POINT SUR COURROIE ===
+  const lenTop = Math.hypot(Rtop.x-Ltop.x, Rtop.y-Ltop.y);
+  const lenBot = Math.hypot(Lbot.x-Rbot.x, Lbot.y-Rbot.y);
+  const lenArcR = rBig*(TAU - 2*phi);
+  const lenArcL = rSmall*(2*phi);
+  const beltLen = lenTop + lenArcR + lenBot + lenArcL;
 
-  const totalLen = lenTop + lenArcR + lenBot + lenArcL;
-
-  // ===== ANIMATION POINT =====
-  const speed = 80;
-  const s = (t * speed) % totalLen;
+  let s = (t*120) % beltLen;
   let P;
 
   if(s <= lenTop){
-    const u = s/lenTop;
-    P = {
-      x: topL.x + u*(topR.x-topL.x),
-      y: topL.y + u*(topR.y-topL.y)
-    };
+    P = lerp(Ltop, Rtop, s/lenTop);
   }
-  else if(s <= lenTop + lenArcR){
-    const u = (s-lenTop)/lenArcR;
-    const a = -Math.PI/2 + u*Math.PI;
-    P = { x: xR + Rbig*Math.cos(a), y: y + Rbig*Math.sin(a) };
+  else if((s -= lenTop) <= lenArcR){
+    const u = s/lenArcR;
+    const a = aRt - u*(TAU - 2*phi);
+    P = { x:xR + rBig*Math.cos(a), y:y + rBig*Math.sin(a) };
   }
-  else if(s <= lenTop + lenArcR + lenBot){
-    const u = (s-lenTop-lenArcR)/lenBot;
-    P = {
-      x: botR.x + u*(botL.x-botR.x),
-      y: botR.y + u*(botL.y-botR.y)
-    };
+  else if((s -= lenArcR) <= lenBot){
+    P = lerp(Rbot, Lbot, s/lenBot);
   }
   else{
-    const u = (s-lenTop-lenArcR-lenBot)/lenArcL;
-    const a = Math.PI/2 + u*Math.PI;
-    P = { x: xL + R*Math.cos(a), y: y + R*Math.sin(a) };
+    s -= lenBot;
+    const u = s/lenArcL;
+    const a = aLb + u*(2*phi);
+    P = { x:xL + rSmall*Math.cos(a), y:y + rSmall*Math.sin(a) };
   }
 
   ctx.fillStyle="#fff";
   ctx.beginPath();
-  ctx.arc(P.x,P.y,6,0,TAU);
+  ctx.arc(P.x,P.y,5,0,TAU);
   ctx.fill();
 }
 
-// ===== Loop =====
-function loop(ts){
-  if(!lastTS) lastTS = ts;
-  const dt = (ts-lastTS)/1000;
-  lastTS = ts;
-  t += dt;
-  draw();
-  requestAnimationFrame(loop);
-}
 requestAnimationFrame(loop);
 })();
 </script>
