@@ -2,34 +2,35 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Poulies & courroie — Base saine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Poulies & courroie — Animation pédagogique</title>
 
 <style>
 body{
   margin:0;
   background:#0b1436;
   color:#eaf1ff;
-  font-family:Arial,sans-serif;
+  font-family:Arial, sans-serif;
 }
 header{
   padding:14px;
   background:#0f1a44;
 }
-h1{margin:0;font-size:18px}
+h1{ margin:0; font-size:18px; }
 
 .panel{
   padding:14px;
+  background:#101a40;
   display:grid;
   gap:12px;
-  background:#101a40;
 }
-input{
+label{ font-size:13px; opacity:.9; }
+input,select{
   width:100%;
   padding:10px;
   font-size:16px;
-  border:none;
   border-radius:10px;
+  border:none;
 }
 
 canvas{
@@ -37,6 +38,7 @@ canvas{
   margin:0 auto;
   background:#000;
 }
+
 .info{
   padding:14px;
   background:#0f1a44;
@@ -48,51 +50,56 @@ canvas{
 <body>
 
 <header>
-  <h1>🔄 Poulies & courroie — Test fondamental</h1>
+  <h1>🔄 Poulies & courroie — Animation réelle</h1>
 </header>
 
 <div class="panel">
-  <input id="rpm" type="number" value="1200" placeholder="RPM motrice">
-  <input id="d1" type="number" value="100" placeholder="Ø menante">
-  <input id="d2" type="number" value="400" placeholder="Ø menée">
+  <label>RPM moteur (menante)
+    <input id="rpm" type="number" value="1200">
+  </label>
+
+  <label>Ø poulie menante (mm)
+    <input id="d1" type="number" value="100">
+  </label>
+
+  <label>Ø poulie menée (mm)
+    <input id="d2" type="number" value="400">
+  </label>
 </div>
 
-<canvas id="c" width="420" height="260"></canvas>
+<canvas id="scene" width="420" height="260"></canvas>
+
 <div class="info" id="info"></div>
 
 <script>
-const c = document.getElementById("c");
-const ctx = c.getContext("2d");
+const canvas = document.getElementById("scene");
+const ctx = canvas.getContext("2d");
 
-const rpmI = document.getElementById("rpm");
-const d1I  = document.getElementById("d1");
-const d2I  = document.getElementById("d2");
-const info = document.getElementById("info");
+let beltPos = 0;
 
-let a1 = 0;
-let a2 = 0;
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 
-function loop(){
-  ctx.clearRect(0,0,c.width,c.height);
+  const rpm = +rpmInput.value;
+  const d1  = +d1Input.value;
+  const d2  = +d2Input.value;
 
-  const rpm1 = +rpmI.value;
-  const d1   = Math.max(1,+d1I.value);
-  const d2   = Math.max(1,+d2I.value);
-
-  const rpm2 = rpm1 * (d1/d2);
-
-  const hz1 = rpm1 / 60;
-  const hz2 = rpm2 / 60;
-
-  // === Positions FIXES (indestructibles) ===
-  const y  = c.height/2;
-  const x1 = 110;
-  const x2 = 310;
-
-  const r1 = 24;
+  const r1 = 28;
   const r2 = r1 * (d2/d1);
 
-  // === Courroie (comme ton Python) ===
+  const x1 = 110;
+  const x2 = canvas.width - r2 - 20;
+  const y  = canvas.height/2;
+
+  // --- Physique réelle ---
+  const omega1 = rpm * 2*Math.PI / 60;
+  const vBelt  = omega1 * r1;
+  beltPos += vBelt * 0.002;
+
+  const angle1 = beltPos / r1;
+  const angle2 = beltPos / r2;
+
+  // --- Courroie (droite, volontairement stable) ---
   ctx.strokeStyle="#777";
   ctx.lineWidth=4;
   ctx.beginPath();
@@ -102,10 +109,10 @@ function loop(){
   ctx.lineTo(x2, y+r2);
   ctx.stroke();
 
-  // === Poulie menante ===
+  // --- Poulie menante ---
   ctx.save();
   ctx.translate(x1,y);
-  ctx.rotate(a1);
+  ctx.rotate(angle1);
   ctx.strokeStyle="#00a2ff";
   ctx.lineWidth=3;
   ctx.beginPath();
@@ -113,14 +120,14 @@ function loop(){
   ctx.stroke();
   ctx.fillStyle="#00a2ff";
   ctx.beginPath();
-  ctx.arc(r1,0,4,0,Math.PI*2);
+  ctx.arc(r1-3,0,4,0,Math.PI*2);
   ctx.fill();
   ctx.restore();
 
-  // === Poulie menée ===
+  // --- Poulie menée ---
   ctx.save();
   ctx.translate(x2,y);
-  ctx.rotate(a2);
+  ctx.rotate(angle2);
   ctx.strokeStyle="#ff9800";
   ctx.lineWidth=3;
   ctx.beginPath();
@@ -128,23 +135,25 @@ function loop(){
   ctx.stroke();
   ctx.fillStyle="#ff9800";
   ctx.beginPath();
-  ctx.arc(r2,0,4,0,Math.PI*2);
+  ctx.arc(r2-4,0,5,0,Math.PI*2);
   ctx.fill();
   ctx.restore();
 
+  const rpm2 = rpm * d1/d2;
+
   info.innerHTML = `
-    🔵 Menante : ${rpm1.toFixed(0)} RPM / ${(hz1).toFixed(2)} Hz<br>
-    🟠 Menée : ${rpm2.toFixed(0)} RPM / ${(hz2).toFixed(2)} Hz
+  🔵 Menante : ${rpm.toFixed(0)} RPM / ${(rpm/60).toFixed(2)} Hz<br>
+  🟠 Menée : ${rpm2.toFixed(0)} RPM / ${(rpm2/60).toFixed(2)} Hz
   `;
 
-  // === ROTATIONS DÉCOUPLÉES (LA CLÉ) ===
-  a1 += hz1 * 0.05;
-  a2 += hz2 * 0.05;
-
-  requestAnimationFrame(loop);
+  requestAnimationFrame(draw);
 }
 
-loop();
+const rpmInput = document.getElementById("rpm");
+const d1Input  = document.getElementById("d1");
+const d2Input  = document.getElementById("d2");
+
+draw();
 </script>
 
 </body>
