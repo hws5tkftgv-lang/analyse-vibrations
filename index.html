@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Courroie — trajectoire correcte</title>
+<title>Courroie & poulies — trajectoire correcte</title>
 
 <style>
 html,body{
@@ -29,7 +29,7 @@ canvas{
 </head>
 
 <body>
-<header>Courroie seule — trajectoire correcte</header>
+<header>Courroie & poulies — trajectoire correcte</header>
 
 <div class="stage">
   <canvas id="scene"></canvas>
@@ -45,10 +45,10 @@ const TAU = Math.PI * 2;
 let t = 0;
 let lastTS = null;
 
-// ===== Resize propre (petit dessin) =====
+// ===== Resize =====
 function resize(){
   const w = Math.min(window.innerWidth - 24, 500);
-  const h = w * 0.4;              // 👈 PLUS PETIT
+  const h = w * 0.4;
   const dpr = Math.min(2, devicePixelRatio || 1);
 
   canvas.style.width = w+"px";
@@ -61,7 +61,7 @@ function resize(){
 window.addEventListener("resize", resize);
 resize();
 
-// ===== Géométrie de la courroie =====
+// ===== Dessin =====
 function draw(){
   const W = canvas.width / (devicePixelRatio||1);
   const H = canvas.height / (devicePixelRatio||1);
@@ -70,67 +70,88 @@ function draw(){
   ctx.fillStyle="#000";
   ctx.fillRect(0,0,W,H);
 
-  // Dimensions de la capsule
+  // ===== Géométrie =====
   const margin = 40;
-  const R = 30;                             // rayon des demi-cercles
+  const R = 30;                // rayon petite poulie
+  const Rbig = 50;             // rayon grande poulie
+
   const xL = margin + R;
-  const xR = W - margin - R;
+  const xR = W - margin - Rbig;
   const y  = H/2;
 
+  // Points clés courroie
   const topL = {x:xL, y:y-R};
-  const topR = {x:xR, y:y-R};
-  const botR = {x:xR, y:y+R};
+  const topR = {x:xR, y:y-Rbig};
+  const botR = {x:xR, y:y+Rbig};
   const botL = {x:xL, y:y+R};
 
-  // ===== Dessin de la courroie =====
+  // ===== COURROIE =====
   ctx.strokeStyle="#9a9a9a";
   ctx.lineWidth=4;
   ctx.lineCap="round";
   ctx.lineJoin="round";
 
   ctx.beginPath();
-  ctx.moveTo(topL.x, topL.y);          // ligne haut
+  ctx.moveTo(topL.x, topL.y);
   ctx.lineTo(topR.x, topR.y);
 
-  ctx.arc(xR, y, R, -Math.PI/2, Math.PI/2, false); // demi-cercle droit
+  ctx.arc(xR, y, Rbig, -Math.PI/2, Math.PI/2, false);
 
-  ctx.lineTo(botL.x, botL.y);           // ligne bas
+  ctx.lineTo(botL.x, botL.y);
 
-  ctx.arc(xL, y, R, Math.PI/2, -Math.PI/2, false); // demi-cercle gauche
+  ctx.arc(xL, y, R, Math.PI/2, -Math.PI/2, false);
   ctx.stroke();
 
-  // ===== Longueurs =====
-  const lenTop = topR.x - topL.x;
-  const lenBot = lenTop;
-  const lenArc = Math.PI * R;
+  // ===== POULIES (visuelles uniquement) =====
+  function drawPulley(cx,cy,r,color){
+    ctx.strokeStyle=color;
+    ctx.lineWidth=3;
+    ctx.beginPath();
+    ctx.arc(cx,cy,r,0,TAU);
+    ctx.stroke();
+  }
 
-  const totalLen = lenTop + lenArc + lenBot + lenArc;
+  drawPulley(xL,y,R,"#00a2ff");   // poulie menante
+  drawPulley(xR,y,Rbig,"#ff9800"); // poulie menée
 
-  // ===== Animation =====
-  const speed = 80; // px/s (constant)
+  // ===== LONGUEURS =====
+  const lenTop = Math.hypot(topR.x-topL.x, topR.y-topL.y);
+  const lenBot = Math.hypot(botL.x-botR.x, botL.y-botR.y);
+  const lenArcL = Math.PI * R;
+  const lenArcR = Math.PI * Rbig;
+
+  const totalLen = lenTop + lenArcR + lenBot + lenArcL;
+
+  // ===== ANIMATION POINT =====
+  const speed = 80;
   const s = (t * speed) % totalLen;
   let P;
 
   if(s <= lenTop){
-    const u = s / lenTop;
-    P = { x: topL.x + u*(topR.x-topL.x), y: topL.y };
+    const u = s/lenTop;
+    P = {
+      x: topL.x + u*(topR.x-topL.x),
+      y: topL.y + u*(topR.y-topL.y)
+    };
   }
-  else if(s <= lenTop + lenArc){
-    const u = (s-lenTop)/lenArc;
+  else if(s <= lenTop + lenArcR){
+    const u = (s-lenTop)/lenArcR;
     const a = -Math.PI/2 + u*Math.PI;
-    P = { x: xR + R*Math.cos(a), y: y + R*Math.sin(a) };
+    P = { x: xR + Rbig*Math.cos(a), y: y + Rbig*Math.sin(a) };
   }
-  else if(s <= lenTop + lenArc + lenBot){
-    const u = (s-lenTop-lenArc)/lenBot;
-    P = { x: botR.x - u*(botR.x-botL.x), y: botR.y };
+  else if(s <= lenTop + lenArcR + lenBot){
+    const u = (s-lenTop-lenArcR)/lenBot;
+    P = {
+      x: botR.x + u*(botL.x-botR.x),
+      y: botR.y + u*(botL.y-botR.y)
+    };
   }
   else{
-    const u = (s-lenTop-lenArc-lenBot)/lenArc;
+    const u = (s-lenTop-lenArcR-lenBot)/lenArcL;
     const a = Math.PI/2 + u*Math.PI;
     P = { x: xL + R*Math.cos(a), y: y + R*Math.sin(a) };
   }
 
-  // ===== Point blanc =====
   ctx.fillStyle="#fff";
   ctx.beginPath();
   ctx.arc(P.x,P.y,6,0,TAU);
