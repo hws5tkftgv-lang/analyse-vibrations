@@ -129,8 +129,9 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
   }
 
   function draw(){
-    const W = canvas.width/(devicePixelRatio||1);
-    const H = canvas.height/(devicePixelRatio||1);
+    const dpr = devicePixelRatio || 1;
+    const W = canvas.width / dpr;
+    const H = canvas.height / dpr;
 
     ctx.clearRect(0,0,W,H);
     ctx.fillStyle="#000";
@@ -177,7 +178,7 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
     }
     const span_mm = Math.sqrt(span2);
 
-    // ✅ phi : IMPORTANT -> calculé sur valeurs physiques (anti NaN)
+    // ✅ phi : IMPORTANT -> calculé sur valeurs physiques
     const ratio = (r2mm - r1mm) / Cmm;
     if(!isFinite(ratio) || ratio < -1 || ratio > 1){
       infoEl.innerHTML = `<span class="bad">⛔ acos invalide (ratio hors [-1,1]).</span>`;
@@ -243,7 +244,7 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
     const lenTop  = Math.hypot(Rtop.x-Ltop.x, Rtop.y-Ltop.y);
     const lenBot  = Math.hypot(Lbot.x-Rbot.x, Lbot.y-Rbot.y);
     const lenArcR = r2 * (TAU - 2*phi); // grande : long
-    const lenArcL = r1 * (2*phi);       // petite : court (IMPORTANT)
+    const lenArcL = r1 * (2*phi);       // ✅ petite : court (FIX du sens/vitesse)
 
     const beltLen_px = lenTop + lenArcR + lenBot + lenArcL;
     if(!(beltLen_px > 0) || !isFinite(beltLen_px)) return;
@@ -262,6 +263,7 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
     } else {
       sPos -= lenBot;
       const u = sPos/lenArcL;
+      // ✅ arc court sur petite poulie, sens cohérent avec le reste du chemin
       const a = aL_top - u*(2*phi);
       P = { x:x1 + r1*Math.cos(a), y:y + r1*Math.sin(a) };
     }
