@@ -8,7 +8,6 @@
 <style>
 :root{
   --bg:#0b1436;
-  --panel:#101a40;
   --text:#eaf1ff;
   --muted:rgba(234,241,255,.65);
   --blue:#00a2ff;
@@ -18,20 +17,66 @@
   --bad:#ff4d4d;
 }
 *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html,body{ margin:0; background:var(--bg); color:var(--text); font-family:Arial,system-ui,sans-serif; }
+html,body{ margin:0; background:var(--bg); color:var(--text); font-family:Arial,sans-serif; }
+
 header{ padding:10px 14px; font-size:16px; font-weight:700; }
-.controls{ padding:10px 14px; display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+
+.controls{
+  padding:10px 14px;
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px;
+}
 .controls label{ font-size:12px; color:var(--muted); }
-.controls input,.controls select{ width:100%; padding:7px 9px; font-size:14px; border-radius:10px; border:none; }
+.controls input,.controls select{
+  width:100%;
+  padding:7px 9px;
+  font-size:14px;
+  border-radius:10px;
+  border:none;
+}
+
 .controls .full{ grid-column:1/-1; }
-.buttons{ display:flex; gap:10px; padding:0 14px 10px; }
-button{ flex:1; padding:10px; font-size:15px; border:none; border-radius:12px; background:var(--btn); color:white; }
+
+.buttons{
+  display:flex;
+  gap:10px;
+  padding:0 14px 10px;
+}
+button{
+  flex:1;
+  padding:10px;
+  font-size:15px;
+  border:none;
+  border-radius:12px;
+  background:var(--btn);
+  color:white;
+}
+
 .stage{ padding:10px 14px; }
-canvas{ width:100%; background:#000; border-radius:12px; display:block; }
-.results{ padding:10px 14px 18px; font-size:14px; line-height:1.45; }
-.dot{ display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px; vertical-align:middle; }
-.blue{background:var(--blue);} .orange{background:var(--orange);} .white{background:#fff;}
-.bad{color:var(--bad); font-weight:700;}
+canvas{
+  width:100%;
+  background:#000;
+  border-radius:12px;
+  display:block;
+}
+
+.results{
+  padding:10px 14px 18px;
+  font-size:14px;
+  line-height:1.45;
+}
+
+.dot{
+  display:inline-block;
+  width:10px;height:10px;
+  border-radius:50%;
+  margin-right:6px;
+}
+.blue{background:var(--blue);}
+.orange{background:var(--orange);}
+.white{background:#fff;}
+.bad{color:var(--bad);font-weight:700;}
 </style>
 </head>
 
@@ -39,18 +84,18 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
 <header>🔄 Poulies & courroie — simulation (pédagogie)</header>
 
 <div class="controls">
-  <label>RPM moteur <input id="rpm" type="number" inputmode="decimal" placeholder="ex: 1500"></label>
+  <label>RPM moteur <input id="rpm" type="number"></label>
   <label>Unités
     <select id="unit">
-      <option value="imperial" selected>po</option>
+      <option value="imperial">po</option>
       <option value="metric">mm</option>
     </select>
   </label>
-  <label>Ø menante <input id="d1" type="number" inputmode="decimal" placeholder="ex: 4"></label>
-  <label>Ø menée <input id="d2" type="number" inputmode="decimal" placeholder="ex: 9"></label>
-  <label class="full">C-C <input id="cc" type="number" inputmode="decimal" placeholder="ex: 21"></label>
+  <label>Ø menante <input id="d1" type="number"></label>
+  <label>Ø menée <input id="d2" type="number"></label>
+  <label class="full">C-C <input id="cc" type="number"></label>
   <div class="full">
-    <label style="display:block;margin-bottom:4px;">Ralenti (plus grand = plus lent)</label>
+    <label>Ralenti (plus grand = plus lent)</label>
     <input id="slow" type="range" min="1" max="20" value="8">
   </div>
 </div>
@@ -61,258 +106,164 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
   <button id="reset">Reset</button>
 </div>
 
-<div class="stage"><canvas id="scene"></canvas></div>
+<div class="stage">
+  <canvas id="scene"></canvas>
+</div>
+
 <div class="results" id="info"></div>
 
 <script>
 (() => {
-  const canvas = document.getElementById("scene");
-  const ctx    = canvas.getContext("2d");
+const canvas = document.getElementById("scene");
+const ctx = canvas.getContext("2d");
 
-  const rpmEl  = document.getElementById("rpm");
-  const d1El   = document.getElementById("d1");
-  const d2El   = document.getElementById("d2");
-  const ccEl   = document.getElementById("cc");
-  const unitEl = document.getElementById("unit");
-  const slowEl = document.getElementById("slow");
-  const infoEl = document.getElementById("info");
+const rpmEl  = document.getElementById("rpm");
+const d1El   = document.getElementById("d1");
+const d2El   = document.getElementById("d2");
+const ccEl   = document.getElementById("cc");
+const unitEl = document.getElementById("unit");
+const slowEl = document.getElementById("slow");
+const infoEl = document.getElementById("info");
 
-  const playBtn  = document.getElementById("play");
-  const pauseBtn = document.getElementById("pause");
-  const resetBtn = document.getElementById("reset");
+const playBtn  = document.getElementById("play");
+const pauseBtn = document.getElementById("pause");
+const resetBtn = document.getElementById("reset");
 
-  const TAU = Math.PI * 2;
-  const IN_TO_MM = 25.4;
-  const BASE_TIME_SCALE = 0.06;
+const TAU = Math.PI*2;
+const IN_TO_MM = 25.4;
+const BASE_TIME_SCALE = 0.06;
 
-  let t = 0, running = false, lastTS = null, lockedWidth = null;
+let t = 0, running = false, lastTS = null, lockedWidth = null;
 
-  const lerp  = (p,q,u)=>({x:p.x+(q.x-p.x)*u, y:p.y+(q.y-p.y)*u});
-  const clamp = (v,a,b)=>Math.max(a, Math.min(b, v));
+const lerp = (p,q,u)=>({x:p.x+(q.x-p.x)*u,y:p.y+(q.y-p.y)*u});
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
 
-  function resize(){
-    if(!lockedWidth) lockedWidth = Math.min(innerWidth - 24, 720);
-    const w = lockedWidth, h = w * 0.6, dpr = Math.min(3, devicePixelRatio || 1);
-    canvas.style.width = w + "px";
-    canvas.style.height= h + "px";
-    canvas.width  = Math.round(w * dpr);
-    canvas.height = Math.round(h * dpr);
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-  }
-  addEventListener("resize", resize);
-  resize();
+function resize(){
+  if(!lockedWidth) lockedWidth = Math.min(innerWidth-24,720);
+  const w=lockedWidth,h=w*0.6,dpr=Math.min(3,devicePixelRatio||1);
+  canvas.style.width=w+"px"; canvas.style.height=h+"px";
+  canvas.width=w*dpr; canvas.height=h*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+addEventListener("resize",resize);
+resize();
 
-  function read(){
-    let rpm = parseFloat(rpmEl.value);
-    let d1  = parseFloat(d1El.value);
-    let d2  = parseFloat(d2El.value);
-    let cc  = parseFloat(ccEl.value);
+function read(){
+  let rpm=+rpmEl.value,d1=+d1El.value,d2=+d2El.value,cc=+ccEl.value;
+  if(!rpm||!d1||!d2||!cc) return null;
+  if(unitEl.value==="imperial"){ d1*=IN_TO_MM; d2*=IN_TO_MM; cc*=IN_TO_MM; }
+  return {rpm,d1mm:d1,d2mm:d2,ccmm:cc};
+}
 
-    if(!isFinite(rpm) || !isFinite(d1) || !isFinite(d2) || !isFinite(cc)) return null;
-    if(rpm <= 0 || d1 <= 0 || d2 <= 0 || cc <= 0) return null;
-
-    if(unitEl.value === "imperial"){ d1*=IN_TO_MM; d2*=IN_TO_MM; cc*=IN_TO_MM; }
-    return { rpm, d1mm:d1, d2mm:d2, ccmm:cc };
-  }
-
-  function loop(ts){
-    if(lastTS === null) lastTS = ts;
-    const dt = (ts - lastTS)/1000;
-    lastTS = ts;
-
-    if(running){
-      const slow = parseFloat(slowEl.value) || 1;
-      t += dt * BASE_TIME_SCALE / slow;
-    }
-    draw();
-    requestAnimationFrame(loop);
-  }
-
-  function draw(){
-    const W = canvas.width/(devicePixelRatio||1);
-    const H = canvas.height/(devicePixelRatio||1);
-
-    ctx.clearRect(0,0,W,H);
-    ctx.fillStyle="#000";
-    ctx.fillRect(0,0,W,H);
-
-    const inp = read();
-    if(!inp){
-      infoEl.innerHTML = `<span class="bad">⛔ Entre RPM, Ø menante, Ø menée et C-C puis Play.</span>`;
-      return;
-    }
-
-    const { rpm, d1mm, d2mm, ccmm } = inp;
-
-    // === sorties cinématiques ===
-    const rpmMotor = rpm;
-    const hzMotor  = rpmMotor / 60;
-
-    const rpmMenante = rpmMotor;
-    const hzMenante  = hzMotor;
-
-    const rpmMenee = rpmMotor * (d1mm / d2mm);
-    const hzMenee  = rpmMenee / 60;
-
-    // --- géométrie physique ---
-    const r1mm = d1mm/2, r2mm = d2mm/2;
-    const Cmm  = ccmm;
-
-    // validation (pas d’auto-correction cachée)
-    const minCC = Math.abs(r2mm - r1mm);
-    if(Cmm <= minCC){
-      infoEl.innerHTML = `
-        <div class="bad">⛔ Géométrie impossible :</div>
-        <div>C-C doit être &gt; |R2 − R1|.</div>
-        <div>Min = ${(unitEl.value==="imperial" ? (minCC/IN_TO_MM).toFixed(2)+" po" : minCC.toFixed(1)+" mm")}.</div>
-      `;
-      return;
-    }
-
-    // span + phi en physique
-    const span2 = Cmm*Cmm - (r2mm - r1mm)*(r2mm - r1mm);
-    if(!(span2 > 0) || !isFinite(span2)){
-      infoEl.innerHTML = `<span class="bad">⛔ span impossible (vérifie tes valeurs).</span>`;
-      return;
-    }
-    const span_mm = Math.sqrt(span2);
-
-    const ratio = (r2mm - r1mm) / Cmm;
-    if(!isFinite(ratio) || ratio < -1 || ratio > 1){
-      infoEl.innerHTML = `<span class="bad">⛔ acos invalide (ratio hors [-1,1]).</span>`;
-      return;
-    }
-    const phi = Math.acos(ratio);
-
-    // --- rendu (écran) ---
-    const margin = 40;
-    const s = Math.min(
-      (W - 2*margin) / (Cmm + r1mm + r2mm),
-      (H - 2*margin) / (2 * Math.max(r1mm, r2mm))
-    );
-
-    const r1 = r1mm*s, r2 = r2mm*s, C = Cmm*s;
-    const x1 = margin + r1, x2 = x1 + C, y = H/2;
-
-    // angles tangence
-    const aL_top =  phi, aL_bot = -phi;
-    const aR_top = Math.PI - phi, aR_bot = Math.PI + phi;
-
-    const Ltop={x:x1+r1*Math.cos(aL_top), y:y+r1*Math.sin(aL_top)};
-    const Lbot={x:x1+r1*Math.cos(aL_bot), y:y+r1*Math.sin(aL_bot)};
-    const Rtop={x:x2+r2*Math.cos(aR_top), y:y+r2*Math.sin(aR_top)};
-    const Rbot={x:x2+r2*Math.cos(aR_bot), y:y+r2*Math.sin(aR_bot)};
-
-    // --- courroie (même chemin que le point) ---
-    ctx.strokeStyle="#9a9a9a";
-    ctx.lineWidth=4;
-    ctx.lineCap="round";
-    ctx.lineJoin="round";
-    ctx.beginPath();
-    ctx.moveTo(Ltop.x,Ltop.y);
-    ctx.lineTo(Rtop.x,Rtop.y);
-
-    // ✅ IMPORTANT: grande poulie = ARC LONG (TAU-2phi)
-    // => on doit dessiner l’arc “dans l’autre sens”
-    ctx.arc(x2,y,r2,aR_top,aR_bot,true);   // <-- true = arc long
-
-    ctx.lineTo(Lbot.x,Lbot.y);
-
-    // petite poulie = ARC COURT (2phi)
-    ctx.arc(x1, y, r1, aL_top, aL_bot, true);
-    ctx.stroke();
-
-    // --- poulies + marqueurs ---
-    const f1 = rpmMotor/60, w1 = TAU*f1;
-    const f2 = rpmMenee/60,  w2 = TAU*f2;
-
-    const ang1 = -w1*t;
-    const ang2 = -w2*t;
-
-    function drawPulley(cx,cy,r,col,a){
-      ctx.strokeStyle=col; ctx.lineWidth=3;
-      ctx.beginPath(); ctx.arc(cx,cy,r,0,TAU); ctx.stroke();
-      ctx.fillStyle=col;
-      ctx.beginPath();
-      ctx.arc(cx+(r-6)*Math.cos(a), cy+(r-6)*Math.sin(a), 6, 0, TAU);
-      ctx.fill();
-    }
-    drawPulley(x1,y,r1,"#00a2ff",ang1);
-    drawPulley(x2,y,r2,"#ff9800",ang2);
-
-    // --- point sur courroie (même segments / mêmes arcs) ---
-    const v_px_s = Math.abs(w1) * r1;
-
-    const lenTop  = Math.hypot(Rtop.x-Ltop.x, Rtop.y-Ltop.y);
-    const lenBot  = Math.hypot(Lbot.x-Rbot.x, Lbot.y-Rbot.y);
-
-    const lenArcR = r2 * (TAU - 2*phi); // grande = long
-    const lenArcL = r1 * (2*phi);       // petite = court
-
-    const beltLen_px = lenTop + lenArcR + lenBot + lenArcL;
-    if(!(beltLen_px > 0) || !isFinite(beltLen_px)) return;
-
-    let sPos = (v_px_s * t) % beltLen_px;
-    let P;
-
-    if(sPos <= lenTop){
-      P = lerp(Ltop, Rtop, sPos/lenTop);
-    } else if((sPos -= lenTop) <= lenArcR){
-      // grande poulie: arc long (sens horaire)
-      const u = sPos/lenArcR;
-      const a = aL_top - u*(2*phi);
-      P = { x:x2 + r2*Math.cos(a), y:y + r2*Math.sin(a) };
-    } else if((sPos -= lenArcR) <= lenBot){
-      P = lerp(Rbot, Lbot, sPos/lenBot);
-    } else {
-      // ✅ FIX PRINCIPAL: petite poulie doit aller de Lbot -> Ltop (sens anti-horaire)
-      sPos -= lenBot;
-      const u = sPos/lenArcL;
-      const a = aL_bot + u*(2*phi);   // <-- AVANT: aL_top - u*(2*phi) (mauvais sens)
-      P = { x:x1 + r1*Math.cos(a), y:y + r1*Math.sin(a) };
-    }
-
-    ctx.fillStyle="#fff";
-    ctx.beginPath();
-    ctx.arc(P.x,P.y,5,0,TAU);
-    ctx.fill();
-
-    // --- longueur courroie (physique) cohérente avec le dessin ---
-    const beltLength_mm =
-      2*span_mm +
-      r1mm*(2*phi) +
-      r2mm*(TAU - 2*phi);
-
-    const beltLengthDisplay = (unitEl.value==="imperial")
-      ? (beltLength_mm/IN_TO_MM).toFixed(2) + " po"
-      : beltLength_mm.toFixed(1) + " mm";
-
-    // --- fréquence courroie = v / L ---
-    const v_mm_s = (rpmMotor * Math.PI * d1mm) / 60;   // mm/s
-    const beltHz = (beltLength_mm > 0) ? (v_mm_s / beltLength_mm) : 0;
-    const beltRPM = beltHz * 60;
-
-    infoEl.innerHTML = `
-      <div><span class="dot blue"></span><b>Moteur</b> : ${rpmMotor.toFixed(0)} RPM | ${hzMotor.toFixed(2)} Hz</div>
-      <div><span class="dot blue"></span><b>Poulie menante</b> : ${rpmMenante.toFixed(0)} RPM | ${hzMenante.toFixed(2)} Hz</div>
-      <div><span class="dot orange"></span><b>Poulie menée</b> : ${rpmMenee.toFixed(0)} RPM | ${hzMenee.toFixed(2)} Hz</div>
-      <div><span class="dot white"></span><b>Courroie</b> : ${beltRPM.toFixed(2)} RPM | ${beltHz.toFixed(2)} Hz</div>
-      <div><span class="dot white"></span><b>Longueur courroie</b> : ${beltLengthDisplay}</div>
-      <div style="margin-top:6px; opacity:.7;">${running ? "▶️ En lecture" : "⏸ En pause"}</div>
-    `;
-  }
-
-  playBtn.onclick  = () => { running = !!read(); };
-  pauseBtn.onclick = () => { running = false; };
-  resetBtn.onclick = () => {
-    t=0;
-    rpmEl.value=""; d1El.value=""; d2El.value=""; ccEl.value="";
-    running=false;
-    infoEl.innerHTML = "";
-    draw();
-  };
-
+function loop(ts){
+  if(!lastTS) lastTS=ts;
+  const dt=(ts-lastTS)/1000;
+  lastTS=ts;
+  if(running) t+=dt*BASE_TIME_SCALE/(+slowEl.value||1);
+  draw();
   requestAnimationFrame(loop);
+}
+
+function draw(){
+  const W=canvas.width/(devicePixelRatio||1);
+  const H=canvas.height/(devicePixelRatio||1);
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle="#000";
+  ctx.fillRect(0,0,W,H);
+
+  const inp=read();
+  if(!inp){ infoEl.innerHTML=""; return; }
+  const {rpm,d1mm,d2mm,ccmm}=inp;
+
+  const r1mm=d1mm/2, r2mm=d2mm/2;
+  if(ccmm<=Math.abs(r2mm-r1mm)){
+    infoEl.innerHTML="<span class='bad'>⛔ Géométrie impossible</span>";
+    return;
+  }
+
+  const phi=Math.acos((r2mm-r1mm)/ccmm);
+  const span=Math.sqrt(ccmm*ccmm-(r2mm-r1mm)**2);
+
+  const margin=40;
+  const s=Math.min((W-2*margin)/(ccmm+r1mm+r2mm),(H-2*margin)/(2*Math.max(r1mm,r2mm)));
+
+  const r1=r1mm*s, r2=r2mm*s, C=ccmm*s;
+  const x1=margin+r1, x2=x1+C, y=H/2;
+
+  const aL_top=phi, aL_bot=-phi;
+  const aR_top=Math.PI-phi, aR_bot=Math.PI+phi;
+
+  const Ltop={x:x1+r1*Math.cos(aL_top),y:y+r1*Math.sin(aL_top)};
+  const Lbot={x:x1+r1*Math.cos(aL_bot),y:y+r1*Math.sin(aL_bot)};
+  const Rtop={x:x2+r2*Math.cos(aR_top),y:y+r2*Math.sin(aR_top)};
+  const Rbot={x:x2+r2*Math.cos(aR_bot),y:y+r2*Math.sin(aR_bot)};
+
+  ctx.strokeStyle="#9a9a9a"; ctx.lineWidth=4;
+  ctx.beginPath();
+  ctx.moveTo(Ltop.x,Ltop.y);
+  ctx.lineTo(Rtop.x,Rtop.y);
+  ctx.arc(x2,y,r2,aR_top,aR_bot,true);
+  ctx.lineTo(Lbot.x,Lbot.y);
+  ctx.arc(x1,y,r1,aL_top,aL_bot,true);
+  ctx.stroke();
+
+  const w1=TAU*(rpm/60);
+  const w2=TAU*((rpm*d1mm/d2mm)/60);
+  const ang1=-w1*t, ang2=-w2*t;
+
+  const drawPulley=(cx,cy,r,col,a)=>{
+    ctx.strokeStyle=col; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,TAU); ctx.stroke();
+    ctx.fillStyle=col;
+    ctx.beginPath();
+    ctx.arc(cx+(r-6)*Math.cos(a),cy+(r-6)*Math.sin(a),6,0,TAU);
+    ctx.fill();
+  };
+  drawPulley(x1,y,r1,"#00a2ff",ang1);
+  drawPulley(x2,y,r2,"#ff9800",ang2);
+
+  const lenTop=Math.hypot(Rtop.x-Ltop.x,Rtop.y-Ltop.y);
+  const lenBot=Math.hypot(Lbot.x-Rbot.x,Lbot.y-Rbot.y);
+  const lenArcR=r2*(TAU-2*phi);
+  const lenArcL=r1*(2*phi);
+  const beltLen=lenTop+lenArcR+lenBot+lenArcL;
+
+  let sPos=(Math.abs(w1)*r1*t)%beltLen;
+  let P;
+
+  if(sPos<=lenTop) P=lerp(Ltop,Rtop,sPos/lenTop);
+  else if((sPos-=lenTop)<=lenArcR){
+    const a=aR_top+(sPos/lenArcR)*(TAU-2*phi);
+    P={x:x2+r2*Math.cos(a),y:y+r2*Math.sin(a)};
+  }
+  else if((sPos-=lenArcR)<=lenBot) P=lerp(Rbot,Lbot,sPos/lenBot);
+  else{
+    const a=aL_top-(sPos-lenBot)/lenArcL*(2*phi);
+    P={x:x1+r1*Math.cos(a),y:y+r1*Math.sin(a)};
+  }
+
+  ctx.fillStyle="#fff";
+  ctx.beginPath(); ctx.arc(P.x,P.y,5,0,TAU); ctx.fill();
+
+  const beltLength_mm=2*span+r1mm*(2*phi)+r2mm*(TAU-2*phi);
+  const v_mm_s=rpm*Math.PI*d1mm/60;
+  const beltHz=v_mm_s/beltLength_mm;
+
+  infoEl.innerHTML=`
+    <div><span class="dot blue"></span>Moteur : ${rpm.toFixed(0)} RPM | ${(rpm/60).toFixed(2)} Hz</div>
+    <div><span class="dot blue"></span>Poulie menante : ${rpm.toFixed(0)} RPM | ${(rpm/60).toFixed(2)} Hz</div>
+    <div><span class="dot orange"></span>Poulie menée : ${(rpm*d1mm/d2mm).toFixed(0)} RPM | ${(rpm*d1mm/d2mm/60).toFixed(2)} Hz</div>
+    <div><span class="dot white"></span>Courroie : ${(beltHz*60).toFixed(2)} RPM | ${beltHz.toFixed(2)} Hz</div>
+    <div><span class="dot white"></span>Longueur courroie : ${
+      unitEl.value==="imperial"?(beltLength_mm/IN_TO_MM).toFixed(2)+" po":beltLength_mm.toFixed(1)+" mm"
+    }</div>`;
+}
+
+playBtn.onclick=()=>running=!!read();
+pauseBtn.onclick=()=>running=false;
+resetBtn.onclick=()=>{t=0;running=false;rpmEl.value=d1El.value=d2El.value=ccEl.value="";};
+
+requestAnimationFrame(loop);
 })();
 </script>
 </body>
