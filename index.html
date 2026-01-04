@@ -2,7 +2,8 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="viewport"
+content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Poulies & courroie — animation réelle</title>
 
 <style>
@@ -157,18 +158,34 @@ function lerp(p,q,u){
 }
 
 function resize(){
-  const w=Math.min(window.innerWidth-24,720);
-  const h=w*0.6;
-  const dpr=Math.min(3,window.devicePixelRatio||1);
-  canvas.style.width=w+"px";
-  canvas.style.height=h+"px";
-  canvas.width=w*dpr;
-  canvas.height=h*dpr;
+  let vw = window.innerWidth;
+  let vh = window.innerHeight;
+
+  // sécurité iOS Safari
+  if(vw < 200 || vh < 200) return;
+
+  const w = Math.min(vw - 24, 720);
+  const h = w * 0.6;
+  const dpr = Math.min(3, window.devicePixelRatio || 1);
+
+  canvas.style.width = w + "px";
+  canvas.style.height = h + "px";
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+
   ctx.setTransform(dpr,0,0,dpr,0,0);
 }
 window.addEventListener("resize",resize);
 resize();
+window.addEventListener("orientationchange", () => {
+  setTimeout(resize, 300);
+});
 
+document.addEventListener("visibilitychange", () => {
+  if(!document.hidden){
+    resize();
+  }
+});
 function loop(ts){
   if(!lastTS) lastTS=ts;
   const dt=(ts-lastTS)/1000;
