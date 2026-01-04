@@ -2,41 +2,45 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Test – Courroie seule</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Courroie & poulies — modèle réel</title>
 
 <style>
-html,body{
+body{
   margin:0;
   background:#0b1436;
   color:#eaf1ff;
   font-family:Arial,system-ui,sans-serif;
 }
 header{ padding:12px; font-weight:700; }
-.controls{ padding:12px; display:grid; gap:8px; }
-canvas{
-  width:100%;
-  background:#000;
-  border-radius:12px;
-  display:block;
-}
+.panel{ padding:12px; display:grid; gap:10px; }
+.row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+input{ padding:8px; font-size:16px; border-radius:8px; border:none; }
+canvas{ width:100%; background:#000; border-radius:12px; display:block; }
+.info{ padding:12px; font-size:14px; }
+.dot{ width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;}
+.blue{background:#00a2ff;} .orange{background:#ff9800;} .white{background:#fff;}
 </style>
 </head>
 
 <body>
-<header>🧪 Test — Courroie seule (sans poulies)</header>
+<header>🔁 Courroie & poulies — géométrie réelle</header>
 
-<div class="controls">
-RPM <input id="rpm" type="number" value="120">
-Ø menante <input id="d1" type="number" value="100">
-Ø menée <input id="d2" type="number" value="400">
-C-C <input id="cc" type="number" value="600">
+<div class="panel">
+  <div class="row">
+    <input id="rpm" type="number" value="1500" placeholder="RPM moteur">
+    <input id="cc"  type="number" value="21" placeholder="C-C (po)">
+  </div>
+  <div class="row">
+    <input id="d1" type="number" value="4" placeholder="Ø menante (po)">
+    <input id="d2" type="number" value="9" placeholder="Ø menée (po)">
+  </div>
 </div>
 
 <canvas id="scene"></canvas>
+<div class="info" id="info"></div>
 
 <script>
-(() => {
 const canvas = document.getElementById("scene");
 const ctx = canvas.getContext("2d");
 
@@ -44,19 +48,16 @@ const rpmEl = document.getElementById("rpm");
 const d1El  = document.getElementById("d1");
 const d2El  = document.getElementById("d2");
 const ccEl  = document.getElementById("cc");
+const info  = document.getElementById("info");
 
 const TAU = Math.PI*2;
-const IN_TO_MM = 25.4;
+const IN = 25.4;
 
-let t=0, lastTS=null;
-
-function lerp(p,q,u){
-  return { x:p.x+(q.x-p.x)*u, y:p.y+(q.y-p.y)*u };
-}
+let t=0, last=null;
 
 function resize(){
-  const w = Math.min(innerWidth-24,720);
-  const h = w*0.6;
+  const w = Math.min(innerWidth-20,700);
+  const h = w*0.55;
   const dpr = devicePixelRatio||1;
   canvas.style.width=w+"px";
   canvas.style.height=h+"px";
@@ -64,95 +65,102 @@ function resize(){
   canvas.height=h*dpr;
   ctx.setTransform(dpr,0,0,dpr,0,0);
 }
-addEventListener("resize",resize);
-resize();
+addEventListener("resize",resize); resize();
+
+function lerp(a,b,u){
+  return {x:a.x+(b.x-a.x)*u, y:a.y+(b.y-a.y)*u};
+}
 
 function loop(ts){
-  if(!lastTS) lastTS=ts;
-  const dt=(ts-lastTS)/1000;
-  lastTS=ts;
-  t+=dt;
+  if(!last) last=ts;
+  t += (ts-last)/1000;
+  last=ts;
   draw();
   requestAnimationFrame(loop);
 }
 
 function draw(){
-  const rpm=+rpmEl.value||0;
-  const d1=+d1El.value||1;
-  const d2=+d2El.value||1;
-  const cc=+ccEl.value||1;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle="#000";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  const rpm = +rpmEl.value||0;
+  const d1 = (+d1El.value||1)*IN;
+  const d2 = (+d2El.value||1)*IN;
+  const cc = (+ccEl.value||1)*IN;
+
+  const r1=d1/2, r2=d2/2;
+  if(cc<=Math.abs(r2-r1)) return;
 
   const W=parseFloat(canvas.style.width);
   const H=parseFloat(canvas.style.height);
+  const m=40;
+  const s=Math.min((W-2*m)/(cc+r1+r2),(H-2*m)/(2*Math.max(r1,r2)));
 
-  ctx.clearRect(0,0,W,H);
-  ctx.fillStyle="#000";
-  ctx.fillRect(0,0,W,H);
+  const R1=r1*s, R2=r2*s, C=cc*s;
+  const x1=m+R1, x2=x1+C, y=H/2;
 
-  const r1mm=d1/2, r2mm=d2/2;
-  const Cmm=Math.max(cc,Math.abs(r2mm-r1mm)+1);
+  const phi=Math.acos((r2-r1)/cc);
 
-  const scale=Math.min(
-    (W-80)/(Cmm+r1mm+r2mm),
-    (H-80)/(2*Math.max(r1mm,r2mm))
-  );
+  const aL1= phi, aL2=-phi;
+  const aR1=Math.PI-phi, aR2=Math.PI+phi;
 
-  const r1=r1mm*scale, r2=r2mm*scale, C=Cmm*scale;
-  const x1=40+r1, x2=x1+C, y=H/2;
+  const Ltop={x:x1+R1*Math.cos(aL1),y:y+R1*Math.sin(aL1)};
+  const Lbot={x:x1+R1*Math.cos(aL2),y:y+R1*Math.sin(aL2)};
+  const Rtop={x:x2+R2*Math.cos(aR1),y:y+R2*Math.sin(aR1)};
+  const Rbot={x:x2+R2*Math.cos(aR2),y:y+R2*Math.sin(aR2)};
 
-  const phi=Math.acos(Math.min(1,Math.max(-1,(r2-r1)/C)));
-
-  const aL_top= phi, aL_bot=-phi;
-  const aR_top=Math.PI-phi, aR_bot=Math.PI+phi;
-
-  const Ltop={x:x1+r1*Math.cos(aL_top),y:y+r1*Math.sin(aL_top)};
-  const Lbot={x:x1+r1*Math.cos(aL_bot),y:y+r1*Math.sin(aL_bot)};
-  const Rtop={x:x2+r2*Math.cos(aR_top),y:y+r2*Math.sin(aR_top)};
-  const Rbot={x:x2+r2*Math.cos(aR_bot),y:y+r2*Math.sin(aR_bot)};
-
-  // === DESSIN COURROIE SEULE ===
+  // === DESSIN COURROIE (UNE BOUCLE) ===
   ctx.strokeStyle="#9a9a9a";
   ctx.lineWidth=4;
   ctx.beginPath();
   ctx.moveTo(Ltop.x,Ltop.y);
   ctx.lineTo(Rtop.x,Rtop.y);
-  ctx.arc(x2,y,r2,aR_top,aR_bot,false);
+  ctx.arc(x2,y,R2,aR1,aR2,false); // grande
   ctx.lineTo(Lbot.x,Lbot.y);
-  ctx.arc(x1,y,r1,aL_bot,aL_top,false);
+  ctx.arc(x1,y,R1,aL2,aL1,false); // petite
   ctx.stroke();
 
-  // === POINT SUR COURROIE ===
-  const w1=TAU*(rpm/60);
-  const v=Math.abs(w1)*r1;
-
+  // === LONGUEUR COURROIE ===
   const lenTop=Math.hypot(Rtop.x-Ltop.x,Rtop.y-Ltop.y);
   const lenBot=Math.hypot(Lbot.x-Rbot.x,Lbot.y-Rbot.y);
-  const lenArcR=r2*(TAU-2*phi);
-  const lenArcL=r1*(2*phi);
-  const beltLen=lenTop+lenArcR+lenBot+lenArcL;
+  const lenArcR=R2*(TAU-2*phi);
+  const lenArcL=R1*(2*phi);
+  const L=lenTop+lenArcR+lenBot+lenArcL;
 
-  let s=(v*t)%beltLen,P;
+  // === POINT BLANC (UN SEUL PARAMÈTRE s) ===
+  const v = rpm*TAU/60 * R1;
+  let sPos = (v*t)%L;
+  let P;
 
-  if(s<=lenTop) P=lerp(Ltop,Rtop,s/lenTop);
-  else if((s-=lenTop)<=lenArcR){
-    const a=aR_top-(s/lenArcR)*(TAU-2*phi);
-    P={x:x2+r2*Math.cos(a),y:y+r2*Math.sin(a)};
-  }
-  else if((s-=lenArcR)<=lenBot) P=lerp(Rbot,Lbot,s/lenBot);
-  else{
-    s-=lenBot;
-    const a=aL_bot+(s/lenArcL)*(2*phi);
-    P={x:x1+r1*Math.cos(a),y:y+r1*Math.sin(a)};
+  if(sPos<=lenTop){
+    P=lerp(Ltop,Rtop,sPos/lenTop);
+  }else if((sPos-=lenTop)<=lenArcR){
+    const u=sPos/lenArcR;
+    const a=aR1-u*(TAU-2*phi);
+    P={x:x2+R2*Math.cos(a),y:y+R2*Math.sin(a)};
+  }else if((sPos-=lenArcR)<=lenBot){
+    P=lerp(Rbot,Lbot,sPos/lenBot);
+  }else{
+    sPos-=lenBot;
+    const u=sPos/lenArcL;
+    const a=aL2+u*(2*phi);
+    P={x:x1+R1*Math.cos(a),y:y+R1*Math.sin(a)};
   }
 
   ctx.fillStyle="#fff";
   ctx.beginPath();
   ctx.arc(P.x,P.y,5,0,TAU);
   ctx.fill();
+
+  info.innerHTML=`
+    <div><span class="dot blue"></span>Menante : ${rpm.toFixed(0)} RPM</div>
+    <div><span class="dot orange"></span>Menée : ${(rpm*d1/d2).toFixed(0)} RPM</div>
+    <div><span class="dot white"></span>Courroie : ${(v/L*60).toFixed(2)} RPM</div>
+  `;
 }
 
 requestAnimationFrame(loop);
-})();
 </script>
 </body>
 </html>
