@@ -96,6 +96,23 @@ function draw(){
  ctx.clearRect(0,0,W,H);
  const inp=read(); if(!inp) return;
  const{rpm,d1mm,d2mm,ccmm}=inp;
+/* =========================
+   SORTIES CINÉMATIQUES
+========================= */
+
+// MOTEUR
+const rpmMotor = rpm;
+const hzMotor  = rpmMotor / 60;
+
+// POULIE MENANTE
+const rpmMenante = rpmMotor;
+const hzMenante  = hzMotor;
+
+// POULIE MENÉE
+const rpmMenee = rpmMotor * (d1mm / d2mm);
+const hzMenee  = rpmMenee / 60;
+
+
  const r1mm=d1mm/2,r2mm=d2mm/2;
  const Cmm=Math.max(ccmm,Math.abs(r2mm-r1mm)+1e-6);
  const s=Math.min((W-80)/(Cmm+r1mm+r2mm),(H-80)/(2*Math.max(r1mm,r2mm)));
