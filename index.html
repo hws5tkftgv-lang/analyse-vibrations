@@ -152,76 +152,137 @@ const slowEl = document.getElementById("slow");
 const slowVal = document.getElementById("slowVal");
 const infoEl = document.getElementById("info");
 
-const TAU = Math.PI*2;
+const TAU = Math.PI * 2;
 const IN_TO_MM = 25.4;
 
-let lastTS=null;
-let t=0;
+let lastTS = null;
+let t = 0;
 
+// === CANVAS RESPONSIVE ===
 function resize(){
-  const w=Math.min(window.innerWidth-24,720);
-  const h=w*0.6;
-  const dpr=Math.min(3,window.devicePixelRatio||1);
-  canvas.style.width=w+"px";
-  canvas.style.height=h+"px";
-  canvas.width=w*dpr;
-  canvas.height=h*dpr;
+  const w = Math.min(window.innerWidth - 24, 720);
+  const h = w * 0.6;
+  const dpr = Math.min(3, window.devicePixelRatio || 1);
+  canvas.style.width = w + "px";
+  canvas.style.height = h + "px";
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
   ctx.setTransform(dpr,0,0,dpr,0,0);
 }
+window.addEventListener("resize", resize);
+resize();
 
+// === BOUCLE ===
 function loop(ts){
-  if(!lastTS) lastTS=ts;
-  const dt=(ts-lastTS)/1000;
-  lastTS=ts;
-  t+=dt/parseFloat(slowEl.value);
+  if(!lastTS) lastTS = ts;
+  const dt = (ts - lastTS) / 1000;
+  lastTS = ts;
+  t += dt / parseFloat(slowEl.value);
   draw();
   requestAnimationFrame(loop);
 }
 
+// === DESSIN ===
 function draw(){
-  const rpm=+rpmEl.value||0;
-  let d1=+d1El.value||1;
-  let d2=+d2El.value||1;
-  if(unitEl.value==="imperial"){
-    d1*=IN_TO_MM;
-    d2*=IN_TO_MM;
+  const rpm = +rpmEl.value || 0;
+  let d1 = +d1El.value || 1;
+  let d2 = +d2El.value || 1;
+  let cc = +ccEl.value || 1;
+
+  if(unitEl.value === "imperial"){
+    d1 *= IN_TO_MM;
+    d2 *= IN_TO_MM;
+    cc *= IN_TO_MM;
   }
 
-  const f1=rpm/60;
-  const rpm2=rpm*(d1/d2);
-  const f2=rpm2/60;
+  const f1 = rpm / 60;
+  const rpm2 = rpm * (d1 / d2);
+  const f2 = rpm2 / 60;
 
-  const w1=TAU*f1;
-  const w2=TAU*f2;
+  const w1 = TAU * f1;
+  const w2 = TAU * f2;
 
-  const v_mm_min=rpm*Math.PI*d1;
-  const v_mm_s=v_mm_min/60;
-  const f_lin=v_mm_s/(Math.PI*d1);
-  const cpm_lin=f_lin*60;
+  const ang1 = -w1 * t;
+  const ang2 = -w2 * t;
 
+  // fond
   ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
 
-  infoEl.innerHTML=`
-  <div><span class="dot blue"></span><b>Poulie menante</b> :
-  ${rpm.toFixed(0)} RPM | ${f1.toFixed(2)} Hz | ${(f1*60).toFixed(0)} CPM</div>
+  // géométrie simple
+  const W = parseFloat(canvas.style.width);
+  const H = parseFloat(canvas.style.height);
 
-  <div><span class="dot orange"></span><b>Poulie menée</b> :
-  ${rpm2.toFixed(0)} RPM | ${f2.toFixed(2)} Hz | ${(f2*60).toFixed(0)} CPM</div>
+  const r1 = Math.max(25, d1 * 0.25);
+  const r2 = Math.max(25, d2 * 0.25);
 
-  <div class="muted" style="margin-top:8px;">
-  <span class="dot white"></span><b>Courroie (linéaire)</b><br>
-  ${v_mm_min.toFixed(0)} ${unitEl.value==="imperial"?"po":"mm"}/min<br>
-  ${f_lin.toFixed(2)} Hz | ${cpm_lin.toFixed(0)} CPM
-  </div>
-  `;
+  const x1 = W * 0.3;
+  const x2 = W * 0.7;
+  const y  = H * 0.5;
+
+  // courroie simple
+  ctx.strokeStyle = "#888";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(x1, y - r1);
+  ctx.lineTo(x2, y - r2);
+  ctx.lineTo(x2, y + r2);
+  ctx.lineTo(x1, y + r1);
+  ctx.closePath();
+  ctx.stroke();
+
+  // poulie menante
+  ctx.strokeStyle = "#00a2ff";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(x1, y, r1, 0, TAU);
+  ctx.stroke();
+
+  ctx.fillStyle = "#00a2ff";
+  ctx.beginPath();
+  ctx.arc(
+    x1 + r1 * Math.cos(ang1),
+    y + r1 * Math.sin(ang1),
+    6, 0, TAU
+  );
+  ctx.fill();
+
+  // poulie menée
+  ctx.strokeStyle = "#ff9800";
+  ctx.beginPath();
+  ctx.arc(x2, y, r2, 0, TAU);
+  ctx.stroke();
+
+  ctx.fillStyle = "#ff9800";
+  ctx.beginPath();
+  ctx.arc(
+    x2 + r2 * Math.cos(ang2),
+    y + r2 * Math.sin(ang2),
+    6, 0, TAU
+  );
+  ctx.fill();
+
+  // infos
+  const v_mm_min = rpm * Math.PI * d1;
+  const v_mm_s = v_mm_min / 60;
+  const f_lin = v_mm_s / (Math.PI * d1);
+
+  infoEl.innerHTML = `
+  <div>🔵 <b>Poulie menante</b> : ${rpm.toFixed(0)} RPM | ${f1.toFixed(2)} Hz | ${(f1*60).toFixed(0)} CPM</div>
+  <div>🟠 <b>Poulie menée</b> : ${rpm2.toFixed(0)} RPM | ${f2.toFixed(2)} Hz | ${(f2*60).toFixed(0)} CPM</div>
+  <div style="margin-top:6px;">
+    ⚪ <b>Courroie (linéaire)</b><br>
+    ${v_mm_min.toFixed(0)} ${unitEl.value==="imperial"?"po":"mm"}/min<br>
+    ${f_lin.toFixed(2)} Hz | ${(f_lin*60).toFixed(0)} CPM
+  </div>`;
 }
 
+// slider
 slowEl.addEventListener("input",()=>{
-  slowVal.textContent="×"+parseFloat(slowEl.value).toFixed(2);
+  slowVal.textContent = "×" + parseFloat(slowEl.value).toFixed(2);
 });
 
-window.addEventListener("resize",resize);
-resize();
 requestAnimationFrame(loop);
 })();
 </script>
