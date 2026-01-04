@@ -262,7 +262,7 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
     } else {
       sPos -= lenBot;
       const u = sPos/lenArcL;
-      const a = aL_bot + u*(2*phi); // -phi -> +phi (arc court)
+      const a = aL_top - u*(2*phi);
       P = { x:x1 + r1*Math.cos(a), y:y + r1*Math.sin(a) };
     }
 
