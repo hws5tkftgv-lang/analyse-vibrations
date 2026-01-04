@@ -22,6 +22,8 @@ html,body{
   background:var(--bg);
   color:var(--text);
   font-family:Arial,system-ui,sans-serif;
+  height: 100%;
+  overscroll-behavior: none;
 }
 
 header{
@@ -157,23 +159,39 @@ function lerp(p,q,u){
   return { x:p.x+(q.x-p.x)*u, y:p.y+(q.y-p.y)*u };
 }
 
-function resize(){
-  let vw = window.innerWidth;
-  let vh = window.innerHeight;
+let stableVH = window.innerHeight;
 
-  // sécurité iOS Safari
-  if(vw < 200 || vh < 200) return;
+function updateStableVH(){
+  const vh = window.innerHeight;
+  if (Math.abs(vh - stableVH) < 120) return; // ignore petits changements Safari
+  stableVH = vh;
+}
+
+window.addEventListener("orientationchange", () => {
+  setTimeout(() => {
+    updateStableVH();
+    resize();
+  }, 400);
+});
+
+
+function resize(){
+  const vw = window.innerWidth;
+  const vh = stableVH || window.innerHeight;
+
+  if(vw < 200 || vh < 300) return;
 
   const w = Math.min(vw - 24, 720);
   const h = w * 0.6;
+
   const dpr = Math.min(3, window.devicePixelRatio || 1);
 
   canvas.style.width = w + "px";
   canvas.style.height = h + "px";
-  canvas.width = w * dpr;
-  canvas.height = h * dpr;
+  canvas.width = Math.round(w * dpr);
+  canvas.height = Math.round(h * dpr);
 
-  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 window.addEventListener("resize",resize);
 resize();
