@@ -12,10 +12,7 @@ body{
   color:#eaf1ff;
   font-family:Arial,sans-serif;
 }
-header{
-  padding:14px;
-  background:#0f1a44;
-}
+header{ padding:14px; background:#0f1a44; }
 h1{ margin:0; font-size:18px; }
 
 .panel{
@@ -83,37 +80,38 @@ window.onload = () => {
 
 const canvas = document.getElementById("scene");
 const ctx = canvas.getContext("2d");
-
 canvas.width  = canvas.offsetWidth;
 canvas.height = canvas.offsetHeight;
 
-let a1 = 0, a2 = 0;
+let a1=0, a2=0;
 
-function drawBelt(x1,y,r1,x2,y2,r2){
+function drawBelt(x1,y,r1,x2,r2){
   const dx = x2-x1;
-  const dy = y2-y;
-  const D = Math.hypot(dx,dy);
-  if(D <= Math.abs(r2-r1)) return;
+  const D  = Math.abs(dx);
+  if (D <= Math.abs(r2-r1)) return;
 
-  const θ = Math.atan2(dy,dx);
-  const α = Math.acos((r2-r1)/D);
+  const alpha = Math.acos((r2-r1)/D);
 
-  const t1 = θ+α;
-  const t2 = θ-α;
-
-  const P1 = {x:x1+r1*Math.cos(t1), y:y+r1*Math.sin(t1)};
-  const P2 = {x:x1+r1*Math.cos(t2), y:y+r1*Math.sin(t2)};
-  const G1 = {x:x2+r2*Math.cos(t1), y:y+r2*Math.sin(t1)};
-  const G2 = {x:x2+r2*Math.cos(t2), y:y+r2*Math.sin(t2)};
+  const t1 =  Math.PI/2 - alpha;
+  const t2 =  Math.PI/2 + alpha;
 
   ctx.strokeStyle="#777";
   ctx.lineWidth=4;
   ctx.beginPath();
-  ctx.moveTo(P1.x,P1.y);
-  ctx.lineTo(G1.x,G1.y);
-  ctx.arc(x2,y,r2,t1,t2,false);
-  ctx.lineTo(P2.x,P2.y);
-  ctx.arc(x1,y,r1,t2,t1,false);
+
+  // haut
+  ctx.moveTo(x1+r1*Math.cos(t1), y-r1*Math.sin(t1));
+  ctx.lineTo(x2+r2*Math.cos(t1), y-r2*Math.sin(t1));
+
+  // grande poulie (arc court)
+  ctx.arc(x2,y,r2,Math.PI/2-alpha,Math.PI/2+alpha,false);
+
+  // bas
+  ctx.lineTo(x1+r1*Math.cos(t2), y-r1*Math.sin(t2));
+
+  // petite poulie (arc long)
+  ctx.arc(x1,y,r1,Math.PI/2+alpha,Math.PI/2-alpha+Math.PI*2,false);
+
   ctx.stroke();
 }
 
@@ -128,15 +126,20 @@ function draw(){
   const hz1 = rpm/60;
   const hz2 = rpm2/60;
 
-  const y = canvas.height/2;
-  const r1 = 30;
-  const r2 = r1*(d2/d1);
+  /* 🔑 MISE À L’ÉCHELLE VISUELLE (LA CLÉ DU BUG) */
+  const maxD = Math.max(d1,d2);
+  const scale = (canvas.height*0.35)/maxD;
+
+  const r1 = d1*scale/2;
+  const r2 = d2*scale/2;
+
+  const y  = canvas.height/2;
   const x1 = 80;
   const x2 = canvas.width - r2 - 30;
 
-  drawBelt(x1,y,r1,x2,y,r2);
+  drawBelt(x1,y,r1,x2,r2);
 
-  // poulie menante
+  // menante
   ctx.save();
   ctx.translate(x1,y);
   ctx.rotate(a1);
@@ -147,7 +150,7 @@ function draw(){
   ctx.beginPath(); ctx.arc(r1-4,0,4,0,Math.PI*2); ctx.fill();
   ctx.restore();
 
-  // poulie menée
+  // menée
   ctx.save();
   ctx.translate(x2,y);
   ctx.rotate(a2);
