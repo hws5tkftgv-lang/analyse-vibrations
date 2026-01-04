@@ -2,89 +2,152 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Courroie seule — forme elliptique</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Courroie — trajectoire correcte</title>
 
 <style>
 html,body{
   margin:0;
   background:#0b1436;
+  color:#eaf1ff;
+  font-family:Arial,system-ui,sans-serif;
+}
+header{
+  padding:12px;
+  font-weight:700;
+}
+.stage{
+  padding:12px;
 }
 canvas{
-  display:block;
-  margin:30px auto;
+  width:100%;
   background:#000;
-  border-radius:14px;
+  border-radius:12px;
+  display:block;
 }
 </style>
 </head>
 
 <body>
-<canvas id="c" width="800" height="300"></canvas>
+<header>Courroie seule — trajectoire correcte</header>
+
+<div class="stage">
+  <canvas id="scene"></canvas>
+</div>
 
 <script>
-const c = document.getElementById("c");
-const ctx = c.getContext("2d");
+(() => {
+const canvas = document.getElementById("scene");
+const ctx = canvas.getContext("2d");
 
-const W = c.width;
-const H = c.height;
+const TAU = Math.PI * 2;
 
-// ===============================
-// PARAMÈTRES VISUELS
-// ===============================
-const beltThickness = 8;
-const beltColor = "#b0b0b0";
+let t = 0;
+let lastTS = null;
 
-// longueur droite entre demi-cercles
-const straightLength = 520;
+// ===== Resize propre (petit dessin) =====
+function resize(){
+  const w = Math.min(window.innerWidth - 24, 500);
+  const h = w * 0.4;              // 👈 PLUS PETIT
+  const dpr = Math.min(2, devicePixelRatio || 1);
 
-// rayon des extrémités (demi-cercles)
-const r = 40;
+  canvas.style.width = w+"px";
+  canvas.style.height = h+"px";
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
 
-const cx = W/2;
-const cy = H/2;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener("resize", resize);
+resize();
 
-// ===============================
-// DESSIN COURROIE (ELLIPSE)
-// ===============================
-ctx.strokeStyle = beltColor;
-ctx.lineWidth = beltThickness;
-ctx.lineCap = "round";
-ctx.lineJoin = "round";
+// ===== Géométrie de la courroie =====
+function draw(){
+  const W = canvas.width / (devicePixelRatio||1);
+  const H = canvas.height / (devicePixelRatio||1);
 
-ctx.beginPath();
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle="#000";
+  ctx.fillRect(0,0,W,H);
 
-// départ en haut à gauche
-ctx.moveTo(cx - straightLength/2, cy - r);
+  // Dimensions de la capsule
+  const margin = 40;
+  const R = 30;                             // rayon des demi-cercles
+  const xL = margin + R;
+  const xR = W - margin - R;
+  const y  = H/2;
 
-// segment haut
-ctx.lineTo(cx + straightLength/2, cy - r);
+  const topL = {x:xL, y:y-R};
+  const topR = {x:xR, y:y-R};
+  const botR = {x:xR, y:y+R};
+  const botL = {x:xL, y:y+R};
 
-// demi-cercle droit
-ctx.arc(
-  cx + straightLength/2,
-  cy,
-  r,
-  -Math.PI/2,
-  Math.PI/2,
-  false
-);
+  // ===== Dessin de la courroie =====
+  ctx.strokeStyle="#9a9a9a";
+  ctx.lineWidth=4;
+  ctx.lineCap="round";
+  ctx.lineJoin="round";
 
-// segment bas
-ctx.lineTo(cx - straightLength/2, cy + r);
+  ctx.beginPath();
+  ctx.moveTo(topL.x, topL.y);          // ligne haut
+  ctx.lineTo(topR.x, topR.y);
 
-// demi-cercle gauche
-ctx.arc(
-  cx - straightLength/2,
-  cy,
-  r,
-  Math.PI/2,
-  -Math.PI/2,
-  false
-);
+  ctx.arc(xR, y, R, -Math.PI/2, Math.PI/2, false); // demi-cercle droit
 
-ctx.closePath();
-ctx.stroke();
+  ctx.lineTo(botL.x, botL.y);           // ligne bas
+
+  ctx.arc(xL, y, R, Math.PI/2, -Math.PI/2, false); // demi-cercle gauche
+  ctx.stroke();
+
+  // ===== Longueurs =====
+  const lenTop = topR.x - topL.x;
+  const lenBot = lenTop;
+  const lenArc = Math.PI * R;
+
+  const totalLen = lenTop + lenArc + lenBot + lenArc;
+
+  // ===== Animation =====
+  const speed = 80; // px/s (constant)
+  const s = (t * speed) % totalLen;
+  let P;
+
+  if(s <= lenTop){
+    const u = s / lenTop;
+    P = { x: topL.x + u*(topR.x-topL.x), y: topL.y };
+  }
+  else if(s <= lenTop + lenArc){
+    const u = (s-lenTop)/lenArc;
+    const a = -Math.PI/2 + u*Math.PI;
+    P = { x: xR + R*Math.cos(a), y: y + R*Math.sin(a) };
+  }
+  else if(s <= lenTop + lenArc + lenBot){
+    const u = (s-lenTop-lenArc)/lenBot;
+    P = { x: botR.x - u*(botR.x-botL.x), y: botR.y };
+  }
+  else{
+    const u = (s-lenTop-lenArc-lenBot)/lenArc;
+    const a = Math.PI/2 + u*Math.PI;
+    P = { x: xL + R*Math.cos(a), y: y + R*Math.sin(a) };
+  }
+
+  // ===== Point blanc =====
+  ctx.fillStyle="#fff";
+  ctx.beginPath();
+  ctx.arc(P.x,P.y,6,0,TAU);
+  ctx.fill();
+}
+
+// ===== Loop =====
+function loop(ts){
+  if(!lastTS) lastTS = ts;
+  const dt = (ts-lastTS)/1000;
+  lastTS = ts;
+  t += dt;
+  draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+})();
 </script>
 </body>
 </html>
