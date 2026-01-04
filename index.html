@@ -2,266 +2,174 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Poulies & courroie — simulation (pédagogie)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Poulies & courroie — simulation (physique correcte)</title>
 
 <style>
 :root{
   --bg:#0b1436;
   --text:#eaf1ff;
-  --muted:rgba(234,241,255,.65);
   --blue:#00a2ff;
   --orange:#ff9800;
   --belt:#9a9a9a;
-  --btn:#1c2b6a;
-  --bad:#ff4d4d;
 }
-*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html,body{ margin:0; background:var(--bg); color:var(--text); font-family:Arial,sans-serif; }
-
-header{ padding:10px 14px; font-size:16px; font-weight:700; }
-
-.controls{
-  padding:10px 14px;
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:8px;
-}
-.controls label{ font-size:12px; color:var(--muted); }
-.controls input,.controls select{
-  width:100%;
-  padding:7px 9px;
-  font-size:14px;
-  border-radius:10px;
-  border:none;
-}
-
-.controls .full{ grid-column:1/-1; }
-
-.buttons{
-  display:flex;
-  gap:10px;
-  padding:0 14px 10px;
-}
-button{
-  flex:1;
-  padding:10px;
-  font-size:15px;
-  border:none;
-  border-radius:12px;
-  background:var(--btn);
-  color:white;
-}
-
-.stage{ padding:10px 14px; }
-canvas{
-  width:100%;
-  background:#000;
-  border-radius:12px;
-  display:block;
-}
-
-.results{
-  padding:10px 14px 18px;
-  font-size:14px;
-  line-height:1.45;
-}
-
-.dot{
-  display:inline-block;
-  width:10px;height:10px;
-  border-radius:50%;
-  margin-right:6px;
-}
-.blue{background:var(--blue);}
-.orange{background:var(--orange);}
-.white{background:#fff;}
-.bad{color:var(--bad);font-weight:700;}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:Arial;}
+header{padding:10px 14px;font-weight:700}
+.controls{padding:10px 14px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.controls label{font-size:12px}
+.controls input,.controls select{padding:8px;border-radius:10px;border:none}
+.controls .full{grid-column:1/-1}
+.buttons{display:flex;gap:10px;padding:10px 14px}
+button{flex:1;padding:10px;border:none;border-radius:12px;background:#1c2b6a;color:white}
+.stage{padding:10px 14px}
+canvas{width:100%;background:#000;border-radius:12px}
+.results{padding:10px 14px;font-size:14px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+.blue{background:var(--blue)} .orange{background:var(--orange)} .white{background:#fff}
 </style>
 </head>
 
 <body>
-<header>🔄 Poulies & courroie — simulation (pédagogie)</header>
+<header>🔄 Poulies & courroie — simulation (physique correcte)</header>
 
 <div class="controls">
-  <label>RPM moteur <input id="rpm" type="number"></label>
-  <label>Unités
-    <select id="unit">
-      <option value="imperial">po</option>
-      <option value="metric">mm</option>
-    </select>
-  </label>
-  <label>Ø menante <input id="d1" type="number"></label>
-  <label>Ø menée <input id="d2" type="number"></label>
-  <label class="full">C-C <input id="cc" type="number"></label>
-  <div class="full">
-    <label>Ralenti (plus grand = plus lent)</label>
-    <input id="slow" type="range" min="1" max="20" value="8">
-  </div>
+<label>RPM moteur <input id="rpm" type="number" value="1500"></label>
+<label>Unités
+<select id="unit"><option value="imperial">po</option><option value="metric">mm</option></select>
+</label>
+<label>Ø menante <input id="d1" type="number" value="4"></label>
+<label>Ø menée <input id="d2" type="number" value="9"></label>
+<label class="full">C-C <input id="cc" type="number" value="21"></label>
+<label class="full">Ralenti <input id="slow" type="range" min="1" max="20" value="8"></label>
 </div>
 
 <div class="buttons">
-  <button id="play">Play</button>
-  <button id="pause">Pause</button>
-  <button id="reset">Reset</button>
+<button id="play">Play</button>
+<button id="pause">Pause</button>
+<button id="reset">Reset</button>
 </div>
 
-<div class="stage">
-  <canvas id="scene"></canvas>
-</div>
-
+<div class="stage"><canvas id="c"></canvas></div>
 <div class="results" id="info"></div>
 
 <script>
-(() => {
-const canvas = document.getElementById("scene");
-const ctx = canvas.getContext("2d");
+(()=>{
 
-const rpmEl  = document.getElementById("rpm");
-const d1El   = document.getElementById("d1");
-const d2El   = document.getElementById("d2");
-const ccEl   = document.getElementById("cc");
-const unitEl = document.getElementById("unit");
-const slowEl = document.getElementById("slow");
-const infoEl = document.getElementById("info");
-
-const playBtn  = document.getElementById("play");
-const pauseBtn = document.getElementById("pause");
-const resetBtn = document.getElementById("reset");
-
-const TAU = Math.PI*2;
-const IN_TO_MM = 25.4;
-const BASE_TIME_SCALE = 0.06;
-
-let t = 0, running = false, lastTS = null, lockedWidth = null;
-
-const lerp = (p,q,u)=>({x:p.x+(q.x-p.x)*u,y:p.y+(q.y-p.y)*u});
-const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+const c=document.getElementById("c"),ctx=c.getContext("2d");
+const rpmEl=rpm,d1El=d1,d2El=d2,ccEl=cc,unitEl=unit,slowEl=slow,info=info;
+const TAU=Math.PI*2,IN=25.4;
+let t=0,run=false,last=0;
 
 function resize(){
-  if(!lockedWidth) lockedWidth = Math.min(innerWidth-24,720);
-  const w=lockedWidth,h=w*0.6,dpr=Math.min(3,devicePixelRatio||1);
-  canvas.style.width=w+"px"; canvas.style.height=h+"px";
-  canvas.width=w*dpr; canvas.height=h*dpr;
-  ctx.setTransform(dpr,0,0,dpr,0,0);
+ const w=Math.min(innerWidth-24,720),h=w*0.6,dpr=devicePixelRatio||1;
+ c.style.width=w+"px";c.style.height=h+"px";
+ c.width=w*dpr;c.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
 }
-addEventListener("resize",resize);
-resize();
+addEventListener("resize",resize);resize();
 
 function read(){
-  let rpm=+rpmEl.value,d1=+d1El.value,d2=+d2El.value,cc=+ccEl.value;
-  if(!rpm||!d1||!d2||!cc) return null;
-  if(unitEl.value==="imperial"){ d1*=IN_TO_MM; d2*=IN_TO_MM; cc*=IN_TO_MM; }
-  return {rpm,d1mm:d1,d2mm:d2,ccmm:cc};
+ let rpm=+rpmEl.value,d1=+d1El.value,d2=+d2El.value,cc=+ccEl.value;
+ if(unitEl.value==="imperial"){d1*=IN;d2*=IN;cc*=IN}
+ return{rpm,d1,d2,cc};
 }
 
 function loop(ts){
-  if(!lastTS) lastTS=ts;
-  const dt=(ts-lastTS)/1000;
-  lastTS=ts;
-  if(running) t+=dt*BASE_TIME_SCALE/(+slowEl.value||1);
-  draw();
-  requestAnimationFrame(loop);
+ if(!last) last=ts;
+ const dt=(ts-last)/1000; last=ts;
+ if(run) t+=dt/(+slowEl.value||1);
+ draw();
+ requestAnimationFrame(loop);
 }
 
 function draw(){
-  const W=canvas.width/(devicePixelRatio||1);
-  const H=canvas.height/(devicePixelRatio||1);
-  ctx.clearRect(0,0,W,H);
-  ctx.fillStyle="#000";
-  ctx.fillRect(0,0,W,H);
+ ctx.clearRect(0,0,c.width,c.height);
+ ctx.fillStyle="#000";ctx.fillRect(0,0,c.width,c.height);
 
-  const inp=read();
-  if(!inp){ infoEl.innerHTML=""; return; }
-  const {rpm,d1mm,d2mm,ccmm}=inp;
+ const {rpm,d1,d2,cc}=read();
+ const r1=d1/2,r2=d2/2;
 
-  const r1mm=d1mm/2, r2mm=d2mm/2;
-  if(ccmm<=Math.abs(r2mm-r1mm)){
-    infoEl.innerHTML="<span class='bad'>⛔ Géométrie impossible</span>";
-    return;
+ const C=cc;
+ if(C<=Math.abs(r2-r1)) return;
+
+ const phi=Math.acos((r2-r1)/C);
+ const span=Math.sqrt(C*C-(r2-r1)*(r2-r1));
+
+ const scale=Math.min((c.width-80)/(C+r1+r2),(c.height-80)/(2*Math.max(r1,r2)));
+ const R1=r1*scale,R2=r2*scale,Cs=C*scale;
+ const x1=40+R1,x2=x1+Cs,y=c.height/2;
+
+ const aLt= phi,aLb=-phi,aRt=Math.PI-phi,aRb=Math.PI+phi;
+
+ const Ltop={x:x1+R1*Math.cos(aLt),y:y+R1*Math.sin(aLt)};
+ const Lbot={x:x1+R1*Math.cos(aLb),y:y+R1*Math.sin(aLb)};
+ const Rtop={x:x2+R2*Math.cos(aRt),y:y+R2*Math.sin(aRt)};
+ const Rbot={x:x2+R2*Math.cos(aRb),y:y+R2*Math.sin(aRb)};
+
+ ctx.strokeStyle="#9a9a9a";ctx.lineWidth=4;
+ ctx.beginPath();
+ ctx.moveTo(Ltop.x,Ltop.y);
+ ctx.lineTo(Rtop.x,Rtop.y);
+ ctx.arc(x2,y,R2,aRt,aRb,true);
+ ctx.lineTo(Lbot.x,Lbot.y);
+ ctx.stroke();
+
+ const beltPath=[
+  {type:"line",a:Ltop,b:Rtop},
+  {type:"arc",c:{x:x2,y:y},r:R2,a0:aRt,a1:aRb},
+  {type:"line",a:Rbot,b:Lbot}
+ ];
+
+ let beltLen=0;
+ beltPath.forEach(s=>{
+  if(s.type==="line") s.len=Math.hypot(s.b.x-s.a.x,s.b.y-s.a.y);
+  else s.len=s.r*Math.abs(s.a1-s.a0);
+  beltLen+=s.len;
+ });
+
+ const v= rpm*Math.PI*d1/60*scale;
+ let s=(v*t)%beltLen;
+ let P;
+
+ for(const seg of beltPath){
+  if(s<=seg.len){
+   if(seg.type==="line"){
+    const u=s/seg.len;
+    P={x:seg.a.x+(seg.b.x-seg.a.x)*u,y:seg.a.y+(seg.b.y-seg.a.y)*u};
+   }else{
+    const u=s/seg.len;
+    const a=seg.a0+u*(seg.a1-seg.a0);
+    P={x:seg.c.x+seg.r*Math.cos(a),y:seg.c.y+seg.r*Math.sin(a)};
+   }
+   break;
   }
+  s-=seg.len;
+ }
 
-  const phi=Math.acos((r2mm-r1mm)/ccmm);
-  const span=Math.sqrt(ccmm*ccmm-(r2mm-r1mm)**2);
+ ctx.fillStyle="#fff";
+ ctx.beginPath();ctx.arc(P.x,P.y,5,0,TAU);ctx.fill();
 
-  const margin=40;
-  const s=Math.min((W-2*margin)/(ccmm+r1mm+r2mm),(H-2*margin)/(2*Math.max(r1mm,r2mm)));
+ const ang1=-TAU*(rpm/60)*t;
+ const ang2=-TAU*(rpm*d1/d2/60)*t;
 
-  const r1=r1mm*s, r2=r2mm*s, C=ccmm*s;
-  const x1=margin+r1, x2=x1+C, y=H/2;
+ function pulley(x,y,r,col,a){
+  ctx.strokeStyle=col;ctx.lineWidth=3;
+  ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.stroke();
+  ctx.fillStyle=col;
+  ctx.beginPath();ctx.arc(x+(r-6)*Math.cos(a),y+(r-6)*Math.sin(a),6,0,TAU);ctx.fill();
+ }
+ pulley(x1,y,R1,"#00a2ff",ang1);
+ pulley(x2,y,R2,"#ff9800",ang2);
 
-  const aL_top=phi, aL_bot=-phi;
-  const aR_top=Math.PI-phi, aR_bot=Math.PI+phi;
-
-  const Ltop={x:x1+r1*Math.cos(aL_top),y:y+r1*Math.sin(aL_top)};
-  const Lbot={x:x1+r1*Math.cos(aL_bot),y:y+r1*Math.sin(aL_bot)};
-  const Rtop={x:x2+r2*Math.cos(aR_top),y:y+r2*Math.sin(aR_top)};
-  const Rbot={x:x2+r2*Math.cos(aR_bot),y:y+r2*Math.sin(aR_bot)};
-
-  ctx.strokeStyle="#9a9a9a"; ctx.lineWidth=4;
-  ctx.beginPath();
-  ctx.moveTo(Ltop.x,Ltop.y);
-  ctx.lineTo(Rtop.x,Rtop.y);
-  ctx.arc(x2,y,r2,aR_top,aR_bot,true);
-  ctx.lineTo(Lbot.x,Lbot.y);
-  ctx.arc(x1,y,r1,aL_top,aL_bot,true);
-  ctx.stroke();
-
-  const w1=TAU*(rpm/60);
-  const w2=TAU*((rpm*d1mm/d2mm)/60);
-  const ang1=-w1*t, ang2=-w2*t;
-
-  const drawPulley=(cx,cy,r,col,a)=>{
-    ctx.strokeStyle=col; ctx.lineWidth=3;
-    ctx.beginPath(); ctx.arc(cx,cy,r,0,TAU); ctx.stroke();
-    ctx.fillStyle=col;
-    ctx.beginPath();
-    ctx.arc(cx+(r-6)*Math.cos(a),cy+(r-6)*Math.sin(a),6,0,TAU);
-    ctx.fill();
-  };
-  drawPulley(x1,y,r1,"#00a2ff",ang1);
-  drawPulley(x2,y,r2,"#ff9800",ang2);
-
-  const lenTop=Math.hypot(Rtop.x-Ltop.x,Rtop.y-Ltop.y);
-  const lenBot=Math.hypot(Lbot.x-Rbot.x,Lbot.y-Rbot.y);
-  const lenArcR=r2*(TAU-2*phi);
-  const lenArcL=r1*(2*phi);
-  const beltLen=lenTop+lenArcR+lenBot+lenArcL;
-
-  let sPos=(Math.abs(w1)*r1*t)%beltLen;
-  let P;
-
-  if(sPos<=lenTop) P=lerp(Ltop,Rtop,sPos/lenTop);
-  else if((sPos-=lenTop)<=lenArcR){
-    const a=aR_top+(sPos/lenArcR)*(TAU-2*phi);
-    P={x:x2+r2*Math.cos(a),y:y+r2*Math.sin(a)};
-  }
-  else if((sPos-=lenArcR)<=lenBot) P=lerp(Rbot,Lbot,sPos/lenBot);
-  else{
-    const a=aL_top-(sPos-lenBot)/lenArcL*(2*phi);
-    P={x:x1+r1*Math.cos(a),y:y+r1*Math.sin(a)};
-  }
-
-  ctx.fillStyle="#fff";
-  ctx.beginPath(); ctx.arc(P.x,P.y,5,0,TAU); ctx.fill();
-
-  const beltLength_mm=2*span+r1mm*(2*phi)+r2mm*(TAU-2*phi);
-  const v_mm_s=rpm*Math.PI*d1mm/60;
-  const beltHz=v_mm_s/beltLength_mm;
-
-  infoEl.innerHTML=`
-    <div><span class="dot blue"></span>Moteur : ${rpm.toFixed(0)} RPM | ${(rpm/60).toFixed(2)} Hz</div>
-    <div><span class="dot blue"></span>Poulie menante : ${rpm.toFixed(0)} RPM | ${(rpm/60).toFixed(2)} Hz</div>
-    <div><span class="dot orange"></span>Poulie menée : ${(rpm*d1mm/d2mm).toFixed(0)} RPM | ${(rpm*d1mm/d2mm/60).toFixed(2)} Hz</div>
-    <div><span class="dot white"></span>Courroie : ${(beltHz*60).toFixed(2)} RPM | ${beltHz.toFixed(2)} Hz</div>
-    <div><span class="dot white"></span>Longueur courroie : ${
-      unitEl.value==="imperial"?(beltLength_mm/IN_TO_MM).toFixed(2)+" po":beltLength_mm.toFixed(1)+" mm"
-    }</div>`;
+ info.innerHTML=`
+ <div><span class="dot blue"></span>Moteur : ${rpm.toFixed(0)} RPM</div>
+ <div><span class="dot blue"></span>Menante : ${rpm.toFixed(0)} RPM</div>
+ <div><span class="dot orange"></span>Menée : ${(rpm*d1/d2).toFixed(0)} RPM</div>
+ <div><span class="dot white"></span>Longueur courroie : ${((2*span+r1*(2*phi)+r2*(TAU-2*phi))/(unitEl.value==="imperial"?IN:1)).toFixed(2)} ${unitEl.value==="imperial"?"po":"mm"}</div>`;
 }
 
-playBtn.onclick=()=>running=!!read();
-pauseBtn.onclick=()=>running=false;
-resetBtn.onclick=()=>{t=0;running=false;rpmEl.value=d1El.value=d2El.value=ccEl.value="";};
+play.onclick=()=>run=true;
+pause.onclick=()=>run=false;
+reset.onclick=()=>{t=0;run=false};
 
 requestAnimationFrame(loop);
 })();
