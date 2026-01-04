@@ -348,7 +348,8 @@ canvas{
   ctx.lineTo(Rtop.x, Rtop.y);
   ctx.arc(x2, y, r2, aR_top, aR_bot, false); // grande poulie : arc long
   ctx.lineTo(Lbot.x, Lbot.y);
-  ctx.arc(x1, y, r1, aL_top, aL_bot, true);  // petite poulie : arc court
+  ctx.arc(x1, y, r1, aL_bot, aL_top, false);
+    // petite poulie : arc court
   ctx.stroke();
 
   /* =========================
