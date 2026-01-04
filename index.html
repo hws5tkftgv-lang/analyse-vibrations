@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport"
 content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Poulies & courroie — animation réelle</title>
+
+<title>Poulies & courroie — pédagogie</title>
 
 <style>
 :root{
   --bg:#0b1436;
   --panel:#101a40;
-  --panel2:#0f1a44;
   --text:#eaf1ff;
-  --muted:rgba(234,241,255,.75);
+  --muted:rgba(234,241,255,.65);
   --blue:#00a2ff;
   --orange:#ff9800;
 }
@@ -22,118 +22,115 @@ html,body{
   background:var(--bg);
   color:var(--text);
   font-family:Arial,system-ui,sans-serif;
-  height: 100%;
-  overscroll-behavior: none;
 }
 
 header{
-  padding:14px;
-  background:linear-gradient(180deg,#0f1a44,#0b1436);
-  border-bottom:1px solid rgba(255,255,255,.12);
-}
-h1{ margin:0; font-size:18px; }
-
-.panel{
-  padding:14px;
-  background:var(--panel);
-  display:grid;
-  gap:14px;
-}
-
-.row2{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-}
-@media(max-width:520px){
-  .row2{ grid-template-columns:1fr; }
-}
-
-label{ font-size:13px; color:var(--muted); }
-.field{
-  margin-top:6px;
-  width:100%;
-  padding:12px;
+  padding:10px 14px;
   font-size:16px;
-  border-radius:10px;
+  font-weight:700;
+}
+
+.controls, .results{
+  padding:10px 14px;
+}
+
+.controls{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px;
+}
+
+.controls label{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.controls input, .controls select{
+  width:100%;
+  padding:6px 8px;
+  font-size:14px;
+  border-radius:6px;
   border:none;
 }
 
-.stageWrap{ padding:12px; }
+.buttons{
+  display:flex;
+  gap:10px;
+  padding:10px 14px;
+}
+
+button{
+  flex:1;
+  padding:10px;
+  font-size:15px;
+  border:none;
+  border-radius:8px;
+  background:#1c2b6a;
+  color:white;
+}
+
+.stage{
+  padding:10px 14px;
+}
+
 canvas{
   width:100%;
-  background:#000;
-  border-radius:14px;
+  background:black;
+  border-radius:12px;
 }
 
-.info{
-  padding:14px;
-  background:var(--panel2);
-  border-top:1px solid rgba(255,255,255,.12);
+.results{
   font-size:14px;
-  line-height:1.45;
+  line-height:1.5;
 }
 
-.dot{
-  display:inline-block;
-  width:12px;height:12px;
-  border-radius:50%;
-  margin-right:6px;
-}
-.blue{ background:var(--blue); }
-.orange{ background:var(--orange); }
-.white{ background:#fff; }
-.muted{ color:var(--muted); }
-
-.sliderVal{
-  text-align:right;
-  font-size:13px;
-  color:var(--muted);
-}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;}
+.blue{background:var(--blue);}
+.orange{background:var(--orange);}
+.white{background:#fff;}
 </style>
 </head>
 
 <body>
-<header>
-  <h1>🔄 Poulies & courroie — géométrie réelle</h1>
-</header>
 
-<div class="panel">
-  <label>RPM moteur (menante)
-    <input id="rpm" class="field" type="number" value="120">
+<header>🔄 Poulies & courroie — simulation</header>
+
+<div class="controls">
+  <label>RPM moteur
+    <input id="rpm" type="number" value="0">
   </label>
 
-  <label>Système d’unités
-    <select id="unit" class="field">
-      <option value="metric">Métrique (mm)</option>
-      <option value="imperial">Impérial (po)</option>
+  <label>Unités
+    <select id="unit">
+      <option value="metric">mm</option>
+      <option value="imperial">po</option>
     </select>
   </label>
 
-  <div class="row2">
-    <label>Ø poulie menante
-      <input id="d1" class="field" type="number" value="100">
-    </label>
-    <label>Ø poulie menée
-      <input id="d2" class="field" type="number" value="400">
-    </label>
-  </div>
-
-  <label>Distance centre-à-centre
-    <input id="cc" class="field" type="number" value="600">
+  <label>Ø menante
+    <input id="d1" type="number" value="0">
   </label>
 
-  <label>Ralenti animation
-    <input id="slow" type="range" min="0.25" max="2" step="0.25" value="1">
-    <div class="sliderVal" id="slowVal">×1.00</div>
+  <label>Ø menée
+    <input id="d2" type="number" value="0">
+  </label>
+
+  <label>C-C
+    <input id="cc" type="number" value="0">
   </label>
 </div>
 
-<div class="stageWrap">
+<div class="buttons">
+  <button id="play">▶️ Play</button>
+  <button id="pause">⏸ Pause</button>
+  <button id="reset">🔄 Reset</button>
+</div>
+
+<div class="stage">
   <canvas id="scene"></canvas>
 </div>
 
-<div class="info" id="info"></div>
+<div class="results" id="info"></div>
 
 <script>
 (() => {
@@ -141,210 +138,80 @@ const canvas = document.getElementById("scene");
 const ctx = canvas.getContext("2d");
 
 const rpmEl = document.getElementById("rpm");
-const unitEl = document.getElementById("unit");
 const d1El = document.getElementById("d1");
 const d2El = document.getElementById("d2");
 const ccEl = document.getElementById("cc");
-const slowEl = document.getElementById("slow");
-const slowVal = document.getElementById("slowVal");
+const unitEl = document.getElementById("unit");
 const infoEl = document.getElementById("info");
 
-const TAU = Math.PI * 2;
+const playBtn = document.getElementById("play");
+const pauseBtn = document.getElementById("pause");
+const resetBtn = document.getElementById("reset");
+
+const TAU = Math.PI*2;
 const IN_TO_MM = 25.4;
 
-
+let t = 0;
+let running = false;
+let lastTS = null;
 let lockedWidth = null;
-let lastTS=null;
-let t=0;
-
-
-
-function lerp(p,q,u){
-  return { x:p.x+(q.x-p.x)*u, y:p.y+(q.y-p.y)*u };
-}
-
-let stableVH = window.innerHeight;
-
-function updateStableVH(){
-  const vh = window.innerHeight;
-  if (Math.abs(vh - stableVH) < 120) return; // ignore petits changements Safari
-  stableVH = vh;
-}
-
-window.addEventListener("orientationchange", () => {
-  setTimeout(() => {
-    updateStableVH();
-    resize();
-  }, 400);
-});
-
 
 function resize(){
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-
-  if(vw < 200 || vh < 300) return;
-
-  // 🔒 verrouillage largeur en portrait
-  if(lockedWidth === null){
-    lockedWidth = Math.min(vw - 24, 720);
+  if(lockedWidth===null){
+    lockedWidth = Math.min(window.innerWidth-24,720);
   }
-
   const w = lockedWidth;
-  const h = w * 0.6;
+  const h = w*0.6;
+  const dpr = Math.min(3,window.devicePixelRatio||1);
 
-  const dpr = Math.min(3, window.devicePixelRatio || 1);
-
-  canvas.style.width = w + "px";
-  canvas.style.height = h + "px";
-  canvas.width = Math.round(w * dpr);
-  canvas.height = Math.round(h * dpr);
-
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  canvas.style.width=w+"px";
+  canvas.style.height=h+"px";
+  canvas.width=w*dpr;
+  canvas.height=h*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
 }
 window.addEventListener("resize",resize);
 resize();
-window.addEventListener("orientationchange", () => {
-  setTimeout(resize, 300);
-});
 
-document.addEventListener("visibilitychange", () => {
-  if(!document.hidden){
-    resize();
-  }
-});
+playBtn.onclick = ()=> running=true;
+pauseBtn.onclick = ()=> running=false;
+resetBtn.onclick = ()=>{
+  running=false;
+  t=0;
+  rpmEl.value=d1El.value=d2El.value=ccEl.value=0;
+  draw();
+};
+
 function loop(ts){
   if(!lastTS) lastTS=ts;
   const dt=(ts-lastTS)/1000;
   lastTS=ts;
-  t+=dt/parseFloat(slowEl.value);
+  if(running) t+=dt;
   draw();
   requestAnimationFrame(loop);
 }
 
 function draw(){
-  const rpm=+rpmEl.value||0;
-  let d1=+d1El.value||1;
-  let d2=+d2El.value||1;
-  let cc=+ccEl.value||1;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle="black";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
 
-  if(unitEl.value==="imperial"){
-    d1*=IN_TO_MM; d2*=IN_TO_MM; cc*=IN_TO_MM;
-  }
+  const rpm=+rpmEl.value||0;
+  let d1=+d1El.value||0;
+  let d2=+d2El.value||0;
+  if(unitEl.value==="imperial"){ d1*=IN_TO_MM; d2*=IN_TO_MM; }
 
   const f1=rpm/60;
-  const rpm2=rpm*(d1/d2);
+  const rpm2=d2?rpm*(d1/d2):0;
   const f2=rpm2/60;
+  const v=rpm*Math.PI*d1;
 
-  const w1=TAU*f1;
-  const w2=TAU*f2;
-
-  const ang1=-w1*t;
-  const ang2=-w2*t;
-
-  const W=parseFloat(canvas.style.width);
-  const H=parseFloat(canvas.style.height);
-  ctx.clearRect(0,0,W,H);
-  ctx.fillStyle="#000";
-  ctx.fillRect(0,0,W,H);
-
-  const margin=40;
-  const r1mm=d1/2;
-  const r2mm=d2/2;
-  const minCC=Math.abs(r2mm-r1mm)+1;
-  const Cmm=Math.max(cc,minCC);
-
-  const scale=Math.min(
-    (W-2*margin)/(Cmm+r1mm+r2mm),
-    (H-2*margin)/(2*Math.max(r1mm,r2mm))
-  );
-
-  const r1=r1mm*scale;
-  const r2=r2mm*scale;
-  const C=Cmm*scale;
-
-  const x1=margin+r1;
-  const x2=x1+C;
-  const y=H/2;
-
-  const phi=Math.acos(Math.min(1,Math.max(-1,(r2-r1)/C)));
-
-  const aL_top= phi, aL_bot=-phi;
-  const aR_top=Math.PI-phi, aR_bot=Math.PI+phi;
-
-  const Ltop={x:x1+r1*Math.cos(aL_top),y:y+r1*Math.sin(aL_top)};
-  const Lbot={x:x1+r1*Math.cos(aL_bot),y:y+r1*Math.sin(aL_bot)};
-  const Rtop={x:x2+r2*Math.cos(aR_top),y:y+r2*Math.sin(aR_top)};
-  const Rbot={x:x2+r2*Math.cos(aR_bot),y:y+r2*Math.sin(aR_bot)};
-
-  ctx.strokeStyle="#9a9a9a";
-  ctx.lineWidth=4;
-  ctx.beginPath();
-  ctx.moveTo(Ltop.x,Ltop.y);
-  ctx.lineTo(Rtop.x,Rtop.y);
-  ctx.arc(x2,y,r2,aR_top,aR_bot,false);
-  ctx.lineTo(Lbot.x,Lbot.y);
-  ctx.arc(x1,y,r1,aL_bot,aL_top,false);
-  ctx.stroke();
-
-  function drawPulley(cx,cy,r,col,a){
-    ctx.strokeStyle=col;
-    ctx.lineWidth=3;
-    ctx.beginPath();
-    ctx.arc(cx,cy,r,0,TAU);
-    ctx.stroke();
-    ctx.fillStyle=col;
-    ctx.beginPath();
-    ctx.arc(cx+(r-6)*Math.cos(a),cy+(r-6)*Math.sin(a),6,0,TAU);
-    ctx.fill();
-  }
-
-  drawPulley(x1,y,r1,"#00a2ff",ang1);
-  drawPulley(x2,y,r2,"#ff9800",ang2);
-
-  const v=Math.abs(w1)*r1;
-  const lenTop=Math.hypot(Rtop.x-Ltop.x,Rtop.y-Ltop.y);
-  const lenBot=Math.hypot(Lbot.x-Rbot.x,Lbot.y-Rbot.y);
-  const lenArcR=r2*(TAU-2*phi);
-  const lenArcL=r1*(TAU-2*phi);
-  const beltLen=lenTop+lenArcR+lenBot+lenArcL;
-
-  let s=(v*t)%beltLen, P;
-
-  if(s<=lenTop) P=lerp(Ltop,Rtop,s/lenTop);
-  else if((s-=lenTop)<=lenArcR){
-    const u=s/lenArcR;
-    const a=aR_top-u*(TAU-2*phi);
-    P={x:x2+r2*Math.cos(a),y:y+r2*Math.sin(a)};
-  }
-  else if((s-=lenArcR)<=lenBot) P=lerp(Rbot,Lbot,s/lenBot);
-  else{
-    s-=lenBot;
-    const u=s/lenArcL;
-    const a=aL_bot-u*(TAU-2*phi);
-    P={x:x1+r1*Math.cos(a),y:y+r1*Math.sin(a)};
-  }
-
-  ctx.fillStyle="#fff";
-  ctx.beginPath();
-  ctx.arc(P.x,P.y,5,0,TAU);
-  ctx.fill();
-
-  const v_mm_min=rpm*Math.PI*d1;
   infoEl.innerHTML=`
-  <div><span class="dot blue"></span><b>Poulie menante</b> :
-  ${rpm.toFixed(0)} RPM | ${f1.toFixed(2)} Hz | ${(f1*60).toFixed(0)} CPM</div>
-  <div><span class="dot orange"></span><b>Poulie menée</b> :
-  ${rpm2.toFixed(0)} RPM | ${f2.toFixed(2)} Hz | ${(f2*60).toFixed(0)} CPM</div>
-  <div class="muted" style="margin-top:6px;">
-  <span class="dot white"></span><b>Courroie (linéaire)</b><br>
-  ${v_mm_min.toFixed(0)} ${unitEl.value==="imperial"?"po":"mm"}/min
-  </div>`;
+  <div><span class="dot blue"></span>Menante : ${rpm.toFixed(0)} RPM | ${f1.toFixed(2)} Hz | ${(f1*60).toFixed(0)} CPM</div>
+  <div><span class="dot orange"></span>Menée : ${rpm2.toFixed(0)} RPM | ${f2.toFixed(2)} Hz | ${(f2*60).toFixed(0)} CPM</div>
+  <div><span class="dot white"></span>Courroie : ${v.toFixed(0)} ${unitEl.value==="imperial"?"po":"mm"}/min</div>
+  `;
 }
-
-slowEl.addEventListener("input",()=>{
-  slowVal.textContent="×"+parseFloat(slowEl.value).toFixed(2);
-});
 
 requestAnimationFrame(loop);
 })();
