@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Poulies & courroie — Animation réelle</title>
+<title>Poulies & courroie — Animation réelle stable</title>
 
 <style>
 body{
@@ -12,51 +12,24 @@ body{
   color:#eaf1ff;
   font-family:Arial,sans-serif;
 }
-header{
-  padding:14px;
-  background:#0f1a44;
-}
+header{padding:14px;background:#0f1a44}
 h1{margin:0;font-size:18px}
 
-.panel{
-  padding:14px;
-  display:grid;
-  gap:12px;
-}
-
+.panel{padding:14px;display:grid;gap:12px}
 label{font-size:13px;opacity:.85}
-input{
-  width:100%;
-  padding:10px;
-  font-size:16px;
-  border:none;
-  border-radius:8px;
-}
+input{width:100%;padding:10px;font-size:16px;border:none;border-radius:8px}
 
-canvas{
-  display:block;
-  margin:10px auto;
-  background:#000;
-  border-radius:12px;
-}
+canvas{display:block;margin:10px auto;background:#000;border-radius:12px}
 
-.info{
-  padding:14px;
-  background:#0f1a44;
-  font-size:14px;
-}
-
-.error{
-  color:#ff6b6b;
-  font-weight:bold;
-}
+.info{padding:14px;background:#0f1a44;font-size:14px}
+.error{color:#ff6b6b;font-weight:bold}
 </style>
 </head>
 
 <body>
 
 <header>
-  <h1>🔄 Poulies & courroie — Animation physique réelle</h1>
+  <h1>🔄 Poulies & courroie — cinématique réelle</h1>
 </header>
 
 <div class="panel">
@@ -83,10 +56,9 @@ canvas{
 <script>
 const canvas = document.getElementById("scene");
 const ctx = canvas.getContext("2d");
+let startTime = performance.now();
 
-let t0 = performance.now();
-
-function draw(){
+function computeState(){
   const rpm1 = +rpm.value;
   const d1v = +d1.value;
   const d2v = +d2.value;
@@ -95,41 +67,45 @@ function draw(){
   const r1 = d1v/2;
   const r2 = d2v/2;
 
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  if(Cmm <= r1 + r2){
-    info.innerHTML = `<div class="error">❌ Configuration impossible : C ≤ R₁ + R₂ (poulies qui se chevauchent)</div>`;
-    return;
-  }
-
   const rpm2 = rpm1 * (d1v/d2v);
 
-  const omega1 = rpm1 * 2*Math.PI/60;
-  const omega2 = rpm2 * 2*Math.PI/60;
+  return {
+    rpm1, rpm2, d1v, d2v, r1, r2, Cmm,
+    omega1: rpm1*2*Math.PI/60,
+    omega2: rpm2*2*Math.PI/60
+  };
+}
 
-  const t = (performance.now()-t0)/1000;
+function isValid(state){
+  return state.Cmm > (state.r1 + state.r2);
+}
+
+function drawScene(state, valid){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const t = (performance.now()-startTime)/1000;
 
   const x1 = 100;
-  const x2 = x1 + (Cmm/250)*200;
+  const x2 = x1 + (state.Cmm/250)*200;
   const y  = canvas.height/2;
 
-  const theta = Math.acos((r2-r1)/Cmm);
-  const alpha = Math.atan2(0, x2-x1);
+  if(valid){
+    const theta = Math.acos((state.r2-state.r1)/state.Cmm);
+    const a1 = theta;
+    const a2 = -theta;
 
-  const a1 = alpha + theta;
-  const a2 = alpha - theta;
+    const P1 = {x:x1+state.r1*Math.cos(a1),y:y+state.r1*Math.sin(a1)};
+    const P2 = {x:x1+state.r1*Math.cos(a2),y:y+state.r1*Math.sin(a2)};
+    const G1 = {x:x2+state.r2*Math.cos(a1),y:y+state.r2*Math.sin(a1)};
+    const G2 = {x:x2+state.r2*Math.cos(a2),y:y+state.r2*Math.sin(a2)};
 
-  const P1 = {x:x1+r1*Math.cos(a1),y:y+r1*Math.sin(a1)};
-  const P2 = {x:x1+r1*Math.cos(a2),y:y+r1*Math.sin(a2)};
-  const G1 = {x:x2+r2*Math.cos(a1),y:y+r2*Math.sin(a1)};
-  const G2 = {x:x2+r2*Math.cos(a2),y:y+r2*Math.sin(a2)};
-
-  ctx.strokeStyle="#aaa";
-  ctx.lineWidth=3;
-  ctx.beginPath();
-  ctx.moveTo(P1.x,P1.y); ctx.lineTo(G1.x,G1.y);
-  ctx.moveTo(P2.x,P2.y); ctx.lineTo(G2.x,G2.y);
-  ctx.stroke();
+    ctx.strokeStyle="#aaa";
+    ctx.lineWidth=3;
+    ctx.beginPath();
+    ctx.moveTo(P1.x,P1.y); ctx.lineTo(G1.x,G1.y);
+    ctx.moveTo(P2.x,P2.y); ctx.lineTo(G2.x,G2.y);
+    ctx.stroke();
+  }
 
   function pulley(x,y,r,color,omega){
     ctx.save();
@@ -147,22 +123,31 @@ function draw(){
     ctx.restore();
   }
 
-  pulley(x1,y,r1,"#00a2ff",omega1);
-  pulley(x2,y,r2,"#ff9800",omega2);
-
-  const v_ms = Math.PI*(d1v/1000)*rpm1/60;
-  const v_ftmin = v_ms*196.85;
-
-  info.innerHTML = `
-  🔵 Menante : ${rpm1.toFixed(1)} RPM · ${(rpm1/60).toFixed(3)} Hz · ${rpm1.toFixed(1)} FPM<br>
-  🟠 Menée : ${rpm2.toFixed(1)} RPM · ${(rpm2/60).toFixed(3)} Hz · ${rpm2.toFixed(1)} FPM<br>
-  🧵 Courroie : ${v_ms.toFixed(3)} m/s · ${v_ftmin.toFixed(1)} ft/min
-  `;
-
-  requestAnimationFrame(draw);
+  pulley(x1,y,state.r1,"#00a2ff",state.omega1);
+  pulley(x2,y,state.r2,"#ff9800",state.omega2);
 }
 
-draw();
+function loop(){
+  const state = computeState();
+  const valid = isValid(state);
+
+  drawScene(state, valid);
+
+  if(!valid){
+    info.innerHTML = `<div class="error">❌ Configuration impossible : C ≤ R₁ + R₂</div>`;
+  }else{
+    const v = Math.PI*(state.d1v/1000)*state.rpm1/60;
+    info.innerHTML = `
+    🔵 Menante : ${state.rpm1.toFixed(1)} RPM · ${(state.rpm1/60).toFixed(3)} Hz · ${state.rpm1.toFixed(1)} FPM<br>
+    🟠 Menée : ${state.rpm2.toFixed(1)} RPM · ${(state.rpm2/60).toFixed(3)} Hz · ${state.rpm2.toFixed(1)} FPM<br>
+    🧵 Courroie : ${v.toFixed(3)} m/s · ${(v*196.85).toFixed(1)} ft/min
+    `;
+  }
+
+  requestAnimationFrame(loop);
+}
+
+loop();
 </script>
 
 </body>
