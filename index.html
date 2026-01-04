@@ -192,24 +192,134 @@ function loop(ts){
 }
 
 function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle="black";
-  ctx.fillRect(0,0,canvas.width,canvas.height);
+  const rpm = +rpmEl.value || 0;
+  let d1 = +d1El.value || 1;
+  let d2 = +d2El.value || 1;
+  let cc = +ccEl.value || 1;
 
-  const rpm=+rpmEl.value||0;
-  let d1=+d1El.value||0;
-  let d2=+d2El.value||0;
-  if(unitEl.value==="imperial"){ d1*=IN_TO_MM; d2*=IN_TO_MM; }
+  if(unitEl.value==="imperial"){
+    d1*=IN_TO_MM;
+    d2*=IN_TO_MM;
+    cc*=IN_TO_MM;
+  }
 
-  const f1=rpm/60;
-  const rpm2=d2?rpm*(d1/d2):0;
-  const f2=rpm2/60;
-  const v=rpm*Math.PI*d1;
+  const f1 = rpm / 60;
+  const rpm2 = rpm * (d1 / d2);
+  const f2 = rpm2 / 60;
 
-  infoEl.innerHTML=`
-  <div><span class="dot blue"></span>Menante : ${rpm.toFixed(0)} RPM | ${f1.toFixed(2)} Hz | ${(f1*60).toFixed(0)} CPM</div>
-  <div><span class="dot orange"></span>Menée : ${rpm2.toFixed(0)} RPM | ${f2.toFixed(2)} Hz | ${(f2*60).toFixed(0)} CPM</div>
-  <div><span class="dot white"></span>Courroie : ${v.toFixed(0)} ${unitEl.value==="imperial"?"po":"mm"}/min</div>
+  const w1 = TAU * f1;
+  const w2 = TAU * f2;
+
+  const ang1 = -w1 * t;
+  const ang2 = -w2 * t;
+
+  const W = parseFloat(canvas.style.width);
+  const H = parseFloat(canvas.style.height);
+
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0,0,W,H);
+
+  // === GÉOMÉTRIE ===
+  const margin = 40;
+  const r1mm = d1/2;
+  const r2mm = d2/2;
+  const minCC = Math.abs(r2mm - r1mm) + 1;
+  const Cmm = Math.max(cc, minCC);
+
+  const scale = Math.min(
+    (W - 2*margin) / (Cmm + r1mm + r2mm),
+    (H - 2*margin) / (2*Math.max(r1mm, r2mm))
+  );
+
+  const r1 = r1mm * scale;
+  const r2 = r2mm * scale;
+  const C  = Cmm * scale;
+
+  const x1 = margin + r1;
+  const x2 = x1 + C;
+  const y  = H / 2;
+
+  const phi = Math.acos(
+    Math.min(1, Math.max(-1, (r2 - r1) / C))
+  );
+
+  const aL_top =  phi, aL_bot = -phi;
+  const aR_top = Math.PI - phi;
+  const aR_bot = Math.PI + phi;
+
+  const Ltop = {x:x1+r1*Math.cos(aL_top), y:y+r1*Math.sin(aL_top)};
+  const Lbot = {x:x1+r1*Math.cos(aL_bot), y:y+r1*Math.sin(aL_bot)};
+  const Rtop = {x:x2+r2*Math.cos(aR_top), y:y+r2*Math.sin(aR_top)};
+  const Rbot = {x:x2+r2*Math.cos(aR_bot), y:y+r2*Math.sin(aR_bot)};
+
+  // === COURROIE ===
+  ctx.strokeStyle = "#9a9a9a";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(Ltop.x, Ltop.y);
+  ctx.lineTo(Rtop.x, Rtop.y);
+  ctx.arc(x2, y, r2, aR_top, aR_bot);
+  ctx.lineTo(Lbot.x, Lbot.y);
+  ctx.arc(x1, y, r1, aL_bot, aL_top);
+  ctx.stroke();
+
+  // === POULIES ===
+  function drawPulley(cx, cy, r, col, a){
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, TAU);
+    ctx.stroke();
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.arc(
+      cx + (r-6)*Math.cos(a),
+      cy + (r-6)*Math.sin(a),
+      6, 0, TAU
+    );
+    ctx.fill();
+  }
+
+  drawPulley(x1, y, r1, "#00a2ff", ang1);
+  drawPulley(x2, y, r2, "#ff9800", ang2);
+
+  // === POINT SUR COURROIE ===
+  const v = Math.abs(w1) * r1;
+  const lenTop = Math.hypot(Rtop.x-Ltop.x, Rtop.y-Ltop.y);
+  const lenBot = Math.hypot(Lbot.x-Rbot.x, Lbot.y-Rbot.y);
+  const lenArcR = r2 * (TAU - 2*phi);
+  const lenArcL = r1 * (TAU - 2*phi);
+  const beltLen = lenTop + lenArcR + lenBot + lenArcL;
+
+  let s = (v * t) % beltLen, P;
+
+  if(s <= lenTop){
+    P = lerp(Ltop, Rtop, s/lenTop);
+  } else if((s -= lenTop) <= lenArcR){
+    const u = s / lenArcR;
+    const a = aR_top - u*(TAU - 2*phi);
+    P = {x:x2+r2*Math.cos(a), y:y+r2*Math.sin(a)};
+  } else if((s -= lenArcR) <= lenBot){
+    P = lerp(Rbot, Lbot, s/lenBot);
+  } else {
+    s -= lenBot;
+    const u = s / lenArcL;
+    const a = aL_bot - u*(TAU - 2*phi);
+    P = {x:x1+r1*Math.cos(a), y:y+r1*Math.sin(a)};
+  }
+
+  ctx.fillStyle="#fff";
+  ctx.beginPath();
+  ctx.arc(P.x, P.y, 5, 0, TAU);
+  ctx.fill();
+
+  // === INFOS ===
+  const v_mm_min = rpm * Math.PI * d1;
+  infoEl.innerHTML = `
+    <div>🔵 Menante : ${rpm.toFixed(0)} RPM | ${f1.toFixed(2)} Hz | ${(f1*60).toFixed(0)} CPM</div>
+    <div>🟠 Menée : ${rpm2.toFixed(0)} RPM | ${f2.toFixed(2)} Hz | ${(f2*60).toFixed(0)} CPM</div>
+    <div>⚪ Courroie : ${v_mm_min.toFixed(0)} ${unitEl.value==="imperial"?"po":"mm"}/min</div>
   `;
 }
 
