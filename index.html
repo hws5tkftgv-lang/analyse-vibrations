@@ -126,7 +126,12 @@ canvas{
   <button id="pause">⏸ Pause</button>
   <button id="reset">🔄 Reset</button>
 </div>
-
+<div class="controls">
+  <label>Ralenti
+    <input id="slow" type="range" min="0.25" max="2" step="0.25" value="1">
+  </label>
+  <div id="slowVal" style="text-align:right;font-size:12px;opacity:.7;">×1.00</div>
+</div>
 <div class="stage">
   <canvas id="scene"></canvas>
 </div>
@@ -151,6 +156,9 @@ const resetBtn = document.getElementById("reset");
 
 const TAU = Math.PI*2;
 const IN_TO_MM = 25.4;
+
+const slowEl = document.getElementById("slow");
+const slowVal = document.getElementById("slowVal");
 
 let t = 0;
 let running = false;
@@ -186,20 +194,26 @@ playBtn.onclick = ()=> running=true;
 pauseBtn.onclick = ()=> running=false;
 resetBtn.onclick = ()=>{
   running=false;
-  rpmEl.value = "";
-d1El.value = "";
-d2El.value = "";
-ccEl.value = "";
-running = false;
-t = 0;
-draw();
-};
+  t=0;
 
+  rpmEl.value="";
+  d1El.value="";
+  d2El.value="";
+  ccEl.value="";
+
+  slowEl.value = 1;
+  slowVal.textContent = "×1.00";
+
+  draw();
+};
+slowEl.addEventListener("input", () => {
+  slowVal.textContent = "×" + parseFloat(slowEl.value).toFixed(2);
+});
 function loop(ts){
   if(!lastTS) lastTS=ts;
   const dt=(ts-lastTS)/1000;
   lastTS=ts;
-  if(running) t+=dt;
+  if(running) t += dt / parseFloat(slowEl.value);
   draw();
   requestAnimationFrame(loop);
 }
