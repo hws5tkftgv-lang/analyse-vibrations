@@ -132,8 +132,8 @@ const span_mm = Math.sqrt(
 
 const beltLength_mm =
   2 * span_mm +
-  r1mm * (TAU - 2*phi) +
-  r2mm * (TAU - 2*phi);
+  r1mm * (2 * phi) +
+  r2mm * (TAU - 2 * phi);
 
 // FRÉQUENCE DE LA COURROIE
 const beltHz  = v_mm_s / beltLength_mm;
@@ -191,17 +191,17 @@ infoEl.innerHTML = `
 <div><span class="dot blue"></span><b>Moteur</b> :
   ${rpmMotor.toFixed(0)} RPM | ${hzMotor.toFixed(2)} Hz
 </div>
-
 <div><span class="dot blue"></span><b>Poulie menante</b> :
   ${rpmMenante.toFixed(0)} RPM | ${hzMenante.toFixed(2)} Hz
 </div>
-
 <div><span class="dot orange"></span><b>Poulie menée</b> :
   ${rpmMenee.toFixed(0)} RPM | ${hzMenee.toFixed(2)} Hz
 </div>
-
 <div><span class="dot white"></span><b>Courroie</b> :
   ${beltRPM.toFixed(2)} RPM | ${beltHz.toFixed(2)} Hz
+</div>
+<div><span class="dot white"></span><b>Longueur courroie</b> :
+  ${beltLengthDisplay}
 </div>
 `;
 }
