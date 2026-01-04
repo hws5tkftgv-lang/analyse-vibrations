@@ -279,59 +279,57 @@ function compute(){
    - arc grande poulie: contact long = π + 2α
    - arc petite poulie: contact court = π - 2α
    ============================= */
-function drawBeltOpen(x1,y1,R1, x2,y2,R2){
+function drawBeltOpen(x1, y1, R1, x2, y2, R2){
   const dx = x2 - x1;
   const dy = y2 - y1;
   const C  = Math.hypot(dx, dy);
 
-  // tangence existe si C > |R2-R1|
-  if(C <= Math.abs(R2 - R1)) return {alpha:null};
+  if (C <= Math.abs(R2 - R1)) return;
 
-  const theta = Math.atan2(dy, dx);
-  const alpha = Math.acos((R2 - R1) / C); // pour courroie ouverte
+  const phi = Math.atan2(dy, dx);
+  const alpha = Math.asin((R2 - R1) / C);
 
-  // angles de tangence (sur la direction theta)
-  const tTop = theta + alpha;
-  const tBot = theta - alpha;
+  // Angles de tangence
+  const t1a = phi + alpha;
+  const t1b = phi - alpha;
 
-  // points tangents (petite et grande)
-  const Ptop = { x: x1 + R1*Math.cos(tTop), y: y1 + R1*Math.sin(tTop) };
-  const Pbot = { x: x1 + R1*Math.cos(tBot), y: y1 + R1*Math.sin(tBot) };
+  // Points de tangence
+  const P1a = { x: x1 + R1 * Math.cos(t1a), y: y1 + R1 * Math.sin(t1a) };
+  const P1b = { x: x1 + R1 * Math.cos(t1b), y: y1 + R1 * Math.sin(t1b) };
 
-  const Gtop = { x: x2 + R2*Math.cos(tTop), y: y2 + R2*Math.sin(tTop) };
-  const Gbot = { x: x2 + R2*Math.cos(tBot), y: y2 + R2*Math.sin(tBot) };
+  const P2a = { x: x2 + R2 * Math.cos(t1a), y: y2 + R2 * Math.sin(t1a) };
+  const P2b = { x: x2 + R2 * Math.cos(t1b), y: y2 + R2 * Math.sin(t1b) };
 
-  // contact angles
-  const sweepSmallTarget = Math.PI - 2*alpha; // court
-  const sweepLargeTarget = Math.PI + 2*alpha; // long
-
-  // Dessin
-  ctx.strokeStyle = "#bfc7d6";
+  ctx.strokeStyle = "#cfd6e6";
   ctx.lineWidth = 5;
   ctx.lineCap = "round";
-  ctx.lineJoin = "round";
+
   ctx.beginPath();
 
-  // segment haut
-  ctx.moveTo(Ptop.x, Ptop.y);
-  ctx.lineTo(Gtop.x, Gtop.y);
+  // Segment haut
+  ctx.moveTo(P1a.x, P1a.y);
+  ctx.lineTo(P2a.x, P2a.y);
 
-  // arc grande poulie de Gtop -> Gbot (long)
-  // angles sur la poulie = tTop -> tBot
-  const largeAnti = bestArcFlag(tTop, tBot, sweepLargeTarget);
-  ctx.arc(x2, y2, R2, tTop, tBot, largeAnti);
+  // Grand arc (grande poulie)
+  ctx.arc(
+    x2, y2, R2,
+    t1a,
+    t1b,
+    false   // IMPORTANT : sens forcé
+  );
 
-  // segment bas vers petite
-  ctx.lineTo(Pbot.x, Pbot.y);
+  // Segment bas
+  ctx.lineTo(P1b.x, P1b.y);
 
-  // arc petite poulie de Pbot -> Ptop (court)
-  // angles = tBot -> tTop (court)
-  const smallAnti = bestArcFlag(tBot, tTop, sweepSmallTarget);
-  ctx.arc(x1, y1, R1, tBot, tTop, smallAnti);
+  // Petit arc (petite poulie)
+  ctx.arc(
+    x1, y1, R1,
+    t1b,
+    t1a,
+    true    // IMPORTANT : sens opposé
+  );
 
   ctx.stroke();
-
-  return {alpha};
 }
 
 /* =============================
