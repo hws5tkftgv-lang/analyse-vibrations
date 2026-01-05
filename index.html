@@ -82,12 +82,7 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
     <input id="slow" type="range" min="1" max="20" value="8">
   </div>
   <!-- ===== Sorties temps réel (résumé) ===== -->
-<div class="full outputBox" id="outputs">
-  <div><b>Poulie menante</b> : <span id="out_rpm1">–</span></div>
-  <div><b>Poulie menée</b> : <span id="out_rpm2">–</span></div>
-  <div><b>Courroie</b> : <span id="out_belt">–</span></div>
-  <div><b>Vitesse linéaire</b> : <span id="out_speed">–</span></div>
-</div>
+
 </div>
 
 <div class="buttons">
@@ -113,9 +108,14 @@ const specCtx    = specCanvas.getContext("2d");
   const unitEl = document.getElementById("unit");
   const slowEl = document.getElementById("slow");
   const infoEl = document.getElementById("info");
-  const outRPM1  = document.getElementById("out_rpm1");
-const outRPM2  = document.getElementById("out_rpm2");
-const outBelt  = document.getElementById("out_belt");
+const outRPM1 = document.getElementById("out-rpm1");
+const outHZ1  = document.getElementById("out-hz1");
+
+const outRPM2 = document.getElementById("out-rpm2");
+const outHZ2  = document.getElementById("out-hz2");
+
+const outHZBelt = document.getElementById("out-hzbelt");
+const outFPM    = document.getElementById("out-fpm");
 const outSpeed = document.getElementById("out_speed");
 
   const playBtn  = document.getElementById("play");
@@ -523,14 +523,14 @@ drawPulley(x2, y, r2, "#ff9800", ang2);
     const rpmMenee = rpm * (d1mm/d2mm);
     const hzMenante = rpmMenante/60;
     const hzMenee = rpmMenee/60;
-outRPM1.textContent =
-  `${rpmMenante.toFixed(0)} RPM | ${hzMenante.toFixed(2)} Hz`;
+outRPM1.textContent = rpmMenante.toFixed(0);
+outHZ1.textContent  = hzMenante.toFixed(2);
 
-outRPM2.textContent =
-  `${rpmMenee.toFixed(0)} RPM | ${hzMenee.toFixed(2)} Hz`;
+outRPM2.textContent = rpmMenee.toFixed(0);
+outHZ2.textContent  = hzMenee.toFixed(2);
 
-outBelt.textContent =
-  `${hzBelt.toFixed(3)} Hz | ${v_ft_min.toFixed(0)} ft/min`;
+outHZBelt.textContent = hzBelt.toFixed(3);
+outFPM.textContent    = v_ft_min.toFixed(0);
 
 outSpeed.textContent =
   `${v_ft_min.toFixed(0)} ft/min`;
