@@ -456,7 +456,7 @@ if (fault === "slip" || fault === "all") {
 specCtx.strokeStyle = "rgba(255,255,255,0.15)";
 specCtx.fillStyle = "#9aa5d6";
 specCtx.font = "11px Arial";
-specCtx.textAlign = "right";
+specCtx.textAlign = "left";
 specCtx.textBaseline = "middle";
 
 for(let a = 0; a <= AMP_MAX; a += 2){
@@ -465,7 +465,7 @@ for(let a = 0; a <= AMP_MAX; a += 2){
   specCtx.moveTo(0, y);
   specCtx.lineTo(W, y);
   specCtx.stroke();
-  specCtx.fillText(a + " mm/s", W - 6, y);
+  specCtx.fillText(a + " mm/s", 6, y);
 }
   /* ===== DESSIN DES BARRES ===== */
   peaks.forEach((p,i)=>{
