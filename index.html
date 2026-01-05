@@ -45,6 +45,23 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
 .outputBox b{
   color:#cfe2ff;
 }
+
+/* ===== FULLSCREEN SPECTRE UNIQUEMENT ===== */
+.spectrum-only-fullscreen{
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999 !important;
+  border-radius: 0 !important;
+  background: #05080f;
+}
+
+/* bloque scroll arrière (iPhone essentiel) */
+body.lock-scroll{
+  overflow: hidden;
+  touch-action: none;
+}
 </style>
 </head>
 
@@ -667,16 +684,20 @@ outFPM.textContent    = v_ft_min.toFixed(0);
   requestAnimationFrame(loop);
   const fsBtn = document.getElementById("fs");
 
-fsBtn.onclick = () => {
-  const el = document.documentElement;
+let spectrumFS = false;
 
-  if (!document.fullscreenElement) {
-    if (el.requestFullscreen) el.requestFullscreen();
-    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); // iOS
-  } else {
-    if (document.exitFullscreen) document.exitFullscreen();
-    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+fsBtn.onclick = () => {
+  spectrumFS = !spectrumFS;
+
+  if(spectrumFS){
+    specCanvas.classList.add("spectrum-only-fullscreen");
+    document.body.classList.add("lock-scroll");
+  }else{
+    specCanvas.classList.remove("spectrum-only-fullscreen");
+    document.body.classList.remove("lock-scroll");
   }
+
+  resize(); // OBLIGATOIRE pour recalculer le spectre
 };
 })();
 </script>
