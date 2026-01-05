@@ -367,7 +367,7 @@ drawPulley(x2, y, r2, "#ff9800", ang2);
 
     // point sur la courroie
     const totalLen = polylineLength(pts);
-    const sPos = (v_px_s * t) % totalLen;
+    const sPos = (totalLen - (v_px_s * t) % totalLen) % totalLen;
     const P = pointAt(pts, sPos);
 
     ctx.fillStyle="#fff";
