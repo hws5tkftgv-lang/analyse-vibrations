@@ -288,8 +288,10 @@ const hzZoneY = H - hzZoneHeight;
 specCtx.fillStyle = "rgba(0,162,255,0.10)";
 specCtx.fillRect(0, hzZoneY, W, hzZoneHeight);
 
-  const minHz = 0;
-const maxHz = hzMotor * 3;   // fenêtre pédagogique
+  const paddingHz = hzMotor * 0.5;      // marge visuelle gauche/droite
+const minHz = Math.max(0, hzBelt - paddingHz);
+const maxHz = hzMotor * 2.5;
+
 const scaleX = W / (maxHz - minHz);
   const fault = document.getElementById("fault")?.value || "none";
 
@@ -334,16 +336,16 @@ if (fault === "slip") {
   });
 }
 
-  // fond grille
-  specCtx.strokeStyle="rgba(255,255,255,0.08)";
-  for(let i=0;i<=10;i++){
-    const x=i*W/10;
-    specCtx.beginPath();
-    specCtx.moveTo(x,0);
-    specCtx.lineTo(x,H);
-    specCtx.stroke();
-  }
-
+  // fond grille Hz (respecte l’échelle)
+specCtx.strokeStyle="rgba(255,255,255,0.08)";
+for(let i=0;i<=8;i++){
+  const hz = minHz + i * (maxHz - minHz) / 8;
+  const x = (hz - minHz) * scaleX;
+  specCtx.beginPath();
+  specCtx.moveTo(x,0);
+  specCtx.lineTo(x,H);
+  specCtx.stroke();
+}
   // pics
   peaks.forEach((p,i)=>{
     const pulse = 0.9 + 0.1*Math.sin(time*5 + i);
@@ -368,11 +370,7 @@ specCtx.fillText(
     specCtx.lineTo(x, H-h);
     specCtx.stroke();
 
-    specCtx.fillStyle="#cfd6ff";
-    specCtx.font="11px Arial";
-    specCtx.textAlign="center";
-    specCtx.fillText(p.label, x, H-h-8);
-    specCtx.fillText(p.hz.toFixed(2)+" Hz", x, H-4);
+    
   });
 
   // axe
