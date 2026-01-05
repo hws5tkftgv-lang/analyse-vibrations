@@ -394,6 +394,11 @@ drawPulley(x2, y, r2, "#ff9800", ang2);
   <b>Courroie (fréquence)</b> : ${hzBelt.toFixed(3)} Hz (${fpmStrobe.toFixed(1)} FPM)
   </div>
 
+  <div>
+  <span class="dot white"></span>
+  <b>Longueur courroie</b> : ${Ldisplay}
+  </div>
+
   <div class="small">
   Vitesse linéaire :
   ${v_mm_s.toFixed(0)} mm/s |
@@ -401,10 +406,7 @@ drawPulley(x2, y, r2, "#ff9800", ang2);
   ${v_ft_min.toFixed(0)} ft/min
   </div>
 
-  <div>
-  <span class="dot white"></span>
-  <b>Longueur courroie</b> : ${Ldisplay}
-  </div>
+
 
   <div class="small">
   ${running ? "▶️ En lecture" : "⏸ En pause"}
