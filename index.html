@@ -289,10 +289,15 @@ if (fault === "belt") {
 }
 
 if (fault === "slip") {
-  peaks.push(
-    { hz: hzBelt * 見る(0.92 + 0.08*Math.sin(time*2)), amp: 0.8,
-      col:"#ffcc00", label:"Glissement" }
-  );
+  const slipFactor = 0.92 + 0.08 * Math.sin(time * 2);
+  const safeHz = Math.max(0.01, hzBelt * slipFactor);
+
+  peaks.push({
+    hz: safeHz,
+    amp: 0.8,
+    col: "#ffcc00",
+    label: "Glissement"
+  });
 }
 
   // fond grille
