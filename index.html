@@ -442,10 +442,14 @@ function drawSpectrum(hzMotor, hzBelt, time){
     specCtx.fillText(p.label, x, Math.max(yTop-6, gridTop+14));
   });
 
-  /* ===== AXE ===== */
-  specCtx.fillStyle="#9aa5d6";
-  specCtx.font="12px Arial";
-  specCtx.textAlign="right";
+    /* ===== AXE ===== */
+  specCtx.fillStyle = "#9aa5d6";
+  specCtx.font = "12px Arial";
+  specCtx.textAlign = "right";
+  specCtx.textBaseline = "top";
+  specCtx.fillText("Hz →", W - 6, 6);
+}
+  
  
   function loop(ts){
     if(lastTS === null) lastTS = ts;
