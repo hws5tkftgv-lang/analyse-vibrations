@@ -105,12 +105,13 @@ const spectrumView = {
   spanHz: 50,   // largeur affichée (0–50 Hz)
   maxHz: 300    // limite totale
 };
-  const canvas = document.getElementById("scene");
-  const ctx    = canvas.getContext("2d");
-const specCanvas = document.getElementById("spectrum");
 let isPanning = false;
 let panStartX = 0;
 let panStartMinHz = 0;
+  const canvas = document.getElementById("scene");
+  const ctx    = canvas.getContext("2d");
+const specCanvas = document.getElementById("spectrum");
+
 
 specCanvas.addEventListener("pointerdown", e => {
   isPanning = true;
@@ -127,10 +128,13 @@ specCanvas.addEventListener("pointermove", e => {
 
   let newMin = panStartMinHz - dxPx * hzPerPx;
 
-  // clamp 0 → 300
+    // clamp 0 → max-span
   newMin = Math.max(
     0,
-    Math.min(spectrumView.maxHz - spectrumView.spanHz, newMin)
+    Math.min(
+      spectrumView.maxHz - spectrumView.spanHz,
+      newMin
+    )
   );
 
   spectrumView.minHz = newMin;
@@ -140,6 +144,10 @@ specCanvas.addEventListener("pointerup", e => {
   isPanning = false;
   specCanvas.releasePointerCapture(e.pointerId);
 });
+
+specCanvas.addEventListener("pointercancel", () => {
+  isPanning = false;
+})
 const outLength = document.getElementById("out-length");
 const specCtx    = specCanvas.getContext("2d");
   const rpmEl  = document.getElementById("rpm");
@@ -318,115 +326,59 @@ specCanvas.style.marginTop = "18px";
 
 function drawSpectrum(hzMotor, hzBelt, time){
 
-  /* ================= DIMENSIONS ================= */
-  const W = specCanvas.width / (devicePixelRatio || 1);
+  const W = specCanvas.width  / (devicePixelRatio || 1);
   const H = specCanvas.height / (devicePixelRatio || 1);
 
-  // ===== ZONES VERTICALES =====
-  const hzZoneHeight = 42;            // hauteur de la règle (bande bleue)
+  /* ===== Zones ===== */
+  const hzZoneHeight = 42;
   const hzZoneY      = H - hzZoneHeight;
 
-  const gridTop      = 16;            // marge haute de la grille
-  const gridBottom   = hzZoneY - 10;  // FIN de la grille (avant la règle)
-  const gridHeight   = gridBottom - gridTop;
+  const gridTop    = 16;
+  const gridBottom = hzZoneY - 10;
+  const gridHeight = gridBottom - gridTop;
 
-  /* ================= FOND ================= */
-  specCtx.clearRect(0, 0, W, H);
+  /* ===== Fenêtre visible ===== */
+  const minHz = spectrumView.minHz;
+  const maxHz = spectrumView.minHz + spectrumView.spanHz;
+  const scaleX = W / (maxHz - minHz);
+
+  /* ===== Fond ===== */
+  specCtx.clearRect(0,0,W,H);
   specCtx.fillStyle = "#05080f";
-  specCtx.fillRect(0, 0, W, H);
+  specCtx.fillRect(0,0,W,H);
 
-  // bande bleue (règle)
+  /* ===== Bande Hz ===== */
   specCtx.fillStyle = "rgba(0,162,255,0.15)";
   specCtx.fillRect(0, hzZoneY, W, hzZoneHeight);
 
-  /* ================= ÉCHELLE Hz (RÈGLE FIXE) ================= */
-  /* ================= ÉCHELLE Hz (fenêtre visible) ================= */
-const minHz = spectrumView.minHz;
-const maxHz = minHz + spectrumView.spanHz;   // <-- fenêtre visible (ex: 0–50)
-const scaleX = W / (maxHz - minHz);
+  /* ===== RÈGLE Hz ===== */
+  specCtx.strokeStyle = "rgba(255,255,255,0.35)";
+  specCtx.fillStyle   = "#eaf1ff";
+  specCtx.font        = "11px Arial";
+  specCtx.textAlign   = "center";
+  specCtx.textBaseline= "top";
 
-  const fault = document.getElementById("fault")?.value || "none";
+  const majorStep = 10;
+  const minorStep = 5;
 
-  /* ================= RÈGLE Hz (graduations) ================= */
-specCtx.strokeStyle  = "rgba(255,255,255,0.35)";
-specCtx.fillStyle    = "#eaf1ff";
-specCtx.font         = "11px Arial";
-specCtx.textAlign    = "center";
-specCtx.textBaseline = "top";
+  for(let hz = Math.ceil(minHz / minorStep) * minorStep;
+          hz <= maxHz;
+          hz += minorStep){
 
-const majorStep = 10;   // 0,50,100,150,200,250,300
-const minorStep = 5;
+    const x = (hz - minHz) * scaleX;
+    const isMajor = (hz % majorStep === 0);
 
-const usedRuleX = [];
-const minGapPx  = 10;
+    specCtx.beginPath();
+    specCtx.moveTo(x, hzZoneY);
+    specCtx.lineTo(x, hzZoneY + (isMajor ? 12 : 6));
+    specCtx.stroke();
 
-for(let hz = minHz; hz <= maxHz; hz += minorStep){
-  const x = (hz - minHz) * scaleX;
-  const isMajor = (hz % majorStep === 0);
-
-  // trait
-  specCtx.beginPath();
-  specCtx.moveTo(x, hzZoneY);
-  specCtx.lineTo(x, hzZoneY + (isMajor ? 12 : 6));
-  specCtx.stroke();
-
-  if(isMajor){
-    const txt = hz + " Hz";
-    const wTxt = specCtx.measureText(txt).width;
-
-    const left  = x - wTxt/2 - minGapPx;
-    const right = x + wTxt/2 + minGapPx;
-
-    let ok = true;
-    for(const seg of usedRuleX){
-      if(!(right < seg.left || left > seg.right)){
-        ok = false;
-        break;
-      }
-    }
-
-    if(ok){
-      const xClamped = Math.max(wTxt/2 + 2, Math.min(W - (wTxt/2 + 2), x));
-      specCtx.fillText(txt, xClamped, hzZoneY + 14);
-      usedRuleX.push({
-        left: xClamped - wTxt/2 - minGapPx,
-        right: xClamped + wTxt/2 + minGapPx
-      });
+    if(isMajor){
+      specCtx.fillText(hz + " Hz", x, hzZoneY + 14);
     }
   }
-}
 
-  /* ================= PICS ================= */
-  let peaks = [
-    { hz: hzMotor, amp: 1.0, col:"#00a2ff", label:"1× moteur" }
-  ];
-
-  if (fault === "none")
-    peaks.push({ hz: hzMotor*2, amp: 0.4, col:"#5fbfff", label:"2× moteur" });
-
-  if (fault === "unbalance")
-    peaks.push({ hz: hzMotor, amp: 1.6, col:"#ff5555", label:"Balourd (1×)" });
-
-  if (fault === "misalign")
-    peaks.push({ hz: hzMotor*2, amp: 1.2, col:"#ff9800", label:"Désalignement (2×)" });
-
-  if (fault === "belt")
-    peaks.push(
-      { hz: hzBelt,   amp: 1.1, col:"#ffffff", label:"Courroie" },
-      { hz: hzBelt*2, amp: 0.6, col:"#bbbbbb", label:"2× courroie" }
-    );
-
-  if (fault === "slip") {
-    const slipFactor = 0.92 + 0.08 * Math.sin(time * 2);
-    peaks.push({
-      hz: Math.max(0.01, hzBelt * slipFactor),
-      amp: 0.8,
-      col:"#ffcc00",
-      label:"Glissement"
-    });
-  }
-
-  /* ================= GRILLE (zone noire seulement) ================= */
+  /* ===== GRILLE ===== */
   specCtx.strokeStyle = "rgba(255,255,255,0.08)";
   for(let i=0;i<=8;i++){
     const x = i * W / 8;
@@ -436,43 +388,65 @@ for(let hz = minHz; hz <= maxHz; hz += minorStep){
     specCtx.stroke();
   }
 
-  /* ================= BARRES + LABELS (dans la grille) ================= */
+  /* ===== PICS ===== */
+  const fault = document.getElementById("fault")?.value || "none";
+
+  let peaks = [
+    { hz: hzMotor, amp: 1.0, col:"#00a2ff", label:"1× moteur" }
+  ];
+
+  if(fault === "none")
+    peaks.push({ hz: hzMotor*2, amp: 0.4, col:"#5fbfff", label:"2× moteur" });
+
+  if(fault === "unbalance")
+    peaks.push({ hz: hzMotor, amp: 1.6, col:"#ff5555", label:"Balourd" });
+
+  if(fault === "misalign")
+    peaks.push({ hz: hzMotor*2, amp: 1.2, col:"#ff9800", label:"Désalignement" });
+
+  if(fault === "belt")
+    peaks.push(
+      { hz: hzBelt, amp: 1.1, col:"#ffffff", label:"Courroie" },
+      { hz: hzBelt*2, amp: 0.6, col:"#bbbbbb", label:"2× courroie" }
+    );
+
+  if(fault === "slip"){
+    const slip = 0.9 + 0.1*Math.sin(time*2);
+    peaks.push({
+      hz: hzBelt * slip,
+      amp: 0.8,
+      col:"#ffcc00",
+      label:"Glissement"
+    });
+  }
+
+  /* ===== DESSIN DES BARRES ===== */
   peaks.forEach((p,i)=>{
-    // si hors règle 0–75, on ignore (évite barres hors cadre)
     if(p.hz < minHz || p.hz > maxHz) return;
 
-    const pulse = 0.9 + 0.1 * Math.sin(time*5 + i);
     const x = (p.hz - minHz) * scaleX;
+    const h = p.amp * (gridHeight * 0.85);
+    const yTop = gridBottom - h;
 
-    const h = p.amp * pulse * (gridHeight * 0.9);
-    const barTopY = gridBottom - h;
-
-    // barre
     specCtx.strokeStyle = p.col;
     specCtx.lineWidth = 3;
     specCtx.beginPath();
     specCtx.moveTo(x, gridBottom);
-    specCtx.lineTo(x, barTopY);
+    specCtx.lineTo(x, yTop);
     specCtx.stroke();
 
-    // identifiant au-dessus (clamp pour éviter de sortir)
     specCtx.fillStyle = "#cfd6ff";
     specCtx.font = "12px Arial";
     specCtx.textAlign = "center";
     specCtx.textBaseline = "bottom";
-
-    let labelY = barTopY - 6;
-    labelY = Math.max(labelY, gridTop + 14); // ne jamais sortir par le haut
-    specCtx.fillText(p.label, x, labelY);
+    specCtx.fillText(p.label, x, Math.max(yTop-6, gridTop+14));
   });
 
-  /* ================= AXE ================= */
+  /* ===== AXE ===== */
   specCtx.fillStyle="#9aa5d6";
   specCtx.font="12px Arial";
   specCtx.textAlign="right";
-  specCtx.textBaseline="top";
-  specCtx.fillText("Hz →", W-6, 6);
-}
+ 
   function loop(ts){
     if(lastTS === null) lastTS = ts;
     const dt = (ts - lastTS)/1000;
