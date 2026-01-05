@@ -278,10 +278,15 @@ specCtx.setTransform(dpr,0,0,dpr,0,0);
 function drawSpectrum(hzMotor, hzBelt, time){
   const W = specCanvas.width/(devicePixelRatio||1);
   const H = specCanvas.height/(devicePixelRatio||1);
+  const hzZoneHeight = 28;          // hauteur de la zone Hz
+const hzZoneY = H - hzZoneHeight;
 
   specCtx.clearRect(0,0,W,H);
   specCtx.fillStyle="#05080f";
   specCtx.fillRect(0,0,W,H);
+  // zone bleue pour affichage des Hz
+specCtx.fillStyle = "rgba(0,162,255,0.10)";
+specCtx.fillRect(0, hzZoneY, W, hzZoneHeight);
 
   const minHz = 0;
 const maxHz = hzMotor * 3;   // fenêtre pédagogique
@@ -346,6 +351,17 @@ if (fault === "slip") {
     const h = p.amp * pulse * (H*0.75);
 
     specCtx.strokeStyle=p.col;
+    // Hz sous le pic (zone bleue)
+specCtx.fillStyle = "#cfe2ff";
+specCtx.font = "12px Arial";
+specCtx.textAlign = "center";
+specCtx.textBaseline = "middle";
+
+specCtx.fillText(
+  p.hz.toFixed(2) + " Hz",
+  x,
+  hzZoneY + hzZoneHeight / 2
+);
     specCtx.lineWidth=3;
     specCtx.beginPath();
     specCtx.moveTo(x, H);
