@@ -340,6 +340,8 @@ function drawSpectrum(hzMotor, hzBelt, time){
     }
 
     const { rpm, d1mm, d2mm, ccmm } = inp;
+    // === Défaut sélectionné ===
+const fault = document.getElementById("fault")?.value || "none";
     // === Longueur de courroie (open belt) ===
 // === Longueur de courroie (open belt) ===
 // === Longueur de courroie (open belt) ===
