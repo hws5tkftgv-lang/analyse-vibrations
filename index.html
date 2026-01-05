@@ -34,6 +34,17 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
 .blue{background:var(--blue);} .orange{background:var(--orange);} .white{background:#fff;}
 .bad{color:var(--bad); font-weight:700;}
 .small{ font-size:12px; opacity:.75; margin-top:6px;}
+/* ===== Sorties intégrées (résumé vitesses) ===== */
+.outputBox{
+  background:rgba(255,255,255,0.08);
+  border-radius:12px;
+  padding:10px;
+  font-size:13px;
+  line-height:1.4;
+}
+.outputBox b{
+  color:#cfe2ff;
+}
 </style>
 </head>
 
@@ -51,6 +62,11 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
   <label>Ø menante <input id="d1" type="number" inputmode="decimal" value="4"></label>
   <label>Ø menée <input id="d2" type="number" inputmode="decimal" value="9"></label>
   <label class="full">C-C <input id="cc" type="number" inputmode="decimal" value="21"></label>
+  <div class="outputBox full">
+  <div><b>Menante</b> : <span id="out-rpm1">—</span> RPM | <span id="out-hz1">—</span> Hz</div>
+  <div><b>Menée</b> : <span id="out-rpm2">—</span> RPM | <span id="out-hz2">—</span> Hz</div>
+  <div><b>Courroie</b> : <span id="out-hzbelt">—</span> Hz | <span id="out-fpm">—</span> ft/min</div>
+</div>
   <div class="full">
     <label class="full">
   Défaut simulé
