@@ -315,11 +315,7 @@ specCanvas.style.marginTop = "18px";
     return pts[pts.length-1];
   }
 // ================= ÉTAT DE LA VUE DU SPECTRE =================
-const spectrumView = {
-  minHz: 0,     // début de la fenêtre visible
-  spanHz: 50,   // largeur affichée (0–50 Hz)
-  maxHz: 300    // limite absolue du spectre
-};
+
 function drawSpectrum(hzMotor, hzBelt, time){
 
   /* ================= DIMENSIONS ================= */
@@ -344,8 +340,9 @@ function drawSpectrum(hzMotor, hzBelt, time){
   specCtx.fillRect(0, hzZoneY, W, hzZoneHeight);
 
   /* ================= ÉCHELLE Hz (RÈGLE FIXE) ================= */
-  const minHz = spectrumView.minHz;
-const maxHz = spectrumView.maxHz;
+  /* ================= ÉCHELLE Hz (fenêtre visible) ================= */
+const minHz = spectrumView.minHz;
+const maxHz = minHz + spectrumView.spanHz;   // <-- fenêtre visible (ex: 0–50)
 const scaleX = W / (maxHz - minHz);
 
   const fault = document.getElementById("fault")?.value || "none";
@@ -357,8 +354,8 @@ specCtx.font         = "11px Arial";
 specCtx.textAlign    = "center";
 specCtx.textBaseline = "top";
 
-const majorStep = 50;   // 0,50,100,150,200,250,300
-const minorStep = 10;
+const majorStep = 10;   // 0,50,100,150,200,250,300
+const minorStep = 5;
 
 const usedRuleX = [];
 const minGapPx  = 10;
