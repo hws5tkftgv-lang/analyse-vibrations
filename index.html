@@ -98,6 +98,11 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
 
 <script>
 (() => {
+  // ================= SPECTRUM VIEW =================
+const spectrumView = {
+  minHz: 0,
+  maxHz: 300
+};
   const canvas = document.getElementById("scene");
   const ctx    = canvas.getContext("2d");
 const specCanvas = document.getElementById("spectrum");
@@ -300,61 +305,60 @@ function drawSpectrum(hzMotor, hzBelt, time){
   specCtx.fillRect(0, hzZoneY, W, hzZoneHeight);
 
   /* ================= ÉCHELLE Hz (RÈGLE FIXE) ================= */
-  const minHz  = 0;
-  const maxHz  = 75;                 // règle fixe 0–75
-  const scaleX = W / (maxHz - minHz);
+  const minHz = spectrumView.minHz;
+const maxHz = spectrumView.maxHz;
+const scaleX = W / (maxHz - minHz);
 
   const fault = document.getElementById("fault")?.value || "none";
 
   /* ================= RÈGLE Hz (graduations) ================= */
-  specCtx.strokeStyle  = "rgba(255,255,255,0.35)";
-  specCtx.fillStyle    = "#eaf1ff";
-  specCtx.font         = "11px Arial";
-  specCtx.textAlign    = "center";
-  specCtx.textBaseline = "top";
+specCtx.strokeStyle  = "rgba(255,255,255,0.35)";
+specCtx.fillStyle    = "#eaf1ff";
+specCtx.font         = "11px Arial";
+specCtx.textAlign    = "center";
+specCtx.textBaseline = "top";
 
-  const majorStep = 15;     // 0,15,30,45,60,75
-  const minorStep = 5;      // graduations secondaires
+const majorStep = 50;   // 0,50,100,150,200,250,300
+const minorStep = 10;
 
-  // anti-chevauchement du texte de règle (mesure réelle du texte)
-  const usedRuleX = [];
-  const minGapPx  = 8; // marge mini entre 2 textes (px)
+const usedRuleX = [];
+const minGapPx  = 10;
 
-  for(let hz = minHz; hz <= maxHz; hz += minorStep){
-    const x = (hz - minHz) * scaleX;
-    const isMajor = (hz % majorStep === 0);
+for(let hz = minHz; hz <= maxHz; hz += minorStep){
+  const x = (hz - minHz) * scaleX;
+  const isMajor = (hz % majorStep === 0);
 
-    // trait
-    specCtx.beginPath();
-    specCtx.moveTo(x, hzZoneY);
-    specCtx.lineTo(x, hzZoneY + (isMajor ? 12 : 7));
-    specCtx.stroke();
+  // trait
+  specCtx.beginPath();
+  specCtx.moveTo(x, hzZoneY);
+  specCtx.lineTo(x, hzZoneY + (isMajor ? 12 : 6));
+  specCtx.stroke();
 
-    // texte seulement sur les majeures + anti-overlap
-    if(isMajor){
-      const txt = hz + " Hz";
-      const wTxt = specCtx.measureText(txt).width;
+  if(isMajor){
+    const txt = hz + " Hz";
+    const wTxt = specCtx.measureText(txt).width;
 
-      // intervalle occupé par ce texte
-      const left  = x - wTxt/2 - minGapPx;
-      const right = x + wTxt/2 + minGapPx;
+    const left  = x - wTxt/2 - minGapPx;
+    const right = x + wTxt/2 + minGapPx;
 
-      let ok = true;
-      for(const seg of usedRuleX){
-        if(!(right < seg.left || left > seg.right)){
-          ok = false;
-          break;
-        }
-      }
-
-      if(ok){
-        // clamp léger pour éviter que 0 Hz ou 75 Hz coupe
-        const xClamped = Math.max(wTxt/2 + 2, Math.min(W - (wTxt/2 + 2), x));
-        specCtx.fillText(txt, xClamped, hzZoneY + 14);
-        usedRuleX.push({ left: xClamped - wTxt/2 - minGapPx, right: xClamped + wTxt/2 + minGapPx });
+    let ok = true;
+    for(const seg of usedRuleX){
+      if(!(right < seg.left || left > seg.right)){
+        ok = false;
+        break;
       }
     }
+
+    if(ok){
+      const xClamped = Math.max(wTxt/2 + 2, Math.min(W - (wTxt/2 + 2), x));
+      specCtx.fillText(txt, xClamped, hzZoneY + 14);
+      usedRuleX.push({
+        left: xClamped - wTxt/2 - minGapPx,
+        right: xClamped + wTxt/2 + minGapPx
+      });
+    }
   }
+}
 
   /* ================= PICS ================= */
   let peaks = [
