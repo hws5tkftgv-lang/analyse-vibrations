@@ -281,67 +281,80 @@ function drawSpectrum(hzMotor, hzBelt, time){
   /* ================= DIMENSIONS ================= */
   const W = specCanvas.width / (devicePixelRatio || 1);
   const H = specCanvas.height / (devicePixelRatio || 1);
+
   // ===== ZONES VERTICALES =====
-const hzZoneHeight = 42;          // hauteur de la règle (bande bleue)
-const hzZoneY      = H - hzZoneHeight;
+  const hzZoneHeight = 42;            // hauteur de la règle (bande bleue)
+  const hzZoneY      = H - hzZoneHeight;
 
-const gridTop      = 16;          // marge haute de la grille
-const gridBottom   = hzZoneY - 10; // FIN de la grille (avant la règle)
-const gridHeight   = gridBottom - gridTop;
-  const LABEL_MIN_DX = 42;   // distance mini entre deux labels (px)
-const LABEL_OFFSET = 12;  // décalage vertical en cas de collision
+  const gridTop      = 16;            // marge haute de la grille
+  const gridBottom   = hzZoneY - 10;  // FIN de la grille (avant la règle)
+  const gridHeight   = gridBottom - gridTop;
 
-  
   /* ================= FOND ================= */
-  specCtx.clearRect(0,0,W,H);
+  specCtx.clearRect(0, 0, W, H);
   specCtx.fillStyle = "#05080f";
-  specCtx.fillRect(0,0,W,H);
+  specCtx.fillRect(0, 0, W, H);
 
-  // zone Hz (hors grille)
+  // bande bleue (règle)
   specCtx.fillStyle = "rgba(0,162,255,0.15)";
   specCtx.fillRect(0, hzZoneY, W, hzZoneHeight);
-  /* ================= RÈGLE Hz (0–75) ================= */
-/* ================= ÉCHELLE Hz ================= */
-  const minHz = 0;
-const maxHz = 75;        // RÈGLE FIXE
-const scaleX = W / (maxHz - minHz);
+
+  /* ================= ÉCHELLE Hz (RÈGLE FIXE) ================= */
+  const minHz  = 0;
+  const maxHz  = 75;                 // règle fixe 0–75
+  const scaleX = W / (maxHz - minHz);
+
   const fault = document.getElementById("fault")?.value || "none";
-specCtx.strokeStyle = "rgba(255,255,255,0.35)";
-specCtx.fillStyle   = "#eaf1ff";
-specCtx.font        = "11px Arial";
-specCtx.textAlign   = "center";
-specCtx.textBaseline= "top";
 
-const majorStep = 15;   // graduations principales : 0,15,30,45,60,75
-const minorStep = 5;    // graduations secondaires
-let lastLabelX = -Infinity;
-const MIN_LABEL_SPACING = 36; // px – ajuste si besoin (32–40)
-for(let hz = minHz; hz <= maxHz; hz += minorStep){
-  const x = (hz - minHz) * scaleX;
+  /* ================= RÈGLE Hz (graduations) ================= */
+  specCtx.strokeStyle  = "rgba(255,255,255,0.35)";
+  specCtx.fillStyle    = "#eaf1ff";
+  specCtx.font         = "11px Arial";
+  specCtx.textAlign    = "center";
+  specCtx.textBaseline = "top";
 
-  const isMajor = (hz % majorStep === 0);
+  const majorStep = 15;     // 0,15,30,45,60,75
+  const minorStep = 5;      // graduations secondaires
 
-  // trait vertical
-  specCtx.beginPath();
-  specCtx.moveTo(x, hzZoneY);
-  specCtx.lineTo(
-    x,
-    hzZoneY + (isMajor ? 12 : 7)
-  );
-  specCtx.stroke();
+  // anti-chevauchement du texte de règle (mesure réelle du texte)
+  const usedRuleX = [];
+  const minGapPx  = 8; // marge mini entre 2 textes (px)
 
-  // valeur numérique (seulement sur les majeures)
-  if (isMajor && Math.abs(x - lastLabelX) >= MIN_LABEL_SPACING) {
-  specCtx.fillText(
-    hz + " Hz",
-    x,
-    hzZoneY + 14
-  );
-  lastLabelX = x;
-}
-}
+  for(let hz = minHz; hz <= maxHz; hz += minorStep){
+    const x = (hz - minHz) * scaleX;
+    const isMajor = (hz % majorStep === 0);
 
-  
+    // trait
+    specCtx.beginPath();
+    specCtx.moveTo(x, hzZoneY);
+    specCtx.lineTo(x, hzZoneY + (isMajor ? 12 : 7));
+    specCtx.stroke();
+
+    // texte seulement sur les majeures + anti-overlap
+    if(isMajor){
+      const txt = hz + " Hz";
+      const wTxt = specCtx.measureText(txt).width;
+
+      // intervalle occupé par ce texte
+      const left  = x - wTxt/2 - minGapPx;
+      const right = x + wTxt/2 + minGapPx;
+
+      let ok = true;
+      for(const seg of usedRuleX){
+        if(!(right < seg.left || left > seg.right)){
+          ok = false;
+          break;
+        }
+      }
+
+      if(ok){
+        // clamp léger pour éviter que 0 Hz ou 75 Hz coupe
+        const xClamped = Math.max(wTxt/2 + 2, Math.min(W - (wTxt/2 + 2), x));
+        specCtx.fillText(txt, xClamped, hzZoneY + 14);
+        usedRuleX.push({ left: xClamped - wTxt/2 - minGapPx, right: xClamped + wTxt/2 + minGapPx });
+      }
+    }
+  }
 
   /* ================= PICS ================= */
   let peaks = [
@@ -373,63 +386,46 @@ for(let hz = minHz; hz <= maxHz; hz += minorStep){
     });
   }
 
-  /* ================= GRILLE (STOP NET) ================= */
+  /* ================= GRILLE (zone noire seulement) ================= */
   specCtx.strokeStyle = "rgba(255,255,255,0.08)";
-for(let i=0;i<=8;i++){
-  const x = i * W / 8;
-  specCtx.beginPath();
-  specCtx.moveTo(x, gridTop);
-  specCtx.lineTo(x, gridBottom);
-  specCtx.stroke();
-}
-  /* ================= BARRES + LABELS ================= */
-  const usedLabelX = [];
-const minLabelSpacing = 34; // anti-collision horizontal
-
-peaks.forEach((p,i)=>{
-  const pulse = 0.9 + 0.1 * Math.sin(time*5 + i);
-  const x = (p.hz - minHz) * scaleX;
-
-  // éviter débordement gauche/droite
-  if (x < 12 || x > W - 12) return;
-
-  const h = p.amp * pulse * (gridHeight * 0.9);
-  const barTopY = gridBottom - h;
-
-  // === BARRE ===
-  specCtx.strokeStyle = p.col;
-  specCtx.lineWidth = 3;
-  specCtx.beginPath();
-  specCtx.moveTo(x, gridBottom);
-  specCtx.lineTo(x, barTopY);
-  specCtx.stroke();
-
-  // === IDENTIFIANT (au-dessus de la barre) ===
-  let labelY = barTopY - 6;
-  labelY = Math.max(labelY, gridTop + 14); // sécurité haut
-
-  specCtx.fillStyle = "#cfd6ff";
-  specCtx.font = "12px Arial";
-  specCtx.textAlign = "center";
-  specCtx.textBaseline = "bottom";
-  specCtx.fillText(p.label, x, labelY);
-
-  // === VALEUR Hz (SOUS la grille, dans la bande bleue) ===
-  let labelX = x;
-
-  // anti-collision des Hz
-  for(const usedX of usedLabelX){
-    if(Math.abs(labelX - usedX) < minLabelSpacing){
-      labelX += minLabelSpacing;
-    }
+  for(let i=0;i<=8;i++){
+    const x = i * W / 8;
+    specCtx.beginPath();
+    specCtx.moveTo(x, gridTop);
+    specCtx.lineTo(x, gridBottom);
+    specCtx.stroke();
   }
-  usedLabelX.push(labelX);
 
-  specCtx.fillStyle = "#eaf1ff";
-  specCtx.font = "12px Arial";
-  specCtx.textBaseline = "middle";
-  
-});
+  /* ================= BARRES + LABELS (dans la grille) ================= */
+  peaks.forEach((p,i)=>{
+    // si hors règle 0–75, on ignore (évite barres hors cadre)
+    if(p.hz < minHz || p.hz > maxHz) return;
+
+    const pulse = 0.9 + 0.1 * Math.sin(time*5 + i);
+    const x = (p.hz - minHz) * scaleX;
+
+    const h = p.amp * pulse * (gridHeight * 0.9);
+    const barTopY = gridBottom - h;
+
+    // barre
+    specCtx.strokeStyle = p.col;
+    specCtx.lineWidth = 3;
+    specCtx.beginPath();
+    specCtx.moveTo(x, gridBottom);
+    specCtx.lineTo(x, barTopY);
+    specCtx.stroke();
+
+    // identifiant au-dessus (clamp pour éviter de sortir)
+    specCtx.fillStyle = "#cfd6ff";
+    specCtx.font = "12px Arial";
+    specCtx.textAlign = "center";
+    specCtx.textBaseline = "bottom";
+
+    let labelY = barTopY - 6;
+    labelY = Math.max(labelY, gridTop + 14); // ne jamais sortir par le haut
+    specCtx.fillText(p.label, x, labelY);
+  });
+
   /* ================= AXE ================= */
   specCtx.fillStyle="#9aa5d6";
   specCtx.font="12px Arial";
