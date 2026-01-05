@@ -171,7 +171,10 @@ canvas.spectrum-only{
 <div class="stage"><canvas id="scene"></canvas></div>
 <div class="stage"><canvas id="spectrum"></canvas></div>
 <div class="results" id="info"></div>
-
+<div id="rotateWarn" class="rotate-warning" style="display:none;">
+  🔄 Tournez votre téléphone en mode paysage
+  <span>Pour une meilleure lecture du spectre</span>
+</div>
 <script>
 (() => {
   // ================= SPECTRUM VIEW =================
@@ -757,26 +760,41 @@ fsBtn.onclick = () => {
   resize();           // recalcul canvas
   checkOrientation(); // affiche / cache message
 };
-let spectrumFS = false;
+const fsBtn = document.getElementById("fs");
 const rotateWarn = document.getElementById("rotateWarn");
+
+let spectrumFS = false;
+
 function checkOrientation(){
-  if(!spectrumFS) {
+  if(!spectrumFS){
     rotateWarn.style.display = "none";
     return;
   }
-
   const isPortrait = window.innerHeight > window.innerWidth;
-
   rotateWarn.style.display = isPortrait ? "flex" : "none";
 }
+
+fsBtn.onclick = () => {
+  spectrumFS = !spectrumFS;
+
+  if(spectrumFS){
+    specCanvas.classList.add("spectrum-only");
+    document.body.classList.add("lock-scroll");
+  }else{
+    specCanvas.classList.remove("spectrum-only");
+    document.body.classList.remove("lock-scroll");
+  }
+
+  resize();            // recalcul canvas
+  checkOrientation();  // affiche/cache message si portrait
+};
+
+// IMPORTANT: maintenir à jour quand on tourne ou resize
+window.addEventListener("resize", checkOrientation);
+window.addEventListener("orientationchange", checkOrientation);
 })(); 
 </script>
-<div id="rotateWarn" class="rotate-warning" style="display:none;">
-  🔄 Tournez votre téléphone en mode paysage
-  <span>Pour une meilleure lecture du spectre</span>
-</div>
-<div id="rotateWarn">
-  Tournez votre téléphone en mode paysage
-</div>
+
+
 </body>
 </html>
