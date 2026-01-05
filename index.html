@@ -2,121 +2,343 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Poulie menante seule — arc correct</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Courroie & poulies — trajectoire correcte</title>
+
 <style>
-html,body{
-  margin:0;
-  background:#0b1436;
-  color:#eaf1ff;
-  font-family:Arial,sans-serif;
+:root{
+  --bg:#0b1436;
+  --panel:#101a40;
+  --text:#eaf1ff;
+  --muted:rgba(234,241,255,.70);
+  --blue:#00a2ff;
+  --orange:#ff9800;
+  --belt:#9a9a9a;
+  --btn:#1c2b6a;
+  --bad:#ff4d4d;
 }
-canvas{
-  display:block;
-  margin:40px auto;
-  background:#000;
-  border-radius:12px;
-  width:min(92vw, 820px);
-  height:auto;
-}
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ margin:0; background:var(--bg); color:var(--text); font-family:Arial,system-ui,sans-serif; }
+header{ padding:10px 14px; font-size:16px; font-weight:700; }
+.controls{ padding:10px 14px; display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+.controls label{ font-size:12px; color:var(--muted); }
+.controls input,.controls select{ width:100%; padding:7px 9px; font-size:14px; border-radius:10px; border:none; }
+.controls .full{ grid-column:1/-1; }
+.buttons{ display:flex; gap:10px; padding:0 14px 10px; }
+button{ flex:1; padding:10px; font-size:15px; border:none; border-radius:12px; background:var(--btn); color:white; }
+.stage{ padding:10px 14px; }
+canvas{ width:100%; background:#000; border-radius:12px; display:block; }
+.results{ padding:10px 14px 18px; font-size:14px; line-height:1.45; }
+.dot{ display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px; vertical-align:middle; }
+.blue{background:var(--blue);} .orange{background:var(--orange);} .white{background:#fff;}
+.bad{color:var(--bad); font-weight:700;}
+.small{ font-size:12px; opacity:.75; margin-top:6px;}
 </style>
 </head>
-<body>
 
-<canvas id="c" width="820" height="420"></canvas>
+<body>
+<header>🔄 Courroie & poulies — trajectoire correcte (open belt)</header>
+
+<div class="controls">
+  <label>RPM moteur <input id="rpm" type="number" inputmode="decimal" value="1500"></label>
+  <label>Unités
+    <select id="unit">
+      <option value="imperial" selected>po</option>
+      <option value="metric">mm</option>
+    </select>
+  </label>
+  <label>Ø menante <input id="d1" type="number" inputmode="decimal" value="4"></label>
+  <label>Ø menée <input id="d2" type="number" inputmode="decimal" value="9"></label>
+  <label class="full">C-C <input id="cc" type="number" inputmode="decimal" value="21"></label>
+  <div class="full">
+    <label style="display:block;margin-bottom:4px;">Ralenti (plus grand = plus lent)</label>
+    <input id="slow" type="range" min="1" max="20" value="8">
+  </div>
+</div>
+
+<div class="buttons">
+  <button id="play">Play</button>
+  <button id="pause">Pause</button>
+  <button id="reset">Reset</button>
+</div>
+
+<div class="stage"><canvas id="scene"></canvas></div>
+<div class="results" id="info"></div>
 
 <script>
 (() => {
-  const canvas = document.getElementById("c");
-  const ctx = canvas.getContext("2d");
+  const canvas = document.getElementById("scene");
+  const ctx    = canvas.getContext("2d");
+
+  const rpmEl  = document.getElementById("rpm");
+  const d1El   = document.getElementById("d1");
+  const d2El   = document.getElementById("d2");
+  const ccEl   = document.getElementById("cc");
+  const unitEl = document.getElementById("unit");
+  const slowEl = document.getElementById("slow");
+  const infoEl = document.getElementById("info");
+
+  const playBtn  = document.getElementById("play");
+  const pauseBtn = document.getElementById("pause");
+  const resetBtn = document.getElementById("reset");
+
   const TAU = Math.PI * 2;
+  const IN_TO_MM = 25.4;
 
-  let t = 0;
+  let t = 0, running = false, lastTS = null, lockedWidth = null;
 
-  const lerp = (a,b,u)=>({ x:a.x+(b.x-a.x)*u, y:a.y+(b.y-a.y)*u });
+  const clamp = (v,a,b)=>Math.max(a, Math.min(b, v));
 
-  function loop(){
-    t += 1/60;         // temps “stable”
+  function resize(){
+    if(!lockedWidth) lockedWidth = Math.min(innerWidth - 24, 720);
+    const w = lockedWidth, h = w * 0.55;
+    const dpr = Math.min(3, devicePixelRatio || 1);
+    canvas.style.width = w + "px";
+    canvas.style.height= h + "px";
+    canvas.width  = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  addEventListener("resize", resize);
+  resize();
+
+  function read(){
+    let rpm = parseFloat(rpmEl.value);
+    let d1  = parseFloat(d1El.value);
+    let d2  = parseFloat(d2El.value);
+    let cc  = parseFloat(ccEl.value);
+
+    if(!isFinite(rpm) || !isFinite(d1) || !isFinite(d2) || !isFinite(cc)) return null;
+    if(rpm <= 0 || d1 <= 0 || d2 <= 0 || cc <= 0) return null;
+
+    if(unitEl.value === "imperial"){ d1*=IN_TO_MM; d2*=IN_TO_MM; cc*=IN_TO_MM; }
+    return { rpm, d1mm:d1, d2mm:d2, ccmm:cc };
+  }
+
+  // === construit un chemin UNIQUE (points) : lignes + arcs ===
+  function buildBeltPath(x1,y1,r1, x2,y2,r2){
+    const C = Math.hypot(x2-x1, y2-y1);
+    const R = Math.max(r1,r2);
+    const r = Math.min(r1,r2);
+
+    // on suppose centres alignés horizontalement (ici c'est le cas)
+    // formule open-belt : phi = acos((R-r)/C)
+    const phi = Math.acos(clamp((R - r)/C, -1, 1));
+
+    // assignation : poulie gauche = (x1,r1), droite=(x2,r2)
+    // si la gauche n'est pas la petite, ça marche quand même car on utilise R/r pour les angles d’enroulement,
+    // mais les tangences se calculent avec les vrais rayons r1/r2.
+    const aL_top =  phi;
+    const aL_bot = -phi;
+    const aR_top = Math.PI - phi;
+    const aR_bot = Math.PI + phi;
+
+    const Ltop = {x:x1 + r1*Math.cos(aL_top), y:y1 + r1*Math.sin(aL_top)};
+    const Lbot = {x:x1 + r1*Math.cos(aL_bot), y:y1 + r1*Math.sin(aL_bot)};
+    const Rtop = {x:x2 + r2*Math.cos(aR_top), y:y2 + r2*Math.sin(aR_top)};
+    const Rbot = {x:x2 + r2*Math.cos(aR_bot), y:y2 + r2*Math.sin(aR_bot)};
+
+    // Sweeps (très important)
+    // - sur la poulie DROITE (souvent la grande): on veut l'arc LONG : TAU - 2phi, et dans le SENS HORAIRE (sweep négatif)
+    const sweepRight = -(TAU - 2*phi);
+
+    // - sur la poulie GAUCHE (souvent la petite): on veut l'arc COURT : 2phi, et dans le sens anti-horaire (sweep positif)
+    const sweepLeft  = +(2*phi);
+
+    function arcPoints(cx,cy,r, aStart, sweep){
+      const absSweep = Math.abs(sweep);
+      const steps = Math.max(18, Math.floor((absSweep * r) / 10)); // densité stable
+      const pts = [];
+      for(let i=0;i<=steps;i++){
+        const u = i/steps;
+        const a = aStart + sweep*u;
+        pts.push({x:cx + r*Math.cos(a), y:cy + r*Math.sin(a)});
+      }
+      return pts;
+    }
+
+    // Construire la boucle dans l’ordre du déplacement :
+    // 1) top line Ltop -> Rtop
+    // 2) arc right Rtop -> Rbot (arc long)
+    // 3) bottom line Rbot -> Lbot
+    // 4) arc left Lbot -> Ltop (arc court)
+
+    const pts = [];
+    pts.push(Ltop, Rtop);
+
+    // arc droite : commence à aR_top
+    const arcR = arcPoints(x2,y2,r2, aR_top, sweepRight);
+    // arcR inclut déjà le point de départ; éviter doublon
+    for(let i=1;i<arcR.length;i++) pts.push(arcR[i]);
+
+    pts.push(Lbot); // on rejoint par ligne (Rbot->Lbot) via dessin; le point Rbot est déjà fin d’arc
+
+    // ligne bottom : on insère un point intermédiaire pour un segment propre
+    // (pas obligatoire, mais aide à éviter micro artefacts)
+    // On ajoute Rbot puis Lbot correctement : la fin d’arc est déjà Rbot, ensuite on "lineTo" Lbot.
+    // Ici on a déjà Lbot, donc on réorganise: on veut une vraie ligne Rbot->Lbot.
+    // Solution simple : remplacer l’ajout direct de Lbot par une étape dessin uniquement.
+    // => On va recalculer en mode "dessin": on ne touche plus la liste ici.
+    // On reconstruit correctement la liste ci-dessous :
+
+    const clean = [];
+    clean.push(Ltop, Rtop);
+    for(let i=1;i<arcR.length;i++) clean.push(arcR[i]); // termine sur Rbot
+    clean.push(Lbot); // segment Rbot -> Lbot
+
+    // arc gauche : il doit commencer à Lbot (angle aL_bot) et finir à Ltop (angle aL_top) avec sweep +2phi
+    const arcL = arcPoints(x1,y1,r1, aL_bot, sweepLeft);
+    for(let i=1;i<arcL.length;i++) clean.push(arcL[i]); // termine sur Ltop
+
+    return {
+      pts: clean,
+      phi,
+      tangency: {Ltop,Lbot,Rtop,Rbot},
+      sweeps: {sweepRight, sweepLeft}
+    };
+  }
+
+  function polylineLength(pts){
+    let L = 0;
+    for(let i=1;i<pts.length;i++){
+      const dx = pts[i].x-pts[i-1].x;
+      const dy = pts[i].y-pts[i-1].y;
+      L += Math.hypot(dx,dy);
+    }
+    return L;
+  }
+
+  function pointAt(pts, s){
+    // s en [0, total)
+    let acc = 0;
+    for(let i=1;i<pts.length;i++){
+      const a = pts[i-1], b = pts[i];
+      const seg = Math.hypot(b.x-a.x, b.y-a.y);
+      if(acc + seg >= s){
+        const u = (s - acc)/seg;
+        return { x: a.x + (b.x-a.x)*u, y: a.y + (b.y-a.y)*u };
+      }
+      acc += seg;
+    }
+    return pts[pts.length-1];
+  }
+
+  function loop(ts){
+    if(lastTS === null) lastTS = ts;
+    const dt = (ts - lastTS)/1000;
+    lastTS = ts;
+
+    if(running){
+      const slow = parseFloat(slowEl.value) || 1;
+      // vitesse de temps
+      t += dt / slow;
+    }
     draw();
     requestAnimationFrame(loop);
   }
 
   function draw(){
-    const W = canvas.width;
-    const H = canvas.height;
+    const W = canvas.width/(devicePixelRatio||1);
+    const H = canvas.height/(devicePixelRatio||1);
+
     ctx.clearRect(0,0,W,H);
     ctx.fillStyle="#000";
     ctx.fillRect(0,0,W,H);
 
-    // === POULIE (à droite) ===
-    const cx = Math.round(W*0.70);
-    const cy = Math.round(H*0.52);
-    const r  = Math.round(Math.min(W,H)*0.18);
+    const inp = read();
+    if(!inp){
+      infoEl.innerHTML = `<span class="bad">⛔ Entre RPM, Ø menante, Ø menée et C-C puis Play.</span>`;
+      return;
+    }
 
-    // angle de contact (visuel)
-    const phi = Math.PI * 0.34;  // ~61°
+    const { rpm, d1mm, d2mm, ccmm } = inp;
 
-    // ✅ POINTS DE TANGENCE SUR LE CÔTÉ GAUCHE (π ± φ)
-    const aTop = Math.PI - phi;
-    const aBot = Math.PI + phi;
+    const r1mm = d1mm/2, r2mm = d2mm/2;
+    const Cmm  = ccmm;
 
-    const Ttop = { x: cx + r*Math.cos(aTop), y: cy + r*Math.sin(aTop) };
-    const Tbot = { x: cx + r*Math.cos(aBot), y: cy + r*Math.sin(aBot) };
+    // validation open belt
+    const minCC = Math.abs(r2mm - r1mm);
+    if(Cmm <= minCC){
+      infoEl.innerHTML = `
+        <div class="bad">⛔ Géométrie impossible (open belt)</div>
+        <div>C-C doit être &gt; |R2 − R1|.</div>
+        <div class="small">Min = ${unitEl.value==="imperial" ? (minCC/IN_TO_MM).toFixed(2)+" po" : minCC.toFixed(1)+" mm"}</div>
+      `;
+      return;
+    }
 
-    // segments (on part vers la gauche)
-    const Ltop = { x: Ttop.x - Math.round(W*0.42), y: Ttop.y - Math.round(H*0.10) };
-    const Lbot = { x: Tbot.x - Math.round(W*0.42), y: Tbot.y + Math.round(H*0.10) };
+    // échelle écran
+    const margin = 26;
+    const s = Math.min(
+      (W - 2*margin) / (Cmm + r1mm + r2mm),
+      (H - 2*margin) / (2 * Math.max(r1mm, r2mm))
+    );
 
-    // === COURROIE ===
-    ctx.strokeStyle="#9a9a9a";
-    ctx.lineWidth=10;
+    const r1 = r1mm*s, r2 = r2mm*s, C = Cmm*s;
+
+    // centres (horizontal)
+    const x1 = margin + r1;
+    const x2 = x1 + C;
+    const y  = H/2;
+
+    // === Chemin courroie unique ===
+    const path = buildBeltPath(x1,y,r1, x2,y,r2);
+    const pts = path.pts;
+
+    // draw belt
+    ctx.strokeStyle = "#9a9a9a";
+    ctx.lineWidth = 4;
     ctx.lineCap="round";
     ctx.lineJoin="round";
     ctx.beginPath();
-    ctx.moveTo(Ltop.x, Ltop.y);
-    ctx.lineTo(Ttop.x, Ttop.y);
-
-    // ✅ ARC CONVEXE DU BON CÔTÉ : de (π-φ) à (π+φ) en sens horaire (false)
-    ctx.arc(cx, cy, r, aTop, aBot, false);
-
-    ctx.lineTo(Lbot.x, Lbot.y);
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x, pts[i].y);
     ctx.stroke();
 
-    // === POULIE ===
-    ctx.strokeStyle="#00a2ff";
-    ctx.lineWidth=10;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, TAU);
-    ctx.stroke();
-
-    // === POINT QUI SE DÉPLACE SUR LE CHEMIN ===
-    const lenSegTop = Math.hypot(Ttop.x-Ltop.x, Ttop.y-Ltop.y);
-    const lenArc    = r * (aBot - aTop);     // (π+φ) - (π-φ) = 2φ
-    const lenSegBot = Math.hypot(Lbot.x-Tbot.x, Lbot.y-Tbot.y);
-    const total = lenSegTop + lenArc + lenSegBot;
-
-    const speed = 140; // px/s (visuel)
-    let s = (t*speed) % total;
-
-    let P;
-    if(s <= lenSegTop){
-      P = lerp(Ltop, Ttop, s/lenSegTop);
-    } else if((s -= lenSegTop) <= lenArc){
-      const u = s/lenArc;
-      const a = aTop + u*(aBot - aTop);
-      P = { x: cx + r*Math.cos(a), y: cy + r*Math.sin(a) };
-    } else {
-      s -= lenArc;
-      P = lerp(Tbot, Lbot, s/lenSegBot);
+    // draw pulleys
+    function drawPulley(cx,cy,r,col){
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(cx,cy,r,0,TAU);
+      ctx.stroke();
     }
+    drawPulley(x1,y,r1,"#00a2ff");
+    drawPulley(x2,y,r2,"#ff9800");
+
+    // vitesse linéaire: v = ω1*r1
+    const w1 = TAU*(rpm/60);
+    const v_px_s = Math.abs(w1) * r1;
+
+    // point sur la courroie
+    const totalLen = polylineLength(pts);
+    const sPos = (v_px_s * t) % totalLen;
+    const P = pointAt(pts, sPos);
 
     ctx.fillStyle="#fff";
     ctx.beginPath();
-    ctx.arc(P.x, P.y, 9, 0, TAU);
+    ctx.arc(P.x,P.y,6,0,TAU);
     ctx.fill();
+
+    // rotations (info)
+    const rpmMenante = rpm;
+    const rpmMenee = rpm * (d1mm/d2mm);
+    const hzMenante = rpmMenante/60;
+    const hzMenee = rpmMenee/60;
+
+    infoEl.innerHTML = `
+      <div><span class="dot blue"></span><b>Poulie menante</b> : ${rpmMenante.toFixed(0)} RPM | ${hzMenante.toFixed(2)} Hz</div>
+      <div><span class="dot orange"></span><b>Poulie menée</b> : ${rpmMenee.toFixed(0)} RPM | ${hzMenee.toFixed(2)} Hz</div>
+      <div><span class="dot white"></span><b>Courroie</b> : ${(v_px_s / (s||1)).toFixed(0)} (vitesse relative écran)</div>
+      <div class="small">${running ? "▶️ En lecture" : "⏸ En pause"}</div>
+    `;
   }
 
-  loop();
+  playBtn.onclick  = () => { running = !!read(); };
+  pauseBtn.onclick = () => { running = false; };
+  resetBtn.onclick = () => { t=0; running=false; draw(); };
+
+  requestAnimationFrame(loop);
 })();
 </script>
 </body>
