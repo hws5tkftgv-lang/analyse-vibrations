@@ -265,18 +265,20 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
 
     const { rpm, d1mm, d2mm, ccmm } = inp;
     // === Longueur de courroie (open belt) ===
+// === Longueur de courroie (open belt) ===
 const D1 = d1mm;
 const D2 = d2mm;
 const Cc = ccmm;
-const Ldisplay =
-  unitEl.value === "imperial"
-    ? (Lmm / IN_TO_MM).toFixed(2) + " po"
-    : Lmm.toFixed(1) + " mm";
 
 const Lmm =
   2 * Cc +
   (Math.PI / 2) * (D1 + D2) +
   ((D2 - D1) ** 2) / (4 * Cc);
+
+const Ldisplay =
+  (unitEl.value === "imperial")
+    ? (Lmm / IN_TO_MM).toFixed(2) + " po"
+    : Lmm.toFixed(1) + " mm";
 
     const r1mm = d1mm/2, r2mm = d2mm/2;
     const Cmm  = ccmm;
