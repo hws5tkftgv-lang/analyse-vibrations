@@ -92,6 +92,18 @@ canvas.spectrum-only{
   z-index: 9999;
 }
 
+body.spectrum-mode > *:not(#spectrum):not(#rotateWarn){
+  display: none !important;
+}
+
+body.spectrum-mode{
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  height: 100vh;
+}
+
+
 
 </style>
 </head>
@@ -234,13 +246,11 @@ const outFPM    = document.getElementById("out-fpm");
 
   const clamp = (v,a,b)=>Math.max(a, Math.min(b, v));
 
-  function resize(){
+function resize(){
 
   const dpr = Math.min(3, window.devicePixelRatio || 1);
 
-  /* =====================================================
-     CANVAS PRINCIPAL (SCÈNE POULIES)
-     ===================================================== */
+  /* ===== SCÈNE (POULIES) ===== */
   if(!lockedWidth){
     lockedWidth = Math.min(window.innerWidth - 24, 720);
   }
@@ -252,41 +262,37 @@ const outFPM    = document.getElementById("out-fpm");
   canvas.style.height = h + "px";
   canvas.width  = Math.round(w * dpr);
   canvas.height = Math.round(h * dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
 
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-  /* =====================================================
-     CANVAS SPECTRE
-     ===================================================== */
+  /* ===== SPECTRE ===== */
   let specW, specH;
 
-  if (spectrumFS) {
-    // ===== FULL SCREEN SPECTRE =====
-    specW = window.innerWidth;
-    specH = window.innerHeight;
+  if(spectrumFS){
+    // ⚠️ CRITIQUE SUR iOS
+    const vv = window.visualViewport || { width: innerWidth, height: innerHeight };
+    specW = vv.width;
+    specH = vv.height;
 
-    specCanvas.style.position   = "fixed";
-    specCanvas.style.inset      = "0";
-    specCanvas.style.marginTop  = "0";
+    specCanvas.style.position = "fixed";
+    specCanvas.style.left = "0";
+    specCanvas.style.top  = "0";
+    specCanvas.style.margin = "0";
     specCanvas.style.borderRadius = "0";
-  } else {
-    // ===== MODE NORMAL =====
+  }else{
     specW = w;
     specH = Math.max(220, h * 0.95);
 
-    specCanvas.style.position   = "relative";
-    specCanvas.style.inset      = "";
-    specCanvas.style.marginTop  = "18px";
+    specCanvas.style.position = "relative";
+    specCanvas.style.marginTop = "18px";
     specCanvas.style.borderRadius = "12px";
   }
 
   specCanvas.style.width  = specW + "px";
   specCanvas.style.height = specH + "px";
-
   specCanvas.width  = Math.round(specW * dpr);
   specCanvas.height = Math.round(specH * dpr);
 
-  specCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  specCtx.setTransform(dpr,0,0,dpr,0,0);
 }
   function read(){
     let rpm = parseFloat(rpmEl.value);
@@ -764,15 +770,13 @@ fsBtn.onclick = () => {
   spectrumFS = !spectrumFS;
 
   if(spectrumFS){
-    specCanvas.classList.add("spectrum-only");
-    document.body.classList.add("lock-scroll");
+    document.body.classList.add("spectrum-mode");
   }else{
-    specCanvas.classList.remove("spectrum-only");
-    document.body.classList.remove("lock-scroll");
+    document.body.classList.remove("spectrum-mode");
   }
 
-  resize();            // recalcul canvas
-  checkOrientation();  // affiche/cache message si portrait
+  resize();
+  checkOrientation();
 };
 
 // IMPORTANT: maintenir à jour quand on tourne ou resize
