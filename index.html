@@ -766,7 +766,12 @@ function checkOrientation(){
     rotateWarn.style.display = "none";
     return;
   }
-  const isPortrait = window.innerHeight > window.innerWidth;
+  const vv = window.visualViewport;
+const vw = vv ? vv.width  : window.innerWidth;
+const vh = vv ? vv.height : window.innerHeight;
+
+// marge anti-faux-positif iOS
+const isPortrait = vh > vw + 40;
   rotateWarn.style.display = isPortrait ? "flex" : "none";
 }
 
