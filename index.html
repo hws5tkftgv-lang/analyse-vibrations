@@ -92,10 +92,20 @@ canvas.spectrum-only{
   z-index: 9999;
 }
 
-body.spectrum-mode > *:not(#spectrum):not(#rotateWarn){
-  display: none !important;
+/* ===== MODE SPECTRE : cacher le reste (sans cacher le parent du canvas) ===== */
+body.spectrum-mode header,
+body.spectrum-mode .controls,
+body.spectrum-mode .buttons,
+body.spectrum-mode #sceneStage,
+body.spectrum-mode #info{
+  display:none !important;
 }
 
+/* garder le spectre visible */
+body.spectrum-mode #specStage{
+  display:block !important;
+  padding:0 !important;
+}
 body.spectrum-mode{
   margin: 0;
   padding: 0;
@@ -153,9 +163,9 @@ body.spectrum-mode{
   <button id="reset">Reset</button>
     <button id="fs">Full screen</button>
 </div>
+<div class="stage" id="sceneStage"><canvas id="scene"></canvas></div>
+<div class="stage" id="specStage"><canvas id="spectrum"></canvas></div>
 
-<div class="stage"><canvas id="scene"></canvas></div>
-<div class="stage"><canvas id="spectrum"></canvas></div>
 <div class="results" id="info"></div>
 <div id="rotateWarn" class="rotate-warning" style="display:none;">
   🔄 Tournez votre téléphone en mode paysage
@@ -783,6 +793,8 @@ fsBtn.onclick = () => {
   }else{
     document.body.classList.remove("spectrum-mode");
   }
+    specCanvas.classList.toggle("spectrum-only", spectrumFS);
+  document.body.classList.toggle("lock-scroll", spectrumFS);
 
   resize();
   checkOrientation();
