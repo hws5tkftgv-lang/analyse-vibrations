@@ -277,54 +277,50 @@ specCtx.setTransform(dpr,0,0,dpr,0,0);
 
 function drawSpectrum(hzMotor, hzBelt, time){
 
-  /* ================== DIMENSIONS ================== */
+  /* ================= DIMENSIONS ================= */
   const W = specCanvas.width / (devicePixelRatio || 1);
   const H = specCanvas.height / (devicePixelRatio || 1);
 
-  const hzZoneHeight = 28;                 // zone texte Hz
+  const hzZoneHeight = 30;                 // zone réservée aux Hz
   const hzZoneY      = H - hzZoneHeight;   // début zone Hz
-  const gridBottom   = hzZoneY;            // fin de la grille
+  const gridBottom   = hzZoneY;            // FIN ABSOLUE DE LA GRILLE
 
-  /* ================== FOND ================== */
+  /* ================= FOND ================= */
   specCtx.clearRect(0,0,W,H);
   specCtx.fillStyle = "#05080f";
   specCtx.fillRect(0,0,W,H);
 
-  // zone bleue (hors grille)
-  specCtx.fillStyle = "rgba(0,162,255,0.12)";
+  // zone Hz (hors grille)
+  specCtx.fillStyle = "rgba(0,162,255,0.15)";
   specCtx.fillRect(0, hzZoneY, W, hzZoneHeight);
 
-  /* ================== ÉCHELLE Hz ================== */
+  /* ================= ÉCHELLE Hz ================= */
   const paddingHz = hzMotor * 0.5;
   const minHz = Math.max(0, hzBelt - paddingHz);
   const maxHz = hzMotor * 2.5;
   const scaleX = W / (maxHz - minHz);
 
-  /* ================== DÉFAUT ================== */
   const fault = document.getElementById("fault")?.value || "none";
 
+  /* ================= PICS ================= */
   let peaks = [
     { hz: hzMotor, amp: 1.0, col:"#00a2ff", label:"1× moteur" }
   ];
 
-  if (fault === "none") {
+  if (fault === "none")
     peaks.push({ hz: hzMotor*2, amp: 0.4, col:"#5fbfff", label:"2× moteur" });
-  }
 
-  if (fault === "unbalance") {
+  if (fault === "unbalance")
     peaks.push({ hz: hzMotor, amp: 1.6, col:"#ff5555", label:"Balourd (1×)" });
-  }
 
-  if (fault === "misalign") {
+  if (fault === "misalign")
     peaks.push({ hz: hzMotor*2, amp: 1.2, col:"#ff9800", label:"Désalignement (2×)" });
-  }
 
-  if (fault === "belt") {
+  if (fault === "belt")
     peaks.push(
       { hz: hzBelt,   amp: 1.1, col:"#ffffff", label:"Courroie" },
       { hz: hzBelt*2, amp: 0.6, col:"#bbbbbb", label:"2× courroie" }
     );
-  }
 
   if (fault === "slip") {
     const slipFactor = 0.92 + 0.08 * Math.sin(time * 2);
@@ -336,7 +332,7 @@ function drawSpectrum(hzMotor, hzBelt, time){
     });
   }
 
-  /* ================== GRILLE (STOP AVANT ZONE Hz) ================== */
+  /* ================= GRILLE (STOP NET) ================= */
   specCtx.strokeStyle = "rgba(255,255,255,0.08)";
   for(let i=0;i<=8;i++){
     const hz = minHz + i * (maxHz - minHz) / 8;
@@ -347,11 +343,11 @@ function drawSpectrum(hzMotor, hzBelt, time){
     specCtx.stroke();
   }
 
-  /* ================== PICS ================== */
+  /* ================= BARRES + LABELS ================= */
   peaks.forEach((p,i)=>{
     const pulse = 0.9 + 0.1 * Math.sin(time*5 + i);
     const x = (p.hz - minHz) * scaleX;
-    const h = p.amp * pulse * (gridBottom * 0.85);
+    const h = p.amp * pulse * (gridBottom * 0.82);
 
     // barre
     specCtx.strokeStyle = p.col;
@@ -361,25 +357,25 @@ function drawSpectrum(hzMotor, hzBelt, time){
     specCtx.lineTo(x, gridBottom - h);
     specCtx.stroke();
 
-    // label AU-DESSUS de la barre
+    // identifiant AU-DESSUS de la barre
     specCtx.fillStyle = "#cfd6ff";
-    specCtx.font = "11px Arial";
+    specCtx.font = "12px Arial";
     specCtx.textAlign = "center";
     specCtx.textBaseline = "bottom";
     specCtx.fillText(p.label, x, gridBottom - h - 6);
 
-    // valeur Hz SOUS la grille (zone bleue)
-    specCtx.fillStyle = "#cfe2ff";
+    // valeur Hz SOUS la grille (hors grille)
+    specCtx.fillStyle = "#eaf1ff";
     specCtx.font = "12px Arial";
     specCtx.textBaseline = "middle";
     specCtx.fillText(
       p.hz.toFixed(2) + " Hz",
       x,
-      hzZoneY + hzZoneHeight/2
+      hzZoneY + hzZoneHeight / 2
     );
   });
 
-  /* ================== AXE ================== */
+  /* ================= AXE ================= */
   specCtx.fillStyle="#9aa5d6";
   specCtx.font="12px Arial";
   specCtx.textAlign="right";
