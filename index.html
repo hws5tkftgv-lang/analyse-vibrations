@@ -281,15 +281,17 @@ function drawSpectrum(hzMotor, hzBelt, time){
   /* ================= DIMENSIONS ================= */
   const W = specCanvas.width / (devicePixelRatio || 1);
   const H = specCanvas.height / (devicePixelRatio || 1);
+  // ===== ZONES VERTICALES =====
+const hzZoneHeight = 42;          // hauteur de la règle (bande bleue)
+const hzZoneY      = H - hzZoneHeight;
+
+const gridTop      = 16;          // marge haute de la grille
+const gridBottom   = hzZoneY - 10; // FIN de la grille (avant la règle)
+const gridHeight   = gridBottom - gridTop;
   const LABEL_MIN_DX = 42;   // distance mini entre deux labels (px)
 const LABEL_OFFSET = 12;  // décalage vertical en cas de collision
 
-  const hzZoneHeight = 36;          // bande bleue (Hz)
-const hzZoneY      = H - hzZoneHeight;
-
-const gridTop      = 16;          // marge haute
-const gridBottom   = hzZoneY - 12; // FIN de la grille (AVANT la bande bleue)
-const gridHeight   = gridBottom - gridTop;
+  
   /* ================= FOND ================= */
   specCtx.clearRect(0,0,W,H);
   specCtx.fillStyle = "#05080f";
@@ -300,11 +302,9 @@ const gridHeight   = gridBottom - gridTop;
   specCtx.fillRect(0, hzZoneY, W, hzZoneHeight);
 
   /* ================= ÉCHELLE Hz ================= */
-  const paddingHz = hzMotor * 0.5;
-  const minHz = Math.max(0, hzBelt - paddingHz);
-  const maxHz = hzMotor * 2.5;
-  const scaleX = W / (maxHz - minHz);
-
+  const minHz = 0;
+const maxHz = 75;        // RÈGLE FIXE
+const scaleX = W / (maxHz - minHz);
   const fault = document.getElementById("fault")?.value || "none";
 
   /* ================= PICS ================= */
