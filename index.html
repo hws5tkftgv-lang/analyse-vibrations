@@ -301,6 +301,11 @@ const LABEL_OFFSET = 12;  // décalage vertical en cas de collision
   specCtx.fillStyle = "rgba(0,162,255,0.15)";
   specCtx.fillRect(0, hzZoneY, W, hzZoneHeight);
   /* ================= RÈGLE Hz (0–75) ================= */
+/* ================= ÉCHELLE Hz ================= */
+  const minHz = 0;
+const maxHz = 75;        // RÈGLE FIXE
+const scaleX = W / (maxHz - minHz);
+  const fault = document.getElementById("fault")?.value || "none";
 specCtx.strokeStyle = "rgba(255,255,255,0.35)";
 specCtx.fillStyle   = "#eaf1ff";
 specCtx.font        = "11px Arial";
@@ -334,11 +339,7 @@ for(let hz = minHz; hz <= maxHz; hz += minorStep){
   }
 }
 
-  /* ================= ÉCHELLE Hz ================= */
-  const minHz = 0;
-const maxHz = 75;        // RÈGLE FIXE
-const scaleX = W / (maxHz - minHz);
-  const fault = document.getElementById("fault")?.value || "none";
+  
 
   /* ================= PICS ================= */
   let peaks = [
