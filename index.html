@@ -147,6 +147,32 @@ specCanvas.addEventListener("pointerup", e => {
 
 specCanvas.addEventListener("pointercancel", () => {
   isPanning = false;
+});
+
+/* ===== ZOOM MOLETTE / TRACKPAD ===== */
+specCanvas.addEventListener("wheel", e => {
+  e.preventDefault();
+
+  const rect = specCanvas.getBoundingClientRect();
+  const xPx = e.clientX - rect.left;
+  const ratio = xPx / rect.width;
+
+  const zoomFactor = e.deltaY > 0 ? 1.15 : 0.87;
+
+  let newSpan = spectrumView.spanHz * zoomFactor;
+  newSpan = Math.max(10, Math.min(300, newSpan));
+
+  const centerHz = spectrumView.minHz + ratio * spectrumView.spanHz;
+  let newMin = centerHz - ratio * newSpan;
+
+  newMin = Math.max(
+    0,
+    Math.min(spectrumView.maxHz - newSpan, newMin)
+  );
+
+  spectrumView.spanHz = newSpan;
+  spectrumView.minHz = newMin;
+}, { passive:false });
 })
 const outLength = document.getElementById("out-length");
 const specCtx    = specCanvas.getContext("2d");
