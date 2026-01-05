@@ -81,6 +81,13 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
     <label style="display:block;margin-bottom:4px;">Ralenti (plus grand = plus lent)</label>
     <input id="slow" type="range" min="1" max="20" value="8">
   </div>
+  <!-- ===== Sorties temps réel (résumé) ===== -->
+<div class="full outputBox" id="outputs">
+  <div><b>Poulie menante</b> : <span id="out_rpm1">–</span></div>
+  <div><b>Poulie menée</b> : <span id="out_rpm2">–</span></div>
+  <div><b>Courroie</b> : <span id="out_belt">–</span></div>
+  <div><b>Vitesse linéaire</b> : <span id="out_speed">–</span></div>
+</div>
 </div>
 
 <div class="buttons">
