@@ -283,10 +283,9 @@ function drawSpectrum(hzMotor, hzBelt, time){
   const LABEL_MIN_DX = 42;   // distance mini entre deux labels (px)
 const LABEL_OFFSET = 12;  // décalage vertical en cas de collision
 
-  const hzZoneHeight = 30;                 // zone réservée aux Hz
-  const hzZoneY      = H - hzZoneHeight;   // début zone Hz
-  const gridBottom   = hzZoneY;            // FIN ABSOLUE DE LA GRILLE
-
+  const hzZoneHeight = 42;              // ← bande Hz plus haute
+const hzZoneY      = H - hzZoneHeight;
+const gridBottom   = hzZoneY - 6;     // ← espace entre grille et bande Hz
   /* ================= FOND ================= */
   specCtx.clearRect(0,0,W,H);
   specCtx.fillStyle = "#05080f";
