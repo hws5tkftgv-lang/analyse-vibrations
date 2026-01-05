@@ -66,6 +66,7 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
   <div><b>Menante</b> : <span id="out-rpm1">—</span> RPM | <span id="out-hz1">—</span> Hz</div>
   <div><b>Menée</b> : <span id="out-rpm2">—</span> RPM | <span id="out-hz2">—</span> Hz</div>
   <div><b>Courroie</b> : <span id="out-hzbelt">—</span> Hz | <span id="out-fpm">—</span> ft/min</div>
+    <div><b>Longueur courroie</b> : <span id="out-length">—</span></div>
 </div>
   <div class="full">
     <label class="full">
@@ -100,6 +101,7 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
   const canvas = document.getElementById("scene");
   const ctx    = canvas.getContext("2d");
 const specCanvas = document.getElementById("spectrum");
+const outLength = document.getElementById("out-length");
 const specCtx    = specCanvas.getContext("2d");
   const rpmEl  = document.getElementById("rpm");
   const d1El   = document.getElementById("d1");
@@ -433,6 +435,7 @@ const Ldisplay =
   (unitEl.value === "imperial")
     ? (Lmm / IN_TO_MM).toFixed(2) + " po"
     : Lmm.toFixed(1) + " mm";
+    outLength.textContent = Ldisplay;
 
 
 
@@ -533,37 +536,7 @@ outHZBelt.textContent = hzBelt.toFixed(3);
 outFPM.textContent    = v_ft_min.toFixed(0);
 
 
-    infoEl.innerHTML = `
-  <div><span class="dot blue"></span>
-  <b>Poulie menante</b> : ${rpmMenante.toFixed(0)} RPM | ${hzMenante.toFixed(2)} Hz
-  </div>
-
-  <div><span class="dot orange"></span>
-  <b>Poulie menée</b> : ${rpmMenee.toFixed(0)} RPM | ${hzMenee.toFixed(2)} Hz
-  </div>
-
-  <div><span class="dot white"></span>
-  <b>Courroie (fréquence)</b> : ${hzBelt.toFixed(3)} Hz (${fpmStrobe.toFixed(1)} FPM)
-  </div>
-
-  <div>
-  <span class="dot white"></span>
-  <b>Longueur courroie</b> : ${Ldisplay}
-  </div>
-
-  <div class="small">
-  Vitesse linéaire :
-  ${v_mm_s.toFixed(0)} mm/s |
-  ${v_in_s.toFixed(1)} in/s |
-  ${v_ft_min.toFixed(0)} ft/min
-  </div>
-
-
-
-  <div class="small">
-  ${running ? "▶️ En lecture" : "⏸ En pause"}
-  </div>
-`;
+    
   }
 
   playBtn.onclick  = () => { running = !!read(); };
