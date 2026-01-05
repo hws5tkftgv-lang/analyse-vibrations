@@ -116,7 +116,7 @@ const outHZ2  = document.getElementById("out-hz2");
 
 const outHZBelt = document.getElementById("out-hzbelt");
 const outFPM    = document.getElementById("out-fpm");
-const outSpeed = document.getElementById("out_speed");
+
 
   const playBtn  = document.getElementById("play");
   const pauseBtn = document.getElementById("pause");
@@ -532,8 +532,7 @@ outHZ2.textContent  = hzMenee.toFixed(2);
 outHZBelt.textContent = hzBelt.toFixed(3);
 outFPM.textContent    = v_ft_min.toFixed(0);
 
-outSpeed.textContent =
-  `${v_ft_min.toFixed(0)} ft/min`;
+
     infoEl.innerHTML = `
   <div><span class="dot blue"></span>
   <b>Poulie menante</b> : ${rpmMenante.toFixed(0)} RPM | ${hzMenante.toFixed(2)} Hz
