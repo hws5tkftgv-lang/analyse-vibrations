@@ -280,6 +280,15 @@ const Ldisplay =
     ? (Lmm / IN_TO_MM).toFixed(2) + " po"
     : Lmm.toFixed(1) + " mm";
 
+
+// === Fréquence de la courroie ===
+// vitesse linéaire imposée par la poulie menante
+const v_mm_s = (Math.PI * d1mm * rpm) / 60;
+
+// fréquence de passage de la courroie
+const beltHz = v_mm_s / Lmm;
+const beltRPM = beltHz * 60;
+
     const r1mm = d1mm/2, r2mm = d2mm/2;
     const Cmm  = ccmm;
 
@@ -371,11 +380,9 @@ drawPulley(x2, y, r2, "#ff9800", ang2);
     infoEl.innerHTML = `
       <div><span class="dot blue"></span><b>Poulie menante</b> : ${rpmMenante.toFixed(0)} RPM | ${hzMenante.toFixed(2)} Hz</div>
       <div><span class="dot orange"></span><b>Poulie menée</b> : ${rpmMenee.toFixed(0)} RPM | ${hzMenee.toFixed(2)} Hz</div>
+      <div><span class="dot white"></span><b>Courroie</b> : ${beltHz.toFixed(3)} Hz (${beltRPM.toFixed(2)} tr/min)</div>
       <div><span class="dot white"></span><b>Courroie</b> : ${(v_px_s / (s||1)).toFixed(0)} (vitesse relative écran)</div>
-      <div>
-  <span class="dot white"></span>
-  <b>Longueur courroie</b> : ${Ldisplay}
-</div>
+      <div><span class="dot white"></span><b>Longueur courroie</b> : ${Ldisplay}</div>
       <div class="small">${running ? "▶️ En lecture" : "⏸ En pause"}</div>
     `;
   }
