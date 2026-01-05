@@ -81,7 +81,9 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
   const playBtn  = document.getElementById("play");
   const pauseBtn = document.getElementById("pause");
   const resetBtn = document.getElementById("reset");
-
+  let ang1 = 0; // angle poulie menante
+  let ang2 = 0; // angle poulie menée
+  
   const TAU = Math.PI * 2;
   const IN_TO_MM = 25.4;
 
@@ -229,10 +231,20 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
     lastTS = ts;
 
     if(running){
-      const slow = parseFloat(slowEl.value) || 1;
-      // vitesse de temps
-      t += dt / slow;
-    }
+  const slow = parseFloat(slowEl.value) || 1;
+
+  const rpm = parseFloat(rpmEl.value) || 0;
+  const d1  = parseFloat(d1El.value) || 1;
+  const d2  = parseFloat(d2El.value) || 1;
+
+  const w1 = TAU * (rpm / 60);          // rad/s menante
+  const w2 = w1 * (d1 / d2);            // rad/s menée
+
+  ang1 += (w1 * dt) / slow;
+  ang2 += (w2 * dt) / slow;
+
+  t += dt / slow; // pour la courroie (on garde)
+}
     draw();
     requestAnimationFrame(loop);
   }
@@ -296,15 +308,28 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
     ctx.stroke();
 
     // draw pulleys
-    function drawPulley(cx,cy,r,col){
-      ctx.strokeStyle = col;
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.arc(cx,cy,r,0,TAU);
-      ctx.stroke();
-    }
-    drawPulley(x1,y,r1,"#00a2ff");
-    drawPulley(x2,y,r2,"#ff9800");
+    function drawPulley(cx, cy, r, col, angle){
+  ctx.strokeStyle = col;
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, TAU);
+  ctx.stroke();
+   
+  drawPulley(x1, y, r1, "#00a2ff", ang1);
+drawPulley(x2, y, r2, "#ff9800", ang2);
+
+  // repère de rotation
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  ctx.arc(
+    cx + (r - 6) * Math.cos(angle),
+    cy + (r - 6) * Math.sin(angle),
+    5,
+    0,
+    TAU
+  );
+  ctx.fill();
+}
 
     // vitesse linéaire: v = ω1*r1
     const w1 = TAU*(rpm/60);
