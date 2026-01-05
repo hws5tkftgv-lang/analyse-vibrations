@@ -291,13 +291,7 @@ const Ldisplay =
     ? (Lmm / IN_TO_MM).toFixed(2) + " po"
     : Lmm.toFixed(1) + " mm";
 
-// === Fréquence de la courroie ===
-// vitesse linéaire imposée par la poulie menante
-const v_mm_s = (Math.PI * d1mm * rpm) / 60;
 
-// fréquence de passage de la courroie
-const beltHz = v_mm_s / Lmm;
-const beltRPM = beltHz * 60;
 
     const r1mm = d1mm/2, r2mm = d2mm/2;
     const Cmm  = ccmm;
