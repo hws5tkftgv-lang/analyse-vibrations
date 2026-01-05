@@ -352,6 +352,12 @@ specCanvas.style.marginTop = "18px";
 // ================= ÉTAT DE LA VUE DU SPECTRE =================
 
 function drawSpectrum(hzMotor, hzBelt, time){
+  
+  const ampLabelWidth = 48; // largeur réservée pour mm/s
+const plotLeft = ampLabelWidth;
+const plotRight = W;
+const plotWidth = plotRight - plotLeft;
+  
   const AMP_MAX = 10; // mm/s (échelle pédagogique)
 
   const W = specCanvas.width  / (devicePixelRatio || 1);
@@ -368,7 +374,7 @@ function drawSpectrum(hzMotor, hzBelt, time){
   /* ===== Fenêtre visible ===== */
   const minHz = spectrumView.minHz;
   const maxHz = spectrumView.minHz + spectrumView.spanHz;
-  const scaleX = W / (maxHz - minHz);
+  const scaleX = plotWidth / (maxHz - minHz);
 
   /* ===== Fond ===== */
   specCtx.clearRect(0,0,W,H);
@@ -393,7 +399,7 @@ function drawSpectrum(hzMotor, hzBelt, time){
           hz <= maxHz;
           hz += minorStep){
 
-    const x = (hz - minHz) * scaleX;
+    const x = plotLeft + (hz - minHz) * scaleX;
     const isMajor = (hz % majorStep === 0);
 
     specCtx.beginPath();
@@ -409,13 +415,26 @@ function drawSpectrum(hzMotor, hzBelt, time){
   /* ===== GRILLE ===== */
   specCtx.strokeStyle = "rgba(255,255,255,0.08)";
   for(let i=0;i<=8;i++){
-    const x = i * W / 8;
+    const x = plotLeft + i * plotWidth / 8;
     specCtx.beginPath();
     specCtx.moveTo(x, gridTop);
     specCtx.lineTo(x, gridBottom);
     specCtx.stroke();
   }
+/* ===== ÉCHELLE AMPLITUDE (mm/s) — À GAUCHE, HORS GRILLE ===== */
+const ampMax = 10;      // amplitude max affichée
+const ampSteps = 5;     // 0,2,4,6,8,10
 
+specCtx.fillStyle = "#cfd6ff";
+specCtx.font = "11px Arial";
+specCtx.textAlign = "right";
+specCtx.textBaseline = "middle";
+
+for(let i = 0; i <= ampSteps; i++){
+  const val = (ampMax / ampSteps) * i;
+  const y = gridBottom - (val / ampMax) * gridHeight;
+  specCtx.fillText(val + " mm/s", plotLeft - 6, y);
+}
   /* ===== PICS ===== */
   const fault = document.getElementById("fault")?.value || "none";
 
@@ -471,7 +490,7 @@ for(let a = 0; a <= AMP_MAX; a += 2){
   peaks.forEach((p,i)=>{
     if(p.hz < minHz || p.hz > maxHz) return;
 
-    const x = (p.hz - minHz) * scaleX;
+    const x = plotLeft + (p.hz - minHz) * scaleX;
     const ampMMs = p.amp * 5; // facteur pédagogique
 const h = (ampMMs / AMP_MAX) * gridHeight;
     const yTop = gridBottom - h;
