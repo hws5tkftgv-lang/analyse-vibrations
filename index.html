@@ -276,110 +276,116 @@ specCtx.setTransform(dpr,0,0,dpr,0,0);
   }
 
 function drawSpectrum(hzMotor, hzBelt, time){
-  const W = specCanvas.width/(devicePixelRatio||1);
-  const H = specCanvas.height/(devicePixelRatio||1);
-  const hzZoneHeight = 28;          // hauteur de la zone Hz
-const hzZoneY = H - hzZoneHeight;
 
+  /* ================== DIMENSIONS ================== */
+  const W = specCanvas.width / (devicePixelRatio || 1);
+  const H = specCanvas.height / (devicePixelRatio || 1);
+
+  const hzZoneHeight = 28;                 // zone texte Hz
+  const hzZoneY      = H - hzZoneHeight;   // début zone Hz
+  const gridBottom   = hzZoneY;            // fin de la grille
+
+  /* ================== FOND ================== */
   specCtx.clearRect(0,0,W,H);
-  specCtx.fillStyle="#05080f";
+  specCtx.fillStyle = "#05080f";
   specCtx.fillRect(0,0,W,H);
-  // zone bleue pour affichage des Hz
-specCtx.fillStyle = "rgba(0,162,255,0.10)";
-specCtx.fillRect(0, hzZoneY, W, hzZoneHeight);
 
-  const paddingHz = hzMotor * 0.5;      // marge visuelle gauche/droite
-const minHz = Math.max(0, hzBelt - paddingHz);
-const maxHz = hzMotor * 2.5;
+  // zone bleue (hors grille)
+  specCtx.fillStyle = "rgba(0,162,255,0.12)";
+  specCtx.fillRect(0, hzZoneY, W, hzZoneHeight);
 
-const scaleX = W / (maxHz - minHz);
+  /* ================== ÉCHELLE Hz ================== */
+  const paddingHz = hzMotor * 0.5;
+  const minHz = Math.max(0, hzBelt - paddingHz);
+  const maxHz = hzMotor * 2.5;
+  const scaleX = W / (maxHz - minHz);
+
+  /* ================== DÉFAUT ================== */
   const fault = document.getElementById("fault")?.value || "none";
 
-let peaks = [
-  { hz: hzMotor,   amp: 1.0, col:"#00a2ff", label:"1× moteur" }
-];
+  let peaks = [
+    { hz: hzMotor, amp: 1.0, col:"#00a2ff", label:"1× moteur" }
+  ];
 
-if (fault === "none") {
-  peaks.push(
-    { hz: hzMotor*2, amp: 0.4, col:"#5fbfff", label:"2× moteur" }
-  );
-}
+  if (fault === "none") {
+    peaks.push({ hz: hzMotor*2, amp: 0.4, col:"#5fbfff", label:"2× moteur" });
+  }
 
-if (fault === "unbalance") {
-  peaks.push(
-    { hz: hzMotor,   amp: 1.6, col:"#ff5555", label:"Balourd (1×)" }
-  );
-}
+  if (fault === "unbalance") {
+    peaks.push({ hz: hzMotor, amp: 1.6, col:"#ff5555", label:"Balourd (1×)" });
+  }
 
-if (fault === "misalign") {
-  peaks.push(
-    { hz: hzMotor*2, amp: 1.2, col:"#ff9800", label:"Désalignement (2×)" }
-  );
-}
+  if (fault === "misalign") {
+    peaks.push({ hz: hzMotor*2, amp: 1.2, col:"#ff9800", label:"Désalignement (2×)" });
+  }
 
-if (fault === "belt") {
-  peaks.push(
-    { hz: hzBelt,    amp: 1.1, col:"#ffffff", label:"Courroie" },
-    { hz: hzBelt*2,  amp: 0.6, col:"#bbbbbb", label:"2× courroie" }
-  );
-}
+  if (fault === "belt") {
+    peaks.push(
+      { hz: hzBelt,   amp: 1.1, col:"#ffffff", label:"Courroie" },
+      { hz: hzBelt*2, amp: 0.6, col:"#bbbbbb", label:"2× courroie" }
+    );
+  }
 
-if (fault === "slip") {
-  const slipFactor = 0.92 + 0.08 * Math.sin(time * 2);
-  const safeHz = Math.max(0.01, hzBelt * slipFactor);
+  if (fault === "slip") {
+    const slipFactor = 0.92 + 0.08 * Math.sin(time * 2);
+    peaks.push({
+      hz: Math.max(0.01, hzBelt * slipFactor),
+      amp: 0.8,
+      col:"#ffcc00",
+      label:"Glissement"
+    });
+  }
 
-  peaks.push({
-    hz: safeHz,
-    amp: 0.8,
-    col: "#ffcc00",
-    label: "Glissement"
-  });
-}
-
-  // fond grille Hz (respecte l’échelle)
-specCtx.strokeStyle="rgba(255,255,255,0.08)";
-for(let i=0;i<=8;i++){
-  const hz = minHz + i * (maxHz - minHz) / 8;
-  const x = (hz - minHz) * scaleX;
-  specCtx.beginPath();
-  specCtx.moveTo(x,0);
-  specCtx.lineTo(x,H);
-  specCtx.stroke();
-}
-  // pics
-  peaks.forEach((p,i)=>{
-    const pulse = 0.9 + 0.1*Math.sin(time*5 + i);
-    const x = (p.hz - minHz) * scaleX;
-    const h = p.amp * pulse * (H*0.75);
-
-    specCtx.strokeStyle=p.col;
-    // Hz sous le pic (zone bleue)
-specCtx.fillStyle = "#cfe2ff";
-specCtx.font = "12px Arial";
-specCtx.textAlign = "center";
-specCtx.textBaseline = "middle";
-
-specCtx.fillText(
-  p.hz.toFixed(2) + " Hz",
-  x,
-  hzZoneY + hzZoneHeight / 2
-);
-    specCtx.lineWidth=3;
+  /* ================== GRILLE (STOP AVANT ZONE Hz) ================== */
+  specCtx.strokeStyle = "rgba(255,255,255,0.08)";
+  for(let i=0;i<=8;i++){
+    const hz = minHz + i * (maxHz - minHz) / 8;
+    const x  = (hz - minHz) * scaleX;
     specCtx.beginPath();
-    specCtx.moveTo(x, H);
-    specCtx.lineTo(x, H-h);
+    specCtx.moveTo(x, 0);
+    specCtx.lineTo(x, gridBottom);
+    specCtx.stroke();
+  }
+
+  /* ================== PICS ================== */
+  peaks.forEach((p,i)=>{
+    const pulse = 0.9 + 0.1 * Math.sin(time*5 + i);
+    const x = (p.hz - minHz) * scaleX;
+    const h = p.amp * pulse * (gridBottom * 0.85);
+
+    // barre
+    specCtx.strokeStyle = p.col;
+    specCtx.lineWidth = 3;
+    specCtx.beginPath();
+    specCtx.moveTo(x, gridBottom);
+    specCtx.lineTo(x, gridBottom - h);
     specCtx.stroke();
 
-    
+    // label AU-DESSUS de la barre
+    specCtx.fillStyle = "#cfd6ff";
+    specCtx.font = "11px Arial";
+    specCtx.textAlign = "center";
+    specCtx.textBaseline = "bottom";
+    specCtx.fillText(p.label, x, gridBottom - h - 6);
+
+    // valeur Hz SOUS la grille (zone bleue)
+    specCtx.fillStyle = "#cfe2ff";
+    specCtx.font = "12px Arial";
+    specCtx.textBaseline = "middle";
+    specCtx.fillText(
+      p.hz.toFixed(2) + " Hz",
+      x,
+      hzZoneY + hzZoneHeight/2
+    );
   });
 
-  // axe
+  /* ================== AXE ================== */
   specCtx.fillStyle="#9aa5d6";
   specCtx.font="12px Arial";
   specCtx.textAlign="right";
-  specCtx.fillText("Hz →", W-6, 12);
+  specCtx.textBaseline="top";
+  specCtx.fillText("Hz →", W-6, 6);
 }
-
   function loop(ts){
     if(lastTS === null) lastTS = ts;
     const dt = (ts - lastTS)/1000;
