@@ -47,21 +47,9 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
 }
 
 /* ===== FULLSCREEN SPECTRE UNIQUEMENT ===== */
-.spectrum-only-fullscreen{
-  position: fixed !important;
-  inset: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  z-index: 9999 !important;
-  border-radius: 0 !important;
-  background: #05080f;
-}
 
-/* bloque scroll arrière (iPhone essentiel) */
-body.lock-scroll{
-  overflow: hidden;
-  touch-action: none;
-}
+
+
 /* ===== MESSAGE ROTATION PAYSAGE ===== */
 .rotate-warning{
   position: fixed;
@@ -104,21 +92,7 @@ canvas.spectrum-only{
   z-index: 9999;
 }
 
-/* message rotation */
-#rotateWarn{
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.85);
-  color: white;
-  font-size: 22px;
-  font-weight: 700;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  z-index: 10000;
-  padding: 20px;
-}
+
 </style>
 </head>
 
@@ -177,8 +151,7 @@ canvas.spectrum-only{
 </div>
 <script>
 (() => {
-  // ================= SPECTRUM VIEW =================
-// ================= ÉTAT DE LA VUE DU SPECTRE =================
+  
 const spectrumView = {
   minHz: 0,     // début visible
   spanHz: 50,   // largeur affichée (0–50 Hz)
@@ -742,24 +715,7 @@ outFPM.textContent    = v_ft_min.toFixed(0);
   resetBtn.onclick = () => { t=0; running=false; draw(); };
 
   requestAnimationFrame(loop);
-  const fsBtn = document.getElementById("fs");
-
-let spectrumFS = false;
-
-fsBtn.onclick = () => {
-  spectrumFS = !spectrumFS;
-
-  if(spectrumFS){
-    specCanvas.classList.add("spectrum-only");
-    document.body.classList.add("lock-scroll");
-  }else{
-    specCanvas.classList.remove("spectrum-only");
-    document.body.classList.remove("lock-scroll");
-  }
-
-  resize();           // recalcul canvas
-  checkOrientation(); // affiche / cache message
-};
+  
 const fsBtn = document.getElementById("fs");
 const rotateWarn = document.getElementById("rotateWarn");
 
