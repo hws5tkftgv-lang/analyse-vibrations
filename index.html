@@ -9,129 +9,136 @@
 html,body{
   margin:0;
   background:#0b1436;
+  color:#eaf1ff;
+  font-family:Arial,system-ui,sans-serif;
 }
 canvas{
   display:block;
   margin:20px auto;
   background:#000;
-  border-radius:12px;
+  border-radius:14px;
 }
 </style>
 </head>
 
 <body>
-<canvas id="c"></canvas>
+
+<canvas id="c" width="700" height="300"></canvas>
 
 <script>
 const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
 
-function resize(){
-  canvas.width = Math.min(innerWidth-20,700);
-  canvas.height = canvas.width*0.45;
-}
-window.addEventListener("resize",resize);
-resize();
+const TAU = Math.PI * 2;
 
-const TAU = Math.PI*2;
+// -------------------- PARAMÈTRES --------------------
+const rSmall = 45;     // rayon petite poulie
+const rLarge = 95;     // rayon grande poulie
+const C      = 240;    // centre-à-centre
+const y0     = 150;
+
+const xSmall = 160;
+const xLarge = xSmall + C;
+
+// -------------------- GÉOMÉTRIE --------------------
+const phi = Math.acos((rLarge - rSmall) / C);
+
+// angles tangence
+const aS_top =  phi;
+const aS_bot = -phi;
+
+const aL_top = Math.PI - phi;
+const aL_bot = Math.PI + phi;
+
+// points de tangence
+const S_top = {
+  x: xSmall + rSmall * Math.cos(aS_top),
+  y: y0     + rSmall * Math.sin(aS_top)
+};
+const S_bot = {
+  x: xSmall + rSmall * Math.cos(aS_bot),
+  y: y0     + rSmall * Math.sin(aS_bot)
+};
+const L_top = {
+  x: xLarge + rLarge * Math.cos(aL_top),
+  y: y0     + rLarge * Math.sin(aL_top)
+};
+const L_bot = {
+  x: xLarge + rLarge * Math.cos(aL_bot),
+  y: y0     + rLarge * Math.sin(aL_bot)
+};
+
+// longueurs
+const lenTop = Math.hypot(L_top.x - S_top.x, L_top.y - S_top.y);
+const lenBot = Math.hypot(S_bot.x - L_bot.x, S_bot.y - L_bot.y);
+const lenArcL = rLarge * (TAU - 2*phi); // arc long
+const lenArcS = rSmall * (2*phi);       // arc court
+
+const totalLen = lenTop + lenArcL + lenBot + lenArcS;
+
+// -------------------- ANIMATION --------------------
 let t = 0;
 
-function loop(){
-  t += 0.01;
-  draw();
-  requestAnimationFrame(loop);
+function lerp(a,b,u){
+  return { x:a.x+(b.x-a.x)*u, y:a.y+(b.y-a.y)*u };
 }
 
 function draw(){
-  const W = canvas.width;
-  const H = canvas.height;
-  ctx.clearRect(0,0,W,H);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  // === PARAMÈTRES PHYSIQUES (FIXES POUR LE TEST) ===
-  const r1 = 40;     // petite poulie
-  const r2 = 90;     // grande poulie
-  const cx1 = 140;
-  const cx2 = W - 140;
-  const cy  = H/2;
-
-  // === GÉOMÉTRIE DES TANGENTES EXTERNES ===
-  const dx = cx2 - cx1;
-  const dy = 0;
-  const d  = Math.hypot(dx,dy);
-
-  const alpha = Math.acos((r2 - r1)/d);
-  const beta  = Math.atan2(dy,dx);
-
-  const a1 = beta + alpha;
-  const a2 = beta - alpha;
-
-  // points de tangence
-  const S_top = { x: cx1 + r1*Math.cos(a1), y: cy + r1*Math.sin(a1) };
-  const S_bot = { x: cx1 + r1*Math.cos(a2), y: cy + r1*Math.sin(a2) };
-  const L_top = { x: cx2 + r2*Math.cos(a1), y: cy + r2*Math.sin(a1) };
-  const L_bot = { x: cx2 + r2*Math.cos(a2), y: cy + r2*Math.sin(a2) };
-
-  // === COURROIE (CONVEXE GARANTIE) ===
+  // ---- COURROIE ----
   ctx.strokeStyle="#aaa";
   ctx.lineWidth=4;
   ctx.beginPath();
   ctx.moveTo(S_top.x,S_top.y);
   ctx.lineTo(L_top.x,L_top.y);
-
-  // grande poulie — ARC LONG
-  ctx.arc(cx2,cy,r2,a1,a2,true);
-
+  ctx.arc(xLarge,y0,rLarge,aL_top,aL_bot,false); // arc long
   ctx.lineTo(S_bot.x,S_bot.y);
-
-  // petite poulie — ARC COURT
-  ctx.arc(cx1,cy,r1,a2,a1,false);
+  ctx.arc(xSmall,y0,rSmall,aS_bot,aS_top,false); // arc court
   ctx.stroke();
 
-  // === POULIES ===
-  ctx.strokeStyle="#00a2ff";
+  // ---- POULIES ----
   ctx.lineWidth=3;
-  ctx.beginPath(); ctx.arc(cx1,cy,r1,0,TAU); ctx.stroke();
+
+  ctx.strokeStyle="#00a2ff";
+  ctx.beginPath();
+  ctx.arc(xSmall,y0,rSmall,0,TAU);
+  ctx.stroke();
 
   ctx.strokeStyle="#ff9800";
-  ctx.beginPath(); ctx.arc(cx2,cy,r2,0,TAU); ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(xLarge,y0,rLarge,0,TAU);
+  ctx.stroke();
 
-  // === POINT SUR COURROIE (UN SEUL SENS) ===
-  const lenTop = Math.hypot(L_top.x-S_top.x, L_top.y-S_top.y);
-  const lenBot = Math.hypot(S_bot.x-L_bot.x, S_bot.y-L_bot.y);
-  const lenArcBig  = r2*(TAU - 2*alpha);
-  const lenArcSmall= r1*(2*alpha);
-  const L = lenTop+lenArcBig+lenBot+lenArcSmall;
-
-  let s = (t*80)%L;
+  // ---- POINT SUR COURROIE ----
+  let s = (t % totalLen);
   let P;
 
-  if(s<lenTop){
-    const u=s/lenTop;
-    P={x:S_top.x+(L_top.x-S_top.x)*u,y:S_top.y+(L_top.y-S_top.y)*u};
-  }
-  else if((s-=lenTop)<lenArcBig){
-    const u=s/lenArcBig;
-    const a=a1-u*(TAU-2*alpha);
-    P={x:cx2+r2*Math.cos(a),y:cy+r2*Math.sin(a)};
-  }
-  else if((s-=lenArcBig)<lenBot){
-    const u=s/lenBot;
-    P={x:L_bot.x+(S_bot.x-L_bot.x)*u,y:L_bot.y+(S_bot.y-L_bot.y)*u};
-  }
-  else{
-    s-=lenBot;
-    const u=s/lenArcSmall;
-    const a=a2+u*(2*alpha);
-    P={x:cx1+r1*Math.cos(a),y:cy+r1*Math.sin(a)};
+  if(s <= lenTop){
+    P = lerp(S_top, L_top, s/lenTop);
+  } else if((s -= lenTop) <= lenArcL){
+    const u = s / lenArcL;
+    const a = aL_top + u*(TAU - 2*phi);
+    P = { x:xLarge + rLarge*Math.cos(a), y:y0 + rLarge*Math.sin(a) };
+  } else if((s -= lenArcL) <= lenBot){
+    P = lerp(L_bot, S_bot, s/lenBot);
+  } else {
+    s -= lenBot;
+    const u = s / lenArcS;
+    const a = aS_bot + u*(2*phi);
+    P = { x:xSmall + rSmall*Math.cos(a), y:y0 + rSmall*Math.sin(a) };
   }
 
   ctx.fillStyle="#fff";
   ctx.beginPath();
-  ctx.arc(P.x,P.y,5,0,TAU);
+  ctx.arc(P.x,P.y,6,0,TAU);
   ctx.fill();
+
+  t += 1.2;
+  requestAnimationFrame(draw);
 }
 
-loop();
+draw();
 </script>
 </body>
 </html>
