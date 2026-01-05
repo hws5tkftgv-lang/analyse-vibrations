@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Poulie menante — géométrie correcte</title>
+<title>Poulie menante seule — arc correct</title>
 <style>
 html,body{
   margin:0;
@@ -16,106 +16,108 @@ canvas{
   margin:40px auto;
   background:#000;
   border-radius:12px;
+  width:min(92vw, 820px);
+  height:auto;
 }
 </style>
 </head>
 <body>
 
-<canvas id="c" width="600" height="300"></canvas>
+<canvas id="c" width="820" height="420"></canvas>
 
 <script>
-const canvas = document.getElementById("c");
-const ctx = canvas.getContext("2d");
+(() => {
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+  const TAU = Math.PI * 2;
 
-const TAU = Math.PI*2;
+  let t = 0;
 
-let t = 0;
+  const lerp = (a,b,u)=>({ x:a.x+(b.x-a.x)*u, y:a.y+(b.y-a.y)*u });
 
-function loop(){
-  t += 0.01;
-  draw();
-  requestAnimationFrame(loop);
-}
-
-function draw(){
-  ctx.clearRect(0,0,600,300);
-
-  const cx = 220;
-  const cy = 150;
-  const r  = 60;
-
-  // angle de contact (choisi volontairement)
-  const phi = Math.PI / 4; // 45°
-
-  // points de tangence
-  const top = {
-    x: cx + r*Math.cos(-phi),
-    y: cy + r*Math.sin(-phi)
-  };
-  const bot = {
-    x: cx + r*Math.cos(phi),
-    y: cy + r*Math.sin(phi)
-  };
-
-  // --- COURROIE ---
-  ctx.strokeStyle = "#9a9a9a";
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.moveTo(top.x-220, top.y-40); // segment haut
-  ctx.lineTo(top.x, top.y);
-
-  // ARC CONVEXE (extérieur)
-  ctx.arc(cx, cy, r, -phi, phi, false);
-
-  ctx.lineTo(bot.x-220, bot.y+40); // segment bas
-  ctx.stroke();
-
-  // --- POULIE ---
-  ctx.strokeStyle = "#00a2ff";
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.arc(cx,cy,r,0,TAU);
-  ctx.stroke();
-
-  // --- POINT QUI SE DÉPLACE ---
-  const arcLen = r * (2*phi);
-  const segLen = 300;
-  const total = segLen + arcLen + segLen;
-
-  let s = (t*80) % total;
-  let p;
-
-  if(s < segLen){
-    const u = s/segLen;
-    p = {
-      x: (top.x-220)*(1-u) + top.x*u,
-      y: (top.y-40)*(1-u) + top.y*u
-    };
-  }
-  else if((s -= segLen) < arcLen){
-    const u = s/arcLen;
-    const a = -phi + u*(2*phi);
-    p = {
-      x: cx + r*Math.cos(a),
-      y: cy + r*Math.sin(a)
-    };
-  }
-  else{
-    s -= arcLen;
-    const u = s/segLen;
-    p = {
-      x: bot.x*(1-u) + (bot.x-220)*u,
-      y: bot.y*(1-u) + (bot.y+40)*u
-    };
+  function loop(){
+    t += 1/60;         // temps “stable”
+    draw();
+    requestAnimationFrame(loop);
   }
 
-  ctx.fillStyle="#fff";
-  ctx.beginPath();
-  ctx.arc(p.x,p.y,5,0,TAU);
-  ctx.fill();
-}
+  function draw(){
+    const W = canvas.width;
+    const H = canvas.height;
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle="#000";
+    ctx.fillRect(0,0,W,H);
 
-loop();
+    // === POULIE (à droite) ===
+    const cx = Math.round(W*0.70);
+    const cy = Math.round(H*0.52);
+    const r  = Math.round(Math.min(W,H)*0.18);
+
+    // angle de contact (visuel)
+    const phi = Math.PI * 0.34;  // ~61°
+
+    // ✅ POINTS DE TANGENCE SUR LE CÔTÉ GAUCHE (π ± φ)
+    const aTop = Math.PI - phi;
+    const aBot = Math.PI + phi;
+
+    const Ttop = { x: cx + r*Math.cos(aTop), y: cy + r*Math.sin(aTop) };
+    const Tbot = { x: cx + r*Math.cos(aBot), y: cy + r*Math.sin(aBot) };
+
+    // segments (on part vers la gauche)
+    const Ltop = { x: Ttop.x - Math.round(W*0.42), y: Ttop.y - Math.round(H*0.10) };
+    const Lbot = { x: Tbot.x - Math.round(W*0.42), y: Tbot.y + Math.round(H*0.10) };
+
+    // === COURROIE ===
+    ctx.strokeStyle="#9a9a9a";
+    ctx.lineWidth=10;
+    ctx.lineCap="round";
+    ctx.lineJoin="round";
+    ctx.beginPath();
+    ctx.moveTo(Ltop.x, Ltop.y);
+    ctx.lineTo(Ttop.x, Ttop.y);
+
+    // ✅ ARC CONVEXE DU BON CÔTÉ : de (π-φ) à (π+φ) en sens horaire (false)
+    ctx.arc(cx, cy, r, aTop, aBot, false);
+
+    ctx.lineTo(Lbot.x, Lbot.y);
+    ctx.stroke();
+
+    // === POULIE ===
+    ctx.strokeStyle="#00a2ff";
+    ctx.lineWidth=10;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, TAU);
+    ctx.stroke();
+
+    // === POINT QUI SE DÉPLACE SUR LE CHEMIN ===
+    const lenSegTop = Math.hypot(Ttop.x-Ltop.x, Ttop.y-Ltop.y);
+    const lenArc    = r * (aBot - aTop);     // (π+φ) - (π-φ) = 2φ
+    const lenSegBot = Math.hypot(Lbot.x-Tbot.x, Lbot.y-Tbot.y);
+    const total = lenSegTop + lenArc + lenSegBot;
+
+    const speed = 140; // px/s (visuel)
+    let s = (t*speed) % total;
+
+    let P;
+    if(s <= lenSegTop){
+      P = lerp(Ltop, Ttop, s/lenSegTop);
+    } else if((s -= lenSegTop) <= lenArc){
+      const u = s/lenArc;
+      const a = aTop + u*(aBot - aTop);
+      P = { x: cx + r*Math.cos(a), y: cy + r*Math.sin(a) };
+    } else {
+      s -= lenArc;
+      P = lerp(Tbot, Lbot, s/lenSegBot);
+    }
+
+    ctx.fillStyle="#fff";
+    ctx.beginPath();
+    ctx.arc(P.x, P.y, 9, 0, TAU);
+    ctx.fill();
+  }
+
+  loop();
+})();
 </script>
 </body>
 </html>
