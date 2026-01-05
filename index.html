@@ -52,6 +52,16 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
   <label>Ø menée <input id="d2" type="number" inputmode="decimal" value="9"></label>
   <label class="full">C-C <input id="cc" type="number" inputmode="decimal" value="21"></label>
   <div class="full">
+    <label class="full">
+  Défaut simulé
+  <select id="fault">
+    <option value="none">Aucun (normal)</option>
+    <option value="unbalance">Balourd</option>
+    <option value="misalign">Désalignement</option>
+    <option value="belt">Défaut de courroie</option>
+    <option value="slip">Glissement courroie</option>
+  </select>
+</label>
     <label style="display:block;margin-bottom:4px;">Ralenti (plus grand = plus lent)</label>
     <input id="slow" type="range" min="1" max="20" value="8">
   </div>
