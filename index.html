@@ -227,25 +227,35 @@ canvas{ width:100%; background:#000; border-radius:14px; display:block; }
     const L_bot = { x: x2 + r2*Math.cos(aL_bot), y: y + r2*Math.sin(aL_bot) };
 
     // ===== draw belt (same path as point) =====
-    ctx.strokeStyle = "#9a9a9a";
-    ctx.lineWidth = 4;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
+    // ===== DESSIN DE LA COURROIE (CORRIGÉ) =====
+ctx.strokeStyle = "#9a9a9a";
+ctx.lineWidth = 4;
+ctx.lineCap = "round";
+ctx.lineJoin = "round";
 
-    ctx.beginPath();
-    ctx.moveTo(S_top.x, S_top.y);
-    ctx.lineTo(L_top.x, L_top.y);
+ctx.beginPath();
+ctx.moveTo(S_top.x, S_top.y);
+ctx.lineTo(L_top.x, L_top.y);
 
-    // grande poulie: ARC LONG (beta -> 2π-beta)
-    ctx.arc(x2, y, r2, aL_top, aL_bot, false);
+// 🟠 POULIE MENÉE (grande, arc LONG, DERRIÈRE)
+ctx.arc(
+  x2, y, r2,
+  aL_top,
+  aL_bot,
+  true        // ⬅️ CRITIQUE : arc long côté extérieur
+);
 
-    ctx.lineTo(S_bot.x, S_bot.y);
+ctx.lineTo(S_bot.x, S_bot.y);
 
-    // petite poulie: ARC COURT (π+beta -> π-beta) en CW (sens horaire) pour faire 2*beta
-    ctx.arc(x1, y, r1, aS_bot, aS_top, false);
+// 🔵 POULIE MENANTE (petite, arc COURT, DEVANT)
+ctx.arc(
+  x1, y, r1,
+  aS_bot,
+  aS_top,
+  false       // arc court normal
+);
 
-    ctx.stroke();
-
+ctx.stroke();
     // ===== pulleys + markers =====
     const f1 = rpm / 60;
     const rpm2 = rpm * (d1mm / d2mm);
