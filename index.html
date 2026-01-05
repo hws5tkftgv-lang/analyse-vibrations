@@ -91,6 +91,7 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
   <button id="play">Play</button>
   <button id="pause">Pause</button>
   <button id="reset">Reset</button>
+    <button id="fs">Full screen</button>
 </div>
 
 <div class="stage"><canvas id="scene"></canvas></div>
@@ -204,6 +205,8 @@ specCanvas.style.marginTop = "18px";
   }
   addEventListener("resize", resize);
   resize();
+  document.addEventListener("fullscreenchange", resize);
+  
 
   function read(){
     let rpm = parseFloat(rpmEl.value);
@@ -662,6 +665,19 @@ outFPM.textContent    = v_ft_min.toFixed(0);
   resetBtn.onclick = () => { t=0; running=false; draw(); };
 
   requestAnimationFrame(loop);
+  const fsBtn = document.getElementById("fs");
+
+fsBtn.onclick = () => {
+  const el = document.documentElement;
+
+  if (!document.fullscreenElement) {
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); // iOS
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  }
+};
 })();
 </script>
 </body>
