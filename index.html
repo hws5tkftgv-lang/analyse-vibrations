@@ -235,29 +235,59 @@ const outFPM    = document.getElementById("out-fpm");
   const clamp = (v,a,b)=>Math.max(a, Math.min(b, v));
 
   function resize(){
-    if(!lockedWidth) lockedWidth = Math.min(innerWidth - 24, 720);
-    const w = lockedWidth, h = w * 0.55;
-    const dpr = Math.min(3, devicePixelRatio || 1);
-    canvas.style.width = w + "px";
-    canvas.style.height= h + "px";
-    canvas.width  = Math.round(w * dpr);
-    canvas.height = Math.round(h * dpr);
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    // spectrum = 35% de la hauteur du canvas principal
-const sh = Math.max(220, h * 0.95);
 
-specCanvas.style.width  = w + "px";
-specCanvas.style.height = sh + "px";
-specCanvas.width  = Math.round(w * dpr);
-specCanvas.height = Math.round(sh * dpr);
-specCtx.setTransform(dpr,0,0,dpr,0,0);
-specCanvas.style.marginTop = "18px";
+  const dpr = Math.min(3, window.devicePixelRatio || 1);
+
+  /* =====================================================
+     CANVAS PRINCIPAL (SCÈNE POULIES)
+     ===================================================== */
+  if(!lockedWidth){
+    lockedWidth = Math.min(window.innerWidth - 24, 720);
   }
-  addEventListener("resize", resize);
-  resize();
-  document.addEventListener("fullscreenchange", resize);
-  
 
+  const w = lockedWidth;
+  const h = w * 0.55;
+
+  canvas.style.width  = w + "px";
+  canvas.style.height = h + "px";
+  canvas.width  = Math.round(w * dpr);
+  canvas.height = Math.round(h * dpr);
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  /* =====================================================
+     CANVAS SPECTRE
+     ===================================================== */
+  let specW, specH;
+
+  if (spectrumFS) {
+    // ===== FULL SCREEN SPECTRE =====
+    specW = window.innerWidth;
+    specH = window.innerHeight;
+
+    specCanvas.style.position   = "fixed";
+    specCanvas.style.inset      = "0";
+    specCanvas.style.marginTop  = "0";
+    specCanvas.style.borderRadius = "0";
+  } else {
+    // ===== MODE NORMAL =====
+    specW = w;
+    specH = Math.max(220, h * 0.95);
+
+    specCanvas.style.position   = "relative";
+    specCanvas.style.inset      = "";
+    specCanvas.style.marginTop  = "18px";
+    specCanvas.style.borderRadius = "12px";
+  }
+
+  specCanvas.style.width  = specW + "px";
+  specCanvas.style.height = specH + "px";
+
+  specCanvas.width  = Math.round(specW * dpr);
+  specCanvas.height = Math.round(specH * dpr);
+
+  specCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
   function read(){
     let rpm = parseFloat(rpmEl.value);
     let d1  = parseFloat(d1El.value);
