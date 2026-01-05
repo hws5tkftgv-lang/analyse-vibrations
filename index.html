@@ -1,265 +1,121 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>Étape 1 — Courroie & poulies (dessin statique)</title>
-
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Poulie menante — géométrie correcte</title>
 <style>
-:root{
-  --bg:#0b1436;
-  --panel:#101a40;
-  --text:#eaf1ff;
-  --muted:rgba(234,241,255,.70);
-  --blue:#00a2ff;
-  --orange:#ff9800;
-  --belt:#bdbdbd;
-  --bad:#ff4d4d;
+html,body{
+  margin:0;
+  background:#0b1436;
+  color:#eaf1ff;
+  font-family:Arial,sans-serif;
 }
-*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html,body{ margin:0; background:var(--bg); color:var(--text); font-family:Arial,system-ui,sans-serif; }
-header{ padding:12px 14px; font-size:16px; font-weight:700; }
-.panel{
-  padding:12px 14px;
-  display:grid;
-  gap:10px;
+canvas{
+  display:block;
+  margin:40px auto;
+  background:#000;
+  border-radius:12px;
 }
-.grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-label{ font-size:12px; color:var(--muted); }
-input,select{
-  width:100%;
-  padding:10px 10px;
-  border:none;
-  border-radius:10px;
-  font-size:15px;
-}
-.stage{ padding:10px 14px 14px; }
-canvas{ width:100%; background:#000; border-radius:14px; display:block; }
-.info{ padding:0 14px 14px; font-size:14px; line-height:1.4; color:var(--muted); }
-.bad{ color:var(--bad); font-weight:700; }
-.small{ font-size:12px; opacity:.85; margin-top:6px; }
 </style>
 </head>
-
 <body>
-<header>✅ Étape 1 — Dessin statique (open belt / non croisée)</header>
 
-<div class="panel">
-  <div class="grid2">
-    <label>Unités
-      <select id="unit">
-        <option value="imperial" selected>po</option>
-        <option value="metric">mm</option>
-      </select>
-    </label>
-    <label>C-C (centre-à-centre)
-      <input id="cc" type="number" inputmode="decimal" value="21" />
-    </label>
-  </div>
-
-  <div class="grid2">
-    <label>Ø menante (gauche)
-      <input id="d1" type="number" inputmode="decimal" value="4" />
-    </label>
-    <label>Ø menée (droite)
-      <input id="d2" type="number" inputmode="decimal" value="9" />
-    </label>
-  </div>
-</div>
-
-<div class="stage">
-  <canvas id="cv"></canvas>
-</div>
-
-<div class="info" id="info"></div>
+<canvas id="c" width="600" height="300"></canvas>
 
 <script>
-(() => {
-  const cv = document.getElementById("cv");
-  const ctx = cv.getContext("2d");
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
 
-  const unitEl = document.getElementById("unit");
-  const ccEl = document.getElementById("cc");
-  const d1El = document.getElementById("d1");
-  const d2El = document.getElementById("d2");
-  const infoEl = document.getElementById("info");
+const TAU = Math.PI*2;
 
-  const TAU = Math.PI * 2;
-  const IN_TO_MM = 25.4;
+let t = 0;
 
-  let lockedWidth = null;
-
-  function resize(){
-    if(!lockedWidth) lockedWidth = Math.min(innerWidth - 24, 820);
-    const w = lockedWidth;
-    const h = Math.round(w * 0.56); // un peu moins haut => ça “rentre”
-    const dpr = Math.min(3, devicePixelRatio || 1);
-
-    cv.style.width = w + "px";
-    cv.style.height = h + "px";
-    cv.width = Math.round(w * dpr);
-    cv.height = Math.round(h * dpr);
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-
-    draw();
-  }
-
-  addEventListener("resize", resize);
-  resize();
-
-  function clamp(v,a,b){ return Math.max(a, Math.min(b,v)); }
-
-  // Arc “long” ou “court” entre deux angles (canvas)
-  function arcBetween(cx, cy, r, a0, a1, wantLong){
-    const sweep = ((a1 - a0) % TAU + TAU) % TAU; // sweep si anticlockwise=false
-    // pour avoir le LONG : on prend la direction opposée si sweep < pi
-    // pour avoir le COURT : on prend la direction opposée si sweep > pi
-    let anticlockwise;
-    if(wantLong){
-      anticlockwise = (sweep < Math.PI);   // inverse => long
-    }else{
-      anticlockwise = (sweep > Math.PI);   // inverse => court
-    }
-    ctx.arc(cx, cy, r, a0, a1, anticlockwise);
-  }
-
-  function read(){
-    let d1 = parseFloat(d1El.value);
-    let d2 = parseFloat(d2El.value);
-    let cc = parseFloat(ccEl.value);
-
-    if(!isFinite(d1) || !isFinite(d2) || !isFinite(cc)) return null;
-    if(d1 <= 0 || d2 <= 0 || cc <= 0) return null;
-
-    // travailler en mm pour être stable
-    if(unitEl.value === "imperial"){
-      d1 *= IN_TO_MM;
-      d2 *= IN_TO_MM;
-      cc *= IN_TO_MM;
-    }
-    return { d1mm:d1, d2mm:d2, ccmm:cc };
-  }
-
-  function draw(){
-    const W = cv.width/(devicePixelRatio||1);
-    const H = cv.height/(devicePixelRatio||1);
-
-    ctx.clearRect(0,0,W,H);
-    ctx.fillStyle="#000";
-    ctx.fillRect(0,0,W,H);
-
-    const inp = read();
-    if(!inp){
-      infoEl.innerHTML = `<div class="bad">⛔ Entre Ø menante, Ø menée et C-C.</div>`;
-      return;
-    }
-
-    let { d1mm, d2mm, ccmm } = inp;
-
-    const rLmm = d1mm/2;      // gauche
-    const rRmm = d2mm/2;      // droite
-    const Cmm  = ccmm;
-
-    // Condition géométrique des tangentes externes
-    const delta = (rRmm - rLmm);
-    if(Cmm <= Math.abs(delta)){
-      const minCC = Math.abs(delta) + 0.0001;
-      const minTxt = (unitEl.value==="imperial")
-        ? (minCC/IN_TO_MM).toFixed(2)+" po"
-        : minCC.toFixed(1)+" mm";
-      infoEl.innerHTML = `
-        <div class="bad">⛔ Géométrie impossible (tangentes externes).</div>
-        <div class="small">Il faut C-C &gt; |Rdroite − Rgauche|. Min ≈ ${minTxt}</div>
-      `;
-      return;
-    }
-
-    // Mise à l’échelle pour rentrer sur l’écran
-    const margin = 34;
-    const scale = Math.min(
-      (W - 2*margin) / (Cmm + rLmm + rRmm),
-      (H - 2*margin) / (2 * Math.max(rLmm, rRmm))
-    );
-
-    const rL = rLmm * scale;
-    const rR = rRmm * scale;
-    const C  = Cmm  * scale;
-
-    const xL = margin + rL;
-    const xR = xL + C;
-    const y  = H/2;
-
-    // Angle pour tangentes externes
-    // beta = acos((rR - rL)/C)
-    const beta = Math.acos(clamp((rR - rL)/C, -1, 1));
-
-    // Angles des points de tangence (repère polaire standard)
-    const aL_top =  beta;
-    const aL_bot = -beta;
-
-    const aR_top = Math.PI - beta;
-    const aR_bot = Math.PI + beta;
-
-    // Points tangents
-    const Ltop = { x: xL + rL*Math.cos(aL_top), y: y + rL*Math.sin(aL_top) };
-    const Lbot = { x: xL + rL*Math.cos(aL_bot), y: y + rL*Math.sin(aL_bot) };
-    const Rtop = { x: xR + rR*Math.cos(aR_top), y: y + rR*Math.sin(aR_top) };
-    const Rbot = { x: xR + rR*Math.cos(aR_bot), y: y + rR*Math.sin(aR_bot) };
-
-    // Qui est la plus grande ? => elle a l’arc “long”
-    const rightIsBigger = (rRmm >= rLmm);
-    const leftIsBigger  = !rightIsBigger;
-
-    // === COURROIE (chemin fermé, non croisé) ===
-    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--belt').trim() || "#bdbdbd";
-    ctx.lineWidth = 5;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-
-    ctx.beginPath();
-    // segment haut
-    ctx.moveTo(Ltop.x, Ltop.y);
-    ctx.lineTo(Rtop.x, Rtop.y);
-
-    // arc sur poulie droite : long si droite est plus grande, sinon court
-    arcBetween(xR, y, rR, aR_top, aR_bot, rightIsBigger);
-
-    // segment bas
-    ctx.lineTo(Lbot.x, Lbot.y);
-
-    // arc sur poulie gauche : long si gauche est plus grande, sinon court
-    // (on revient de Lbot vers Ltop)
-    arcBetween(xL, y, rL, aL_bot, aL_top, leftIsBigger);
-
-    ctx.closePath();
-    ctx.stroke();
-
-    // === POULIES (pour valider visuellement la tangence) ===
-    ctx.lineWidth = 4;
-
-    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--blue').trim() || "#00a2ff";
-    ctx.beginPath(); ctx.arc(xL, y, rL, 0, TAU); ctx.stroke();
-
-    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--orange').trim() || "#ff9800";
-    ctx.beginPath(); ctx.arc(xR, y, rR, 0, TAU); ctx.stroke();
-
-    // Info
-    const Lmm = (unitEl.value==="imperial") ? (d1mm/IN_TO_MM) : d1mm;
-    const Rmm = (unitEl.value==="imperial") ? (d2mm/IN_TO_MM) : d2mm;
-    const Cdisp = (unitEl.value==="imperial") ? (ccmm/IN_TO_MM) : ccmm;
-    const u = (unitEl.value==="imperial") ? "po" : "mm";
-
-    infoEl.innerHTML = `
-      <div>✅ Courroie <b>ouverte (non croisée)</b>, tangente aux 2 poulies.</div>
-      <div class="small">Gauche Ø=${Lmm.toFixed(unitEl.value==="imperial"?2:0)} ${u} | Droite Ø=${Rmm.toFixed(unitEl.value==="imperial"?2:0)} ${u} | C-C=${Cdisp.toFixed(unitEl.value==="imperial"?2:0)} ${u}</div>
-    `;
-  }
-
-  // Redessiner quand on change une valeur (sans animation)
-  [unitEl, ccEl, d1El, d2El].forEach(el => el.addEventListener("input", draw));
-
+function loop(){
+  t += 0.01;
   draw();
-})();
+  requestAnimationFrame(loop);
+}
+
+function draw(){
+  ctx.clearRect(0,0,600,300);
+
+  const cx = 220;
+  const cy = 150;
+  const r  = 60;
+
+  // angle de contact (choisi volontairement)
+  const phi = Math.PI / 4; // 45°
+
+  // points de tangence
+  const top = {
+    x: cx + r*Math.cos(-phi),
+    y: cy + r*Math.sin(-phi)
+  };
+  const bot = {
+    x: cx + r*Math.cos(phi),
+    y: cy + r*Math.sin(phi)
+  };
+
+  // --- COURROIE ---
+  ctx.strokeStyle = "#9a9a9a";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(top.x-220, top.y-40); // segment haut
+  ctx.lineTo(top.x, top.y);
+
+  // ARC CONVEXE (extérieur)
+  ctx.arc(cx, cy, r, -phi, phi, false);
+
+  ctx.lineTo(bot.x-220, bot.y+40); // segment bas
+  ctx.stroke();
+
+  // --- POULIE ---
+  ctx.strokeStyle = "#00a2ff";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.arc(cx,cy,r,0,TAU);
+  ctx.stroke();
+
+  // --- POINT QUI SE DÉPLACE ---
+  const arcLen = r * (2*phi);
+  const segLen = 300;
+  const total = segLen + arcLen + segLen;
+
+  let s = (t*80) % total;
+  let p;
+
+  if(s < segLen){
+    const u = s/segLen;
+    p = {
+      x: (top.x-220)*(1-u) + top.x*u,
+      y: (top.y-40)*(1-u) + top.y*u
+    };
+  }
+  else if((s -= segLen) < arcLen){
+    const u = s/arcLen;
+    const a = -phi + u*(2*phi);
+    p = {
+      x: cx + r*Math.cos(a),
+      y: cy + r*Math.sin(a)
+    };
+  }
+  else{
+    s -= arcLen;
+    const u = s/segLen;
+    p = {
+      x: bot.x*(1-u) + (bot.x-220)*u,
+      y: bot.y*(1-u) + (bot.y+40)*u
+    };
+  }
+
+  ctx.fillStyle="#fff";
+  ctx.beginPath();
+  ctx.arc(p.x,p.y,5,0,TAU);
+  ctx.fill();
+}
+
+loop();
 </script>
 </body>
 </html>
