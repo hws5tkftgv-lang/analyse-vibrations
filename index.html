@@ -2,143 +2,142 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Courroie ouverte — géométrie correcte</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Courroie & poulies — open belt correct</title>
 
 <style>
-html,body{
+body{
   margin:0;
   background:#0b1436;
   color:#eaf1ff;
   font-family:Arial,system-ui,sans-serif;
 }
+header{padding:14px;font-size:18px;font-weight:700}
 canvas{
   display:block;
-  margin:20px auto;
+  margin:12px auto;
   background:#000;
   border-radius:14px;
 }
+.controls{padding:12px;display:grid;gap:8px}
+input{padding:10px;font-size:16px;border-radius:10px;border:none}
 </style>
 </head>
 
 <body>
+<header>🔄 Courroie & poulies — géométrie correcte (open belt)</header>
 
-<canvas id="c" width="700" height="300"></canvas>
+<div class="controls">
+<input id="rpm" type="number" value="1500" placeholder="RPM moteur">
+<input id="d1" type="number" value="4" placeholder="Ø menante (po)">
+<input id="d2" type="number" value="9" placeholder="Ø menée (po)">
+<input id="cc" type="number" value="21" placeholder="Centre à centre (po)">
+</div>
+
+<canvas id="c" width="900" height="360"></canvas>
 
 <script>
-const canvas = document.getElementById("c");
-const ctx = canvas.getContext("2d");
+const c=document.getElementById("c");
+const ctx=c.getContext("2d");
+const IN=25.4,TAU=Math.PI*2;
 
-const TAU = Math.PI * 2;
+let t=0,last=0;
 
-// -------------------- PARAMÈTRES --------------------
-const rSmall = 45;     // rayon petite poulie
-const rLarge = 95;     // rayon grande poulie
-const C      = 240;    // centre-à-centre
-const y0     = 150;
-
-const xSmall = 160;
-const xLarge = xSmall + C;
-
-// -------------------- GÉOMÉTRIE --------------------
-const phi = Math.acos((rLarge - rSmall) / C);
-
-// angles tangence
-const aS_top =  phi;
-const aS_bot = -phi;
-
-const aL_top = Math.PI - phi;
-const aL_bot = Math.PI + phi;
-
-// points de tangence
-const S_top = {
-  x: xSmall + rSmall * Math.cos(aS_top),
-  y: y0     + rSmall * Math.sin(aS_top)
-};
-const S_bot = {
-  x: xSmall + rSmall * Math.cos(aS_bot),
-  y: y0     + rSmall * Math.sin(aS_bot)
-};
-const L_top = {
-  x: xLarge + rLarge * Math.cos(aL_top),
-  y: y0     + rLarge * Math.sin(aL_top)
-};
-const L_bot = {
-  x: xLarge + rLarge * Math.cos(aL_bot),
-  y: y0     + rLarge * Math.sin(aL_bot)
-};
-
-// longueurs
-const lenTop = Math.hypot(L_top.x - S_top.x, L_top.y - S_top.y);
-const lenBot = Math.hypot(S_bot.x - L_bot.x, S_bot.y - L_bot.y);
-const lenArcL = rLarge * (TAU - 2*phi); // arc long
-const lenArcS = rSmall * (2*phi);       // arc court
-
-const totalLen = lenTop + lenArcL + lenBot + lenArcS;
-
-// -------------------- ANIMATION --------------------
-let t = 0;
-
-function lerp(a,b,u){
-  return { x:a.x+(b.x-a.x)*u, y:a.y+(b.y-a.y)*u };
+function loop(ts){
+  const dt=(ts-last)/1000; last=ts;
+  t+=dt*0.25;
+  draw();
+  requestAnimationFrame(loop);
 }
 
 function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.clearRect(0,0,c.width,c.height);
 
-  // ---- COURROIE ----
-  ctx.strokeStyle="#aaa";
-  ctx.lineWidth=4;
+  let rpm=+rpm.value||1;
+  let d1=+d1.value||1;
+  let d2=+d2.value||1;
+  let cc=+cc.value||1;
+
+  d1*=IN; d2*=IN; cc*=IN;
+
+  const R1=d1/2, R2=d2/2;
+  const C=Math.max(cc,Math.abs(R2-R1)+1);
+
+  const scale=Math.min(
+    (c.width-120)/(C+R1+R2),
+    (c.height-80)/(2*Math.max(R1,R2))
+  );
+
+  const r1=R1*scale, r2=R2*scale, Cpx=C*scale;
+  const x1=80+r1, x2=x1+Cpx, y=c.height/2;
+
+  const alpha=Math.asin((R2-R1)/C);
+
+  const t1=alpha;
+  const t2=Math.PI-alpha;
+
+  const L1={x:x1+r1*Math.cos(t1),y:y+r1*Math.sin(t1)};
+  const L2={x:x1+r1*Math.cos(-t1),y:y+r1*Math.sin(-t1)};
+  const R1p={x:x2+r2*Math.cos(t2),y:y+r2*Math.sin(t2)};
+  const R2p={x:x2+r2*Math.cos(-t2),y:y+r2*Math.sin(-t2)};
+
+  // courroie
+  ctx.strokeStyle="#aaa"; ctx.lineWidth=4;
   ctx.beginPath();
-  ctx.moveTo(S_top.x,S_top.y);
-  ctx.lineTo(L_top.x,L_top.y);
-  ctx.arc(xLarge,y0,rLarge,aL_top,aL_bot,false); // arc long
-  ctx.lineTo(S_bot.x,S_bot.y);
-  ctx.arc(xSmall,y0,rSmall,aS_bot,aS_top,false); // arc court
+  ctx.moveTo(L1.x,L1.y);
+  ctx.lineTo(R1p.x,R1p.y);
+  ctx.arc(x2,y,r2,t2,-t2,false);      // grande poulie EXTERNE
+  ctx.lineTo(L2.x,L2.y);
+  ctx.arc(x1,y,r1,-t1,t1,false);      // petite poulie EXTERNE
   ctx.stroke();
 
-  // ---- POULIES ----
-  ctx.lineWidth=3;
+  // poulies
+  function pulley(x,y,r,col,a){
+    ctx.strokeStyle=col; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.arc(x,y,r,0,TAU); ctx.stroke();
+    ctx.fillStyle=col;
+    ctx.beginPath();
+    ctx.arc(x+(r-6)*Math.cos(a),y+(r-6)*Math.sin(a),6,0,TAU);
+    ctx.fill();
+  }
 
-  ctx.strokeStyle="#00a2ff";
-  ctx.beginPath();
-  ctx.arc(xSmall,y0,rSmall,0,TAU);
-  ctx.stroke();
+  const w1=TAU*(rpm/60);
+  const w2=w1*(R1/R2);
 
-  ctx.strokeStyle="#ff9800";
-  ctx.beginPath();
-  ctx.arc(xLarge,y0,rLarge,0,TAU);
-  ctx.stroke();
+  pulley(x1,y,r1,"#00a2ff",-w1*t);
+  pulley(x2,y,r2,"#ff9800",-w2*t);
 
-  // ---- POINT SUR COURROIE ----
-  let s = (t % totalLen);
-  let P;
+  // point sur courroie (même chemin)
+  const Ltop=Math.hypot(R1p.x-L1.x,R1p.y-L1.y);
+  const Lbot=Math.hypot(L2.x-R2p.x,L2.y-R2p.y);
+  const A1=r1*(Math.PI-2*alpha);
+  const A2=r2*(Math.PI+2*alpha);
+  const Ltot=Ltop+A2+Lbot+A1;
 
-  if(s <= lenTop){
-    P = lerp(S_top, L_top, s/lenTop);
-  } else if((s -= lenTop) <= lenArcL){
-    const u = s / lenArcL;
-    const a = aL_top + u*(TAU - 2*phi);
-    P = { x:xLarge + rLarge*Math.cos(a), y:y0 + rLarge*Math.sin(a) };
-  } else if((s -= lenArcL) <= lenBot){
-    P = lerp(L_bot, S_bot, s/lenBot);
-  } else {
-    s -= lenBot;
-    const u = s / lenArcS;
-    const a = aS_bot + u*(2*phi);
-    P = { x:xSmall + rSmall*Math.cos(a), y:y0 + rSmall*Math.sin(a) };
+  let s=(w1*r1*t)%Ltot, P;
+
+  if(s<Ltop){
+    const u=s/Ltop;
+    P={x:L1.x+(R1p.x-L1.x)*u,y:L1.y+(R1p.y-L1.y)*u};
+  }else if((s-=Ltop)<A2){
+    const a=t2-s/A2*(Math.PI+2*alpha);
+    P={x:x2+r2*Math.cos(a),y:y+r2*Math.sin(a)};
+  }else if((s-=A2)<Lbot){
+    const u=s/Lbot;
+    P={x:R2p.x+(L2.x-R2p.x)*u,y:R2p.y+(L2.y-R2p.y)*u};
+  }else{
+    s-=Lbot;
+    const a=-t1+s/A1*(Math.PI-2*alpha);
+    P={x:x1+r1*Math.cos(a),y:y+r1*Math.sin(a)};
   }
 
   ctx.fillStyle="#fff";
   ctx.beginPath();
-  ctx.arc(P.x,P.y,6,0,TAU);
+  ctx.arc(P.x,P.y,5,0,TAU);
   ctx.fill();
-
-  t += 1.2;
-  requestAnimationFrame(draw);
 }
 
-draw();
+requestAnimationFrame(loop);
 </script>
 </body>
 </html>
