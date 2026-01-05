@@ -283,9 +283,9 @@ function drawSpectrum(hzMotor, hzBelt, time){
   specCtx.fillStyle="#05080f";
   specCtx.fillRect(0,0,W,H);
 
-  const maxHz = Math.max(hzMotor*4, hzBelt*3);
-  const scaleX = W / maxHz;
-
+  const minHz = 0;
+const maxHz = hzMotor * 3;   // fenêtre pédagogique
+const scaleX = W / (maxHz - minHz);
   const fault = document.getElementById("fault")?.value || "none";
 
 let peaks = [
@@ -342,7 +342,7 @@ if (fault === "slip") {
   // pics
   peaks.forEach((p,i)=>{
     const pulse = 0.9 + 0.1*Math.sin(time*5 + i);
-    const x = p.hz * scaleX;
+    const x = (p.hz - minHz) * scaleX;
     const h = p.amp * pulse * (H*0.75);
 
     specCtx.strokeStyle=p.col;
