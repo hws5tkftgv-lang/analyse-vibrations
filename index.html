@@ -306,6 +306,10 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
     ctx.moveTo(pts[0].x, pts[0].y);
     for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x, pts[i].y);
     ctx.stroke();
+    
+    // 👉 ICI (AU BON ENDROIT)
+drawPulley(x1, y, r1, "#00a2ff", ang1);
+drawPulley(x2, y, r2, "#ff9800", ang2);
 
     // draw pulleys
     function drawPulley(cx, cy, r, col, angle){
@@ -315,9 +319,7 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
   ctx.arc(cx, cy, r, 0, TAU);
   ctx.stroke();
    
-  drawPulley(x1, y, r1, "#00a2ff", ang1);
-drawPulley(x2, y, r2, "#ff9800", ang2);
-
+  
   // repère de rotation
   ctx.fillStyle = col;
   ctx.beginPath();
