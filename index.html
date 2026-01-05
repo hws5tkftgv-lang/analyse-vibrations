@@ -257,12 +257,43 @@ function drawSpectrum(hzMotor, hzBelt, time){
   const maxHz = Math.max(hzMotor*4, hzBelt*3);
   const scaleX = W / maxHz;
 
-  const peaks = [
-    { hz: hzMotor,     amp: 1.0,  col:"#00a2ff", label:"1× moteur" },
-    { hz: hzMotor*2,   amp: 0.6,  col:"#5fbfff", label:"2× moteur" },
-    { hz: hzBelt,      amp: 0.5,  col:"#ffffff", label:"Courroie" },
-    { hz: hzBelt*2,    amp: 0.25, col:"#bbbbbb", label:"2× courroie" }
-  ];
+  const fault = document.getElementById("fault")?.value || "none";
+
+let peaks = [
+  { hz: hzMotor,   amp: 1.0, col:"#00a2ff", label:"1× moteur" }
+];
+
+if (fault === "none") {
+  peaks.push(
+    { hz: hzMotor*2, amp: 0.4, col:"#5fbfff", label:"2× moteur" }
+  );
+}
+
+if (fault === "unbalance") {
+  peaks.push(
+    { hz: hzMotor,   amp: 1.6, col:"#ff5555", label:"Balourd (1×)" }
+  );
+}
+
+if (fault === "misalign") {
+  peaks.push(
+    { hz: hzMotor*2, amp: 1.2, col:"#ff9800", label:"Désalignement (2×)" }
+  );
+}
+
+if (fault === "belt") {
+  peaks.push(
+    { hz: hzBelt,    amp: 1.1, col:"#ffffff", label:"Courroie" },
+    { hz: hzBelt*2,  amp: 0.6, col:"#bbbbbb", label:"2× courroie" }
+  );
+}
+
+if (fault === "slip") {
+  peaks.push(
+    { hz: hzBelt * 見る(0.92 + 0.08*Math.sin(time*2)), amp: 0.8,
+      col:"#ffcc00", label:"Glissement" }
+  );
+}
 
   // fond grille
   specCtx.strokeStyle="rgba(255,255,255,0.08)";
