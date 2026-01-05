@@ -300,6 +300,39 @@ const LABEL_OFFSET = 12;  // décalage vertical en cas de collision
   // zone Hz (hors grille)
   specCtx.fillStyle = "rgba(0,162,255,0.15)";
   specCtx.fillRect(0, hzZoneY, W, hzZoneHeight);
+  /* ================= RÈGLE Hz (0–75) ================= */
+specCtx.strokeStyle = "rgba(255,255,255,0.35)";
+specCtx.fillStyle   = "#eaf1ff";
+specCtx.font        = "11px Arial";
+specCtx.textAlign   = "center";
+specCtx.textBaseline= "top";
+
+const majorStep = 15;   // graduations principales : 0,15,30,45,60,75
+const minorStep = 5;    // graduations secondaires
+
+for(let hz = minHz; hz <= maxHz; hz += minorStep){
+  const x = (hz - minHz) * scaleX;
+
+  const isMajor = (hz % majorStep === 0);
+
+  // trait vertical
+  specCtx.beginPath();
+  specCtx.moveTo(x, hzZoneY);
+  specCtx.lineTo(
+    x,
+    hzZoneY + (isMajor ? 12 : 7)
+  );
+  specCtx.stroke();
+
+  // valeur numérique (seulement sur les majeures)
+  if(isMajor){
+    specCtx.fillText(
+      hz + " Hz",
+      x,
+      hzZoneY + 14
+    );
+  }
+}
 
   /* ================= ÉCHELLE Hz ================= */
   const minHz = 0;
