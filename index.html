@@ -113,6 +113,10 @@ const specCtx    = specCanvas.getContext("2d");
   const unitEl = document.getElementById("unit");
   const slowEl = document.getElementById("slow");
   const infoEl = document.getElementById("info");
+  const outRPM1  = document.getElementById("out_rpm1");
+const outRPM2  = document.getElementById("out_rpm2");
+const outBelt  = document.getElementById("out_belt");
+const outSpeed = document.getElementById("out_speed");
 
   const playBtn  = document.getElementById("play");
   const pauseBtn = document.getElementById("pause");
@@ -519,7 +523,17 @@ drawPulley(x2, y, r2, "#ff9800", ang2);
     const rpmMenee = rpm * (d1mm/d2mm);
     const hzMenante = rpmMenante/60;
     const hzMenee = rpmMenee/60;
+outRPM1.textContent =
+  `${rpmMenante.toFixed(0)} RPM | ${hzMenante.toFixed(2)} Hz`;
 
+outRPM2.textContent =
+  `${rpmMenee.toFixed(0)} RPM | ${hzMenee.toFixed(2)} Hz`;
+
+outBelt.textContent =
+  `${hzBelt.toFixed(3)} Hz | ${v_ft_min.toFixed(0)} ft/min`;
+
+outSpeed.textContent =
+  `${v_ft_min.toFixed(0)} ft/min`;
     infoEl.innerHTML = `
   <div><span class="dot blue"></span>
   <b>Poulie menante</b> : ${rpmMenante.toFixed(0)} RPM | ${hzMenante.toFixed(2)} Hz
