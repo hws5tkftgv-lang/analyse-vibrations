@@ -280,6 +280,8 @@ function drawSpectrum(hzMotor, hzBelt, time){
   /* ================= DIMENSIONS ================= */
   const W = specCanvas.width / (devicePixelRatio || 1);
   const H = specCanvas.height / (devicePixelRatio || 1);
+  const LABEL_MIN_DX = 42;   // distance mini entre deux labels (px)
+const LABEL_OFFSET = 12;  // décalage vertical en cas de collision
 
   const hzZoneHeight = 30;                 // zone réservée aux Hz
   const hzZoneY      = H - hzZoneHeight;   // début zone Hz
@@ -344,37 +346,51 @@ function drawSpectrum(hzMotor, hzBelt, time){
   }
 
   /* ================= BARRES + LABELS ================= */
-  peaks.forEach((p,i)=>{
-    const pulse = 0.9 + 0.1 * Math.sin(time*5 + i);
-    const x = (p.hz - minHz) * scaleX;
-    const h = p.amp * pulse * (gridBottom * 0.82);
+  const usedLabelX = [];
 
-    // barre
-    specCtx.strokeStyle = p.col;
-    specCtx.lineWidth = 3;
-    specCtx.beginPath();
-    specCtx.moveTo(x, gridBottom);
-    specCtx.lineTo(x, gridBottom - h);
-    specCtx.stroke();
+peaks.forEach((p,i)=>{
+  const pulse = 0.9 + 0.1 * Math.sin(time*5 + i);
+  const x = (p.hz - minHz) * scaleX;
+  const h = p.amp * pulse * (gridBottom * 0.82);
 
-    // identifiant AU-DESSUS de la barre
-    specCtx.fillStyle = "#cfd6ff";
-    specCtx.font = "12px Arial";
-    specCtx.textAlign = "center";
-    specCtx.textBaseline = "bottom";
-    specCtx.fillText(p.label, x, gridBottom - h - 6);
+  // ===== BARRE =====
+  specCtx.strokeStyle = p.col;
+  specCtx.lineWidth = 3;
+  specCtx.beginPath();
+  specCtx.moveTo(x, gridBottom);
+  specCtx.lineTo(x, gridBottom - h);
+  specCtx.stroke();
 
-    // valeur Hz SOUS la grille (hors grille)
-    specCtx.fillStyle = "#eaf1ff";
-    specCtx.font = "12px Arial";
-    specCtx.textBaseline = "middle";
-    specCtx.fillText(
-      p.hz.toFixed(2) + " Hz",
-      x,
-      hzZoneY + hzZoneHeight / 2
-    );
-  });
+  // ===== GESTION COLLISION =====
+  let yShift = 0;
+  for(const prevX of usedLabelX){
+    if(Math.abs(x - prevX) < 42){
+      yShift = 12;
+      break;
+    }
+  }
+  usedLabelX.push(x);
 
+  // ===== IDENTIFIANT AU-DESSUS =====
+  specCtx.fillStyle = "#cfd6ff";
+  specCtx.font = "12px Arial";
+  specCtx.textAlign = "center";
+  specCtx.textBaseline = "bottom";
+  specCtx.fillText(
+    p.label,
+    x,
+    gridBottom - h - 6 - yShift
+  );
+
+  // ===== Hz SOUS LA GRILLE =====
+  specCtx.fillStyle = "#eaf1ff";
+  specCtx.textBaseline = "middle";
+  specCtx.fillText(
+    p.hz.toFixed(2) + " Hz",
+    x,
+    hzZoneY + hzZoneHeight / 2 + yShift
+  );
+});
   /* ================= AXE ================= */
   specCtx.fillStyle="#9aa5d6";
   specCtx.font="12px Arial";
