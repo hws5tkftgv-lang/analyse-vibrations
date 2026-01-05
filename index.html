@@ -750,6 +750,11 @@ outFPM.textContent    = v_ft_min.toFixed(0);
   pauseBtn.onclick = () => { running = false; };
   resetBtn.onclick = () => { t=0; running=false; draw(); };
 
+resize();
+checkOrientation();
+
+
+
   requestAnimationFrame(loop);
   
 const fsBtn = document.getElementById("fs");
@@ -780,8 +785,21 @@ fsBtn.onclick = () => {
 };
 
 // IMPORTANT: maintenir à jour quand on tourne ou resize
-window.addEventListener("resize", checkOrientation);
-window.addEventListener("orientationchange", checkOrientation);
+window.addEventListener("resize", () => {
+  resize();
+  checkOrientation();
+});
+
+window.addEventListener("orientationchange", () => {
+  resize();
+  checkOrientation();
+});
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", () => {
+    resize();
+    checkOrientation();
+  });
+}
 })(); 
 </script>
 
