@@ -62,6 +62,63 @@ body.lock-scroll{
   overflow: hidden;
   touch-action: none;
 }
+/* ===== MESSAGE ROTATION PAYSAGE ===== */
+.rotate-warning{
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(5,8,15,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #eaf1ff;
+  pointer-events: none;
+}
+
+.rotate-warning span{
+  display: block;
+  font-size: 14px;
+  font-weight: 400;
+  opacity: 0.85;
+  margin-top: 10px;
+}
+/* ================= FULL SCREEN SPECTRE ================= */
+
+/* empêche le scroll quand actif */
+.lock-scroll{
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* canvas spectre en plein écran */
+canvas.spectrum-only{
+  position: fixed;
+  inset: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  border-radius: 0 !important;
+  z-index: 9999;
+}
+
+/* message rotation */
+#rotateWarn{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  color: white;
+  font-size: 22px;
+  font-weight: 700;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 10000;
+  padding: 20px;
+}
 </style>
 </head>
 
@@ -690,16 +747,36 @@ fsBtn.onclick = () => {
   spectrumFS = !spectrumFS;
 
   if(spectrumFS){
-    specCanvas.classList.add("spectrum-only-fullscreen");
+    specCanvas.classList.add("spectrum-only");
     document.body.classList.add("lock-scroll");
   }else{
-    specCanvas.classList.remove("spectrum-only-fullscreen");
+    specCanvas.classList.remove("spectrum-only");
     document.body.classList.remove("lock-scroll");
   }
 
-  resize(); // OBLIGATOIRE pour recalculer le spectre
+  resize();           // recalcul canvas
+  checkOrientation(); // affiche / cache message
 };
-})();
+let spectrumFS = false;
+const rotateWarn = document.getElementById("rotateWarn");
+function checkOrientation(){
+  if(!spectrumFS) {
+    rotateWarn.style.display = "none";
+    return;
+  }
+
+  const isPortrait = window.innerHeight > window.innerWidth;
+
+  rotateWarn.style.display = isPortrait ? "flex" : "none";
+}
+})(); 
 </script>
+<div id="rotateWarn" class="rotate-warning" style="display:none;">
+  🔄 Tournez votre téléphone en mode paysage
+  <span>Pour une meilleure lecture du spectre</span>
+</div>
+<div id="rotateWarn">
+  Tournez votre téléphone en mode paysage
+</div>
 </body>
 </html>
