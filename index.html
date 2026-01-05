@@ -99,13 +99,47 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
 <script>
 (() => {
   // ================= SPECTRUM VIEW =================
+// ================= ÉTAT DE LA VUE DU SPECTRE =================
 const spectrumView = {
-  minHz: 0,
-  maxHz: 300
+  minHz: 0,     // début visible
+  spanHz: 50,   // largeur affichée (0–50 Hz)
+  maxHz: 300    // limite totale
 };
   const canvas = document.getElementById("scene");
   const ctx    = canvas.getContext("2d");
 const specCanvas = document.getElementById("spectrum");
+let isPanning = false;
+let panStartX = 0;
+let panStartMinHz = 0;
+
+specCanvas.addEventListener("pointerdown", e => {
+  isPanning = true;
+  panStartX = e.clientX;
+  panStartMinHz = spectrumView.minHz;
+  specCanvas.setPointerCapture(e.pointerId);
+});
+
+specCanvas.addEventListener("pointermove", e => {
+  if(!isPanning) return;
+
+  const dxPx = e.clientX - panStartX;
+  const hzPerPx = spectrumView.spanHz / specCanvas.clientWidth;
+
+  let newMin = panStartMinHz - dxPx * hzPerPx;
+
+  // clamp 0 → 300
+  newMin = Math.max(
+    0,
+    Math.min(spectrumView.maxHz - spectrumView.spanHz, newMin)
+  );
+
+  spectrumView.minHz = newMin;
+});
+
+specCanvas.addEventListener("pointerup", e => {
+  isPanning = false;
+  specCanvas.releasePointerCapture(e.pointerId);
+});
 const outLength = document.getElementById("out-length");
 const specCtx    = specCanvas.getContext("2d");
   const rpmEl  = document.getElementById("rpm");
@@ -280,7 +314,12 @@ specCanvas.style.marginTop = "18px";
     }
     return pts[pts.length-1];
   }
-
+// ================= ÉTAT DE LA VUE DU SPECTRE =================
+const spectrumView = {
+  minHz: 0,     // début de la fenêtre visible
+  spanHz: 50,   // largeur affichée (0–50 Hz)
+  maxHz: 300    // limite absolue du spectre
+};
 function drawSpectrum(hzMotor, hzBelt, time){
 
   /* ================= DIMENSIONS ================= */
