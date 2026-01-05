@@ -274,6 +274,15 @@ const Lmm =
   2 * Cc +
   (Math.PI / 2) * (D1 + D2) +
   ((D2 - D1) ** 2) / (4 * Cc);
+  
+// === Vitesse linéaire réelle de la courroie ===
+const v_mm_s  = Math.PI * d1mm * (rpm / 60);
+const v_in_s  = v_mm_s / 25.4;
+const v_ft_min = v_in_s * 5;
+
+// === Fréquence courroie ===
+const hzBelt = v_mm_s / Lmm;
+const fpmStrobe = hzBelt * 60;
 
 const Ldisplay =
   (unitEl.value === "imperial")
@@ -378,12 +387,34 @@ drawPulley(x2, y, r2, "#ff9800", ang2);
     const hzMenee = rpmMenee/60;
 
     infoEl.innerHTML = `
-      <div><span class="dot blue"></span><b>Poulie menante</b> : ${rpmMenante.toFixed(0)} RPM | ${hzMenante.toFixed(2)} Hz</div>
-      <div><span class="dot orange"></span><b>Poulie menée</b> : ${rpmMenee.toFixed(0)} RPM | ${hzMenee.toFixed(2)} Hz</div>
-      <div><span class="dot white"></span><b>Courroie</b> : ${beltHz.toFixed(3)} Hz (${beltRPM.toFixed(2)} tr/min)</div>
-      <div><span class="dot white"></span><b>Longueur courroie</b> : ${Ldisplay}</div>
-      <div class="small">${running ? "▶️ En lecture" : "⏸ En pause"}</div>
-    `;
+  <div><span class="dot blue"></span>
+  <b>Poulie menante</b> : ${rpmMenante.toFixed(0)} RPM | ${hzMenante.toFixed(2)} Hz
+  </div>
+
+  <div><span class="dot orange"></span>
+  <b>Poulie menée</b> : ${rpmMenee.toFixed(0)} RPM | ${hzMenee.toFixed(2)} Hz
+  </div>
+
+  <div><span class="dot white"></span>
+  <b>Courroie (fréquence)</b> : ${hzBelt.toFixed(3)} Hz (${fpmStrobe.toFixed(1)} FPM)
+  </div>
+
+  <div class="small">
+  Vitesse linéaire :
+  ${v_mm_s.toFixed(0)} mm/s |
+  ${v_in_s.toFixed(1)} in/s |
+  ${v_ft_min.toFixed(0)} ft/min
+  </div>
+
+  <div>
+  <span class="dot white"></span>
+  <b>Longueur courroie</b> : ${Ldisplay}
+  </div>
+
+  <div class="small">
+  ${running ? "▶️ En lecture" : "⏸ En pause"}
+  </div>
+`;
   }
 
   playBtn.onclick  = () => { running = !!read(); };
