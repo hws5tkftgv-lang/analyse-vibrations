@@ -143,13 +143,14 @@ const outFPM    = document.getElementById("out-fpm");
     canvas.height = Math.round(h * dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
     // spectrum = 35% de la hauteur du canvas principal
-const sh = h * 0.85;
+const sh = Math.max(220, h * 0.95);
 
 specCanvas.style.width  = w + "px";
 specCanvas.style.height = sh + "px";
 specCanvas.width  = Math.round(w * dpr);
 specCanvas.height = Math.round(sh * dpr);
 specCtx.setTransform(dpr,0,0,dpr,0,0);
+specCanvas.style.marginTop = "18px";
   }
   addEventListener("resize", resize);
   resize();
