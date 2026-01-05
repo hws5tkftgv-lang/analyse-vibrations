@@ -284,9 +284,12 @@ function drawSpectrum(hzMotor, hzBelt, time){
   const LABEL_MIN_DX = 42;   // distance mini entre deux labels (px)
 const LABEL_OFFSET = 12;  // décalage vertical en cas de collision
 
-  const hzZoneHeight = 42;              // ← bande Hz plus haute
+  const hzZoneHeight = 36;          // bande bleue (Hz)
 const hzZoneY      = H - hzZoneHeight;
-const gridBottom   = hzZoneY - 2;     // ← espace entre grille et bande Hz
+
+const gridTop      = 16;          // marge haute
+const gridBottom   = hzZoneY - 12; // FIN de la grille (AVANT la bande bleue)
+const gridHeight   = gridBottom - gridTop;
   /* ================= FOND ================= */
   specCtx.clearRect(0,0,W,H);
   specCtx.fillStyle = "#05080f";
@@ -336,59 +339,63 @@ const gridBottom   = hzZoneY - 2;     // ← espace entre grille et bande Hz
 
   /* ================= GRILLE (STOP NET) ================= */
   specCtx.strokeStyle = "rgba(255,255,255,0.08)";
-  for(let i=0;i<=8;i++){
-    const hz = minHz + i * (maxHz - minHz) / 8;
-    const x  = (hz - minHz) * scaleX;
-    specCtx.beginPath();
-    specCtx.moveTo(x, 0);
-    specCtx.lineTo(x, gridBottom);
-    specCtx.stroke();
-  }
-
+for(let i=0;i<=8;i++){
+  const x = i * W / 8;
+  specCtx.beginPath();
+  specCtx.moveTo(x, gridTop);
+  specCtx.lineTo(x, gridBottom);
+  specCtx.stroke();
+}
   /* ================= BARRES + LABELS ================= */
   const usedLabelX = [];
+const minLabelSpacing = 34; // anti-collision horizontal
 
 peaks.forEach((p,i)=>{
   const pulse = 0.9 + 0.1 * Math.sin(time*5 + i);
   const x = (p.hz - minHz) * scaleX;
-  const h = p.amp * pulse * (gridBottom * 0.82);
 
-  // ===== BARRE =====
+  // éviter débordement gauche/droite
+  if (x < 12 || x > W - 12) return;
+
+  const h = p.amp * pulse * (gridHeight * 0.9);
+  const barTopY = gridBottom - h;
+
+  // === BARRE ===
   specCtx.strokeStyle = p.col;
   specCtx.lineWidth = 3;
   specCtx.beginPath();
   specCtx.moveTo(x, gridBottom);
-  specCtx.lineTo(x, gridBottom - h);
+  specCtx.lineTo(x, barTopY);
   specCtx.stroke();
 
-  // ===== GESTION COLLISION =====
-  let yShift = 0;
-  for(const prevX of usedLabelX){
-    if(Math.abs(x - prevX) < 42){
-      yShift = 12;
-      break;
-    }
-  }
-  usedLabelX.push(x);
+  // === IDENTIFIANT (au-dessus de la barre) ===
+  let labelY = barTopY - 6;
+  labelY = Math.max(labelY, gridTop + 14); // sécurité haut
 
-  // ===== IDENTIFIANT AU-DESSUS =====
   specCtx.fillStyle = "#cfd6ff";
   specCtx.font = "12px Arial";
   specCtx.textAlign = "center";
   specCtx.textBaseline = "bottom";
-  specCtx.fillText(
-    p.label,
-    x,
-    gridBottom - h - 6 - yShift
-  );
+  specCtx.fillText(p.label, x, labelY);
 
-  // ===== Hz SOUS LA GRILLE =====
+  // === VALEUR Hz (SOUS la grille, dans la bande bleue) ===
+  let labelX = x;
+
+  // anti-collision des Hz
+  for(const usedX of usedLabelX){
+    if(Math.abs(labelX - usedX) < minLabelSpacing){
+      labelX += minLabelSpacing;
+    }
+  }
+  usedLabelX.push(labelX);
+
   specCtx.fillStyle = "#eaf1ff";
+  specCtx.font = "12px Arial";
   specCtx.textBaseline = "middle";
   specCtx.fillText(
     p.hz.toFixed(2) + " Hz",
-    x,
-    hzZoneY + hzZoneHeight / 2 + yShift
+    labelX,
+    hzZoneY + hzZoneHeight / 2
   );
 });
   /* ================= AXE ================= */
