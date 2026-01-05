@@ -314,7 +314,8 @@ specCtx.textBaseline= "top";
 
 const majorStep = 15;   // graduations principales : 0,15,30,45,60,75
 const minorStep = 5;    // graduations secondaires
-
+let lastLabelX = -Infinity;
+const MIN_LABEL_SPACING = 36; // px – ajuste si besoin (32–40)
 for(let hz = minHz; hz <= maxHz; hz += minorStep){
   const x = (hz - minHz) * scaleX;
 
@@ -330,13 +331,14 @@ for(let hz = minHz; hz <= maxHz; hz += minorStep){
   specCtx.stroke();
 
   // valeur numérique (seulement sur les majeures)
-  if(isMajor){
-    specCtx.fillText(
-      hz + " Hz",
-      x,
-      hzZoneY + 14
-    );
-  }
+  if (isMajor && Math.abs(x - lastLabelX) >= MIN_LABEL_SPACING) {
+  specCtx.fillText(
+    hz + " Hz",
+    x,
+    hzZoneY + 14
+  );
+  lastLabelX = x;
+}
 }
 
   
