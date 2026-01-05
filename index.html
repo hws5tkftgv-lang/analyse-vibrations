@@ -266,6 +266,7 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
     const { rpm, d1mm, d2mm, ccmm } = inp;
     // === Longueur de courroie (open belt) ===
 // === Longueur de courroie (open belt) ===
+// === Longueur de courroie (open belt) ===
 const D1 = d1mm;
 const D2 = d2mm;
 const Cc = ccmm;
@@ -274,21 +275,21 @@ const Lmm =
   2 * Cc +
   (Math.PI / 2) * (D1 + D2) +
   ((D2 - D1) ** 2) / (4 * Cc);
-  
-// === Vitesse linéaire réelle de la courroie ===
-const v_mm_s  = Math.PI * d1mm * (rpm / 60);
-const v_in_s  = v_mm_s / 25.4;
+
+// === Vitesse linéaire réelle de la courroie (issue de la menante) ===
+const v_mm_s   = Math.PI * d1mm * (rpm / 60);
+const v_in_s   = v_mm_s / IN_TO_MM;
 const v_ft_min = v_in_s * 5;
 
 // === Fréquence courroie ===
-const hzBelt = v_mm_s / Lmm;
+// (combien de "tours de boucle" par seconde)
+const hzBelt    = v_mm_s / Lmm;
 const fpmStrobe = hzBelt * 60;
 
 const Ldisplay =
   (unitEl.value === "imperial")
     ? (Lmm / IN_TO_MM).toFixed(2) + " po"
     : Lmm.toFixed(1) + " mm";
-
 
 // === Fréquence de la courroie ===
 // vitesse linéaire imposée par la poulie menante
