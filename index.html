@@ -143,7 +143,7 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
     const sweepRight = -(TAU - 2*phi);
 
     // - sur la poulie GAUCHE (souvent la petite): on veut l'arc COURT : 2phi, et dans le sens anti-horaire (sweep positif)
-    const sweepLeft  = +(2*phi);
+    const sweepLeft  = -(2*phi);
 
     function arcPoints(cx,cy,r, aStart, sweep){
       const absSweep = Math.abs(sweep);
