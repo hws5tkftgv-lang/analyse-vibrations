@@ -303,6 +303,7 @@ function resize(){
   specCanvas.height = Math.round(specH * dpr);
 
   specCtx.setTransform(dpr,0,0,dpr,0,0);
+  specCtx.imageSmoothingEnabled = false;
 }
   function read(){
     let rpm = parseFloat(rpmEl.value);
@@ -433,7 +434,9 @@ function drawSpectrum(hzMotor, hzBelt, time){
 
   /* ===== Layout ===== */
   const hzZoneHeight = 42;
-  const hzZoneY      = H - hzZoneHeight;
+const hzZoneY = spectrumFS
+  ? H - hzZoneHeight - 14   // 🔑 marge iOS fullscreen
+  : H - hzZoneHeight;
 
   const gridTop    = 16;
   const gridBottom = hzZoneY - 10;
