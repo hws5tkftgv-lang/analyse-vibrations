@@ -179,6 +179,7 @@ body.spectrum-mode #fsHUD{ display:block; }
 (() => {
   "use strict";
 
+
   /* ===================== CONSTANTES ===================== */
   const TAU = Math.PI * 2;
   const IN_TO_MM = 25.4;
@@ -190,6 +191,8 @@ body.spectrum-mode #fsHUD{ display:block; }
 
   /* ===================== ÉTAT ===================== */
   let running = false;
+  // ===== ENREGISTREMENT (Peak Hold par élément) =====
+let peakRecord = {}; // { label: { hz, amp } }   amp en mm/s
 
   // temps séparés, MAIS une seule boucle RAF
   let tMotion = 0; // courroie / poulies
@@ -516,7 +519,24 @@ body.spectrum-mode #fsHUD{ display:block; }
 
     // ===== AUTO-SCALE AMPLITUDE (OPTION 1) =====
 const peaks = buildPeaks(hzMotor, hzBelt, time, faultEl.value);
+// ===== ENREGISTREMENT AUTO (uniquement quand Play) =====
+if(running){
+  for(const p of peaks){
+    if(!Number.isFinite(p.hz)) continue;
 
+    // EXACTEMENT le même facteur que l’affichage
+    const ampMMs = (Number.isFinite(p.amp) ? p.amp : 0) * 5;
+
+    // clé = label (donc "1× moteur", "Balourd (1×)", etc.)
+    const key = (p.label || "").trim();
+    if(!key) continue;
+
+    // garde le max
+    if(!peakRecord[key] || ampMMs > peakRecord[key].amp){
+      peakRecord[key] = { hz: p.hz, amp: ampMMs };
+    }
+  }
+}
 // amplitude max réelle (en mm/s pédagogiques)
 let maxAmp = 1;
 for(const p of peaks){
@@ -623,6 +643,34 @@ const AMP_STEP = AMP_MAX <= 6 ? 1 : 2;
     specCtx.textBaseline = "top";
     specCtx.fillText("Hz →", W - 6, 6);
   }
+
+function renderPeakList(){
+  const keys = Object.keys(peakRecord);
+
+  if(keys.length === 0){
+    infoEl.innerHTML = "<div class='small'>📸 Aucun pic enregistré (appuie Play).</div>";
+    return;
+  }
+
+  // tri par amplitude décroissante
+  keys.sort((a,b) => peakRecord[b].amp - peakRecord[a].amp);
+
+  let html = "<b>📸 Photo instantanée — pics max enregistrés</b><br><br>";
+
+  for(const label of keys){
+    const p = peakRecord[label];
+    html += `
+      <div style="margin-bottom:10px;">
+        • <b>${label}</b><br>
+        &nbsp;&nbsp;${p.hz.toFixed(2)} Hz — ${p.amp.toFixed(2)} mm/s
+      </div>
+    `;
+  }
+
+  infoEl.innerHTML = html;
+}
+
+
 
 function updateSpectrumModeByOrientation(){
   const vv = window.visualViewport;
@@ -912,17 +960,23 @@ if(window.visualViewport){
     running = true;
   });
 
-  pauseBtn.addEventListener("click", () => { running = false; });
+  pauseBtn.addEventListener("click", () => {
+  running = false;     // fige le spectre (tSpec n’avance plus)
+  renderPeakList();    // affiche la photo instantanée (max enregistrés)
+});
 
   resetBtn.addEventListener("click", () => {
-    running = false;
-    tMotion = 0;
-    tSpec   = 0;
-    ang1 = 0;
-    ang2 = 0;
-    draw();
-  });
+  running = false;
+  tMotion = 0;
+  tSpec   = 0;
+  ang1 = 0;
+  ang2 = 0;
 
+  peakRecord = {};      // ✅ efface la mémoire
+  infoEl.innerHTML = ""; // optionnel: efface l'affichage
+
+  draw();
+});
   
   
 
