@@ -1045,15 +1045,18 @@ function autoExitOnPortrait(){
   });
 
   // plein écran: resize / orientation
-  window.addEventListener("resize", () => {
+  // plein écran: resize / orientation
+window.addEventListener("resize", () => {
   resize();
   checkOrientation();
+  autoExitOnPortrait();   // ✅ AJOUT
   draw();
 });
 
 window.addEventListener("orientationchange", () => {
   resize();
   checkOrientation();
+  autoExitOnPortrait();   // ✅ AJOUT
   draw();
 });
 
@@ -1061,6 +1064,7 @@ if(window.visualViewport){
   window.visualViewport.addEventListener("resize", () => {
     resize();
     checkOrientation();
+    autoExitOnPortrait(); // ✅ AJOUT
     draw();
   });
 }
