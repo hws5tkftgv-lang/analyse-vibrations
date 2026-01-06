@@ -79,7 +79,10 @@ canvas.spectrum-only{
   border-radius: 0 !important;
   z-index: 9999;
 }
-
+/* cache le conteneur du spectre quand fullscreen */
+.stage.hidden {
+  display: none;
+}
 /* ===== MODE SPECTRE : cacher le reste (sans cacher le parent du canvas) ===== */
 
 </style>
@@ -769,7 +772,23 @@ function autoExitOnPortrait(){
   spectrumFS = !spectrumFS;
 
   // ✅ FULL SCREEN = UNIQUEMENT LE CANVAS
+  function toggleSpectrumFS(){
+  spectrumFS = !spectrumFS;
+
+  // canvas plein écran
   specCanvas.classList.toggle("spectrum-only", spectrumFS);
+
+  // ⚠️ cache le conteneur NORMAL du spectre
+  document.getElementById("specStage")
+    .classList.toggle("hidden", spectrumFS);
+
+  // bloque le scroll proprement
+  document.documentElement.style.overflow = spectrumFS ? "hidden" : "";
+
+  resize();
+  checkOrientation();
+  redrawSpectrumNow();
+}
 
   // ✅ bloquer le scroll sans toucher au body
   document.documentElement.style.overflow = spectrumFS ? "hidden" : "";
