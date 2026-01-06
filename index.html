@@ -549,36 +549,125 @@ hzZoneY = Math.max(80, hzZoneY);
 
   /* ===== PICS ===== */
   const fault = document.getElementById("fault")?.value || "none";
-  let peaks = [];
+let peaks = [];
 
-  // toujours présent
-  peaks.push({ hz: hzMotor, amp: 1.0, col:"#00a2ff", label:"1× moteur" });
+// ================= BASE TEMPORELLE =================
+const t1 = time;
+const t2 = time * 1.7;
+const t3 = time * 2.3;
 
-  // 2× moteur
-  if (fault === "none" || fault === "all")
-    peaks.push({ hz: hzMotor*2, amp: 0.4, col:"#5fbfff", label:"2× moteur" });
+// ================= FRÉQUENCES DE BASE =================
+const f1 = hzMotor;          // 1× moteur
+const f2 = hzMotor * 2;      // 2× moteur
+const f3 = hzMotor * 3;      // 3× moteur
+const fb = hzBelt;           // fréquence courroie
 
-  // balourd
-  if (fault === "unbalance" || fault === "all")
-    peaks.push({ hz: hzMotor, amp: 1.6, col:"#ff5555", label:"Balourd (1×)" });
+// ================= VARIATIONS D’AMPLITUDE (LIVE) =================
+const a_base  = 1.0 + 0.15 * Math.sin(t1);
+const a_mid   = 0.7 + 0.20 * Math.sin(t2);
+const a_high  = 0.5 + 0.25 * Math.sin(t3);
 
-  // désalignement
-  if (fault === "misalign" || fault === "all")
-    peaks.push({ hz: hzMotor*2, amp: 1.2, col:"#ff9800", label:"Désalignement (2×)" });
+// ================= NORMAL / RÉFÉRENCE =================
+peaks.push({
+  hz: f1,
+  amp: a_base,
+  col: "#00a2ff",
+  label: "1× moteur"
+});
 
-  // défaut de courroie
-  if (fault === "belt" || fault === "all")
-    peaks.push(
-      { hz: hzBelt,   amp: 1.1, col:"#ffffff", label:"Courroie" },
-      { hz: hzBelt*2, amp: 0.6, col:"#bbbbbb", label:"2× courroie" }
-    );
+// ================= DÉSÉQUILIBRE (BALOURD) =================
+if (fault === "unbalance" || fault === "all") {
+  peaks.push({
+    hz: f1,
+    amp: 1.8 + 0.3 * Math.sin(t1),
+    col: "#ff5555",
+    label: "Balourd (1×)"
+  });
+}
 
-  // glissement
-  if (fault === "slip" || fault === "all") {
-    const slip = 0.9 + 0.1 * Math.sin(time * 2);
-    peaks.push({ hz: hzBelt * slip, amp: 0.8, col:"#ffcc00", label:"Glissement" });
-  }
+// ================= DÉSALIGNEMENT =================
+if (fault === "misalign" || fault === "all") {
+  peaks.push(
+    {
+      hz: f1,
+      amp: 1.2 + 0.2 * Math.sin(t2),
+      col: "#ff9800",
+      label: "Désalignement 1×"
+    },
+    {
+      hz: f2,
+      amp: 1.5 + 0.25 * Math.sin(t1),
+      col: "#ff9800",
+      label: "Désalignement 2×"
+    }
+  );
+}
 
+// ================= JEU MÉCANIQUE / LOOSE =================
+if (fault === "looseness" || fault === "all") {
+  peaks.push(
+    { hz: f1, amp: 1.0 + 0.2 * Math.sin(t1), col:"#ffd54f", label:"Jeu 1×" },
+    { hz: f2, amp: 0.9 + 0.2 * Math.sin(t2), col:"#ffd54f", label:"Jeu 2×" },
+    { hz: f3, amp: 0.7 + 0.2 * Math.sin(t3), col:"#ffd54f", label:"Jeu 3×" }
+  );
+}
+
+// ================= COURROIE – DÉFAUT =================
+if (fault === "belt" || fault === "all") {
+  peaks.push(
+    {
+      hz: fb,
+      amp: 1.2 + 0.25 * Math.sin(t1),
+      col:"#ffffff",
+      label:"Courroie"
+    },
+    {
+      hz: fb * 2,
+      amp: 0.6 + 0.2 * Math.sin(t2),
+      col:"#bbbbbb",
+      label:"2× courroie"
+    }
+  );
+}
+
+// ================= GLISSEMENT COURROIE =================
+if (fault === "slip" || fault === "all") {
+  const slip = 0.92 + 0.08 * Math.sin(t1 * 1.5);
+  peaks.push({
+    hz: fb * slip,
+    amp: 0.9 + 0.25 * Math.sin(t2),
+    col:"#ffcc00",
+    label:"Glissement"
+  });
+}
+
+// ================= ROULEMENT – DÉFAUT GÉNÉRAL =================
+if (fault === "bearing" || fault === "all") {
+  peaks.push(
+    {
+      hz: f1 * 4,
+      amp: 0.6 + 0.3 * Math.sin(t3),
+      col:"#c77dff",
+      label:"Roulement BPFO"
+    },
+    {
+      hz: f1 * 5.2,
+      amp: 0.5 + 0.25 * Math.sin(t2),
+      col:"#c77dff",
+      label:"Roulement BPFI"
+    }
+  );
+}
+
+// ================= RÉSONANCE STRUCTURELLE =================
+if (fault === "resonance" || fault === "all") {
+  peaks.push({
+    hz: f1 * 2.6,
+    amp: 2.0 + 0.4 * Math.sin(t1),
+    col:"#ff1744",
+    label:"Résonance"
+  });
+}
   /* ===== DESSIN DES BARRES ===== */
   peaks.forEach(p=>{
     if(p.hz < minHz || p.hz > maxHz) return;
