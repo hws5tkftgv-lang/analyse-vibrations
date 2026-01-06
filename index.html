@@ -661,9 +661,7 @@ const v_ft_min = v_in_s * 5;
 const hzBelt    = v_mm_s / Lmm;
 const fpmStrobe = hzBelt * 60;
 const hzMotor = rpm / 60;
-liveHzMotor = hzMotor;
-liveHzBelt  = hzBelt;
-drawSpectrum(liveHzMotor, liveHzBelt, t);
+drawSpectrum(hzMotor, hzBelt, t);
 
 const Ldisplay =
   (unitEl.value === "imperial")
