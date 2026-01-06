@@ -514,9 +514,19 @@ body.spectrum-mode #fsHUD{ display:block; }
     const plotRight = W;
     const plotWidth = plotRight - plotLeft;
 
-    const AMP_MAX  = 10;
-    const AMP_STEP = 2;
+    // ===== AUTO-SCALE AMPLITUDE (OPTION 1) =====
+const peaks = buildPeaks(hzMotor, hzBelt, time, faultEl.value);
 
+// amplitude max réelle (en mm/s pédagogiques)
+let maxAmp = 1;
+for(const p of peaks){
+  const ampMMs = p.amp * 5;   // même facteur que tes barres
+  if(ampMMs > maxAmp) maxAmp = ampMMs;
+}
+
+// marge pédagogique + arrondi propre
+const AMP_MAX  = Math.max(2, Math.ceil(maxAmp * 1.15));
+const AMP_STEP = AMP_MAX <= 6 ? 1 : 2;
     const minHz = spectrumView.minHz;
     const maxHz = minHz + spectrumView.spanHz;
     const scaleX = plotWidth / (maxHz - minHz);
@@ -580,7 +590,7 @@ body.spectrum-mode #fsHUD{ display:block; }
     }
 
     const fault = faultEl.value || "none";
-    const peaks = buildPeaks(hzMotor, hzBelt, time, fault);
+    
 
     // barres
     for(const p of peaks){
