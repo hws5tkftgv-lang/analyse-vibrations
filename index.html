@@ -76,9 +76,10 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
 /* canvas spectre en plein écran */
 canvas.spectrum-only{
   position: fixed;
-  inset: 0;
-  width: 100vw !important;
-  height: 100vh !important;
+  left: 0;
+  top: 0;
+  width: 100dvw !important;
+  height: 100dvh !important;   /* ✅ iOS SAFE */
   border-radius: 0 !important;
   z-index: 9999;
 }
