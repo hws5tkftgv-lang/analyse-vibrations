@@ -85,13 +85,16 @@ canvas.spectrum-only{
 }
 /* cache le conteneur du spectre quand fullscreen */
 /* ===== MODE SPECTRE SEUL ===== */
-body.spectrum-mode > *:not(#specStage):not(#rotateWarn){
-  display: none !important;
+/* ===== CORRECTION FINALE FULLSCREEN SPECTRE ===== */
+body.spectrum-mode #specStage{
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
-body.spectrum-mode{
-  overflow: hidden;
+body.spectrum-mode canvas#spectrum{
+  display: block;
 }
+
 /* ===== MODE SPECTRE : cacher le reste (sans cacher le parent du canvas) ===== */
 
 </style>
