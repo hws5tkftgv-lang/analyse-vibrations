@@ -175,12 +175,13 @@ body.spectrum-mode{
 (() => {
   
 const spectrumView = {
-  let liveHzMotor = 0;
-let liveHzBelt  = 0;
-  minHz: 0,     // début visible
-  spanHz: 50,   // largeur affichée (0–50 Hz)
-  maxHz: 300    // limite totale
+  minHz: 0,
+  spanHz: 50,
+  maxHz: 300
 };
+
+let liveHzMotor = 0;
+let liveHzBelt  = 0;
 let isPanning = false;
 let panStartX = 0;
 let panStartMinHz = 0;
@@ -215,9 +216,7 @@ specCanvas.addEventListener("pointermove", e => {
   spectrumView.minHz = newMin;
 
   // 🔴 REDRAW IMMÉDIAT DU SPECTRE
-  liveHzMotor = hzMotor;
-liveHzBelt  = hzBelt;
-drawSpectrum(liveHzMotor, liveHzBelt, t);
+  drawSpectrum(liveHzMotor, liveHzBelt, t);
 });
 
 specCanvas.addEventListener("pointerup", e => {
@@ -662,6 +661,8 @@ const v_ft_min = v_in_s * 5;
 const hzBelt    = v_mm_s / Lmm;
 const fpmStrobe = hzBelt * 60;
 const hzMotor = rpm / 60;
+liveHzMotor = hzMotor;
+liveHzBelt  = hzBelt;
 drawSpectrum(liveHzMotor, liveHzBelt, t);
 
 const Ldisplay =
@@ -787,14 +788,7 @@ const rotateWarn = document.getElementById("rotateWarn");
 
 let spectrumFS = false;
 
-function exitSpectrumMode(){
-  spectrumFS = false;
-  document.body.classList.remove("spectrum-mode");
-  document.body.classList.remove("lock-scroll");
-  specCanvas.classList.remove("spectrum-only");
-  rotateWarn.style.display = "none";
-  resize();
-}
+
 
 
 function exitSpectrumMode(){
