@@ -1,42 +1,39 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
 <title>Courroie & poulies — trajectoire correcte</title>
 
 <style>
-html, body {
-  height: 100%;
-}
+html, body { height:100%; }
 :root{
   --bg:#0b1436;
-  --panel:#101a40;
   --text:#eaf1ff;
   --muted:rgba(234,241,255,.70);
-  --blue:#00a2ff;
-  --orange:#ff9800;
-  --belt:#9a9a9a;
   --btn:#1c2b6a;
   --bad:#ff4d4d;
 }
 *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 html,body{ margin:0; background:var(--bg); color:var(--text); font-family:Arial,system-ui,sans-serif; }
 header{ padding:10px 14px; font-size:16px; font-weight:700; }
+
 .controls{ padding:10px 14px; display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
 .controls label{ font-size:12px; color:var(--muted); }
-.controls input,.controls select{ width:100%; padding:4px 6px; font-size:13px; border-radius:8px; border:none; }
+.controls input,.controls select{ width:100%; padding:6px 8px; font-size:13px; border-radius:10px; border:none; }
 .controls .full{ grid-column:1/-1; }
+
 .buttons{ display:flex; gap:10px; padding:0 14px 10px; flex-wrap:wrap; }
 button{ flex:1; min-width:120px; padding:10px; font-size:15px; border:none; border-radius:12px; background:var(--btn); color:white; }
+
 .stage{ padding:10px 14px; }
 canvas{ width:100%; background:#000; border-radius:12px; display:block; }
-#spectrum{ background:#05080f; touch-action:none; } /* important pour pan iPhone */
-.results{ padding:10px 14px 18px; font-size:14px; line-height:1.45; }
-.bad{color:var(--bad); font-weight:700;}
-.small{ font-size:12px; opacity:.75; margin-top:6px;}
+#spectrum{ background:#05080f; touch-action:none; }
 
-/* ===== Sorties intégrées (résumé vitesses) ===== */
+.results{ padding:10px 14px 18px; font-size:14px; line-height:1.45; }
+.bad{ color:var(--bad); font-weight:700; }
+.small{ font-size:12px; opacity:.75; margin-top:6px; }
+
 .outputBox{
   background:rgba(255,255,255,0.08);
   border-radius:12px;
@@ -46,13 +43,68 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
 }
 .outputBox b{ color:#cfe2ff; }
 
+/* ===== FULLSCREEN SPECTRE (canvas only) ===== */
+canvas.spectrum-only{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100dvw !important;
+  height: 100dvh !important;
+  border-radius: 0 !important;
+  z-index: 9999;
+}
+
+/* Mode spectre : cacher tout sauf specStage + warning + boutons overlay */
+body.spectrum-mode > *:not(#specStage):not(#rotateWarn):not(#fsExit):not(#fsHUD){
+  display:none !important;
+}
+body.spectrum-mode{
+  overflow:hidden;
+}
+body.spectrum-mode #specStage{
+  padding:0 !important;
+  margin:0 !important;
+}
+
+/* ===== OVERLAYS FULLSCREEN ===== */
+#fsExit{
+  position: fixed;
+  z-index: 10001;
+  right: 12px;
+  top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: none;
+  background: rgba(28,43,106,0.92);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  display: none;
+}
+body.spectrum-mode #fsExit{ display:block; }
+
+#fsHUD{
+  position: fixed;
+  z-index: 10001;
+  left: 12px;
+  top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.35);
+  color:#eaf1ff;
+  font-size: 12px;
+  line-height: 1.25;
+  display:none;
+}
+body.spectrum-mode #fsHUD{ display:block; }
+
 /* ===== MESSAGE ROTATION PAYSAGE ===== */
 .rotate-warning{
   position: fixed;
   inset: 0;
   z-index: 10000;
   background: rgba(5,8,15,0.85);
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   text-align: center;
@@ -63,40 +115,12 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
   pointer-events: none;
 }
 .rotate-warning span{
-  display: block;
-  font-size: 14px;
-  font-weight: 400;
-  opacity: 0.85;
-  margin-top: 10px;
+  display:block;
+  font-size:14px;
+  font-weight:400;
+  opacity:0.85;
+  margin-top:10px;
 }
-
-/* empêche le scroll quand plein écran spectre */
-
-
-/* canvas spectre en plein écran */
-canvas.spectrum-only{
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 100dvw !important;
-  height: 100dvh !important;   /* ✅ iOS SAFE */
-  border-radius: 0 !important;
-  z-index: 9999;
-}
-/* cache le conteneur du spectre quand fullscreen */
-/* ===== MODE SPECTRE SEUL ===== */
-/* ===== CORRECTION FINALE FULLSCREEN SPECTRE ===== */
-body.spectrum-mode #specStage{
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-body.spectrum-mode canvas#spectrum{
-  display: block;
-}
-
-/* ===== MODE SPECTRE : cacher le reste (sans cacher le parent du canvas) ===== */
-
 </style>
 </head>
 
@@ -122,7 +146,7 @@ body.spectrum-mode canvas#spectrum{
     <div><b>Menée</b> : <span id="out-rpm2">—</span> RPM | <span id="out-cpm2">—</span> CPM | <span id="out-hz2">—</span> Hz</div>
     <div><b>Courroie</b> : <span id="out-hzbelt">—</span> Hz | <span id="out-fpm">—</span> ft/min | <span id="out-strobe">—</span> FPM</div>
     <div><b>Longueur courroie</b> : <span id="out-length">—</span></div>
-    <div class="small">Note : “FPM” ici = <b>Feet/min</b> pour la vitesse linéaire, et “FPM (strobe)” = <b>Flash/min</b> (≈ Hz×60).</div>
+    <div class="small">Note : “FPM” ici = <b>Feet/min</b> (vitesse linéaire), et “FPM (strobe)” = <b>Flash/min</b> (≈ Hz×60).</div>
   </div>
 
   <div class="full">
@@ -158,56 +182,50 @@ body.spectrum-mode canvas#spectrum{
 
 <div class="results" id="info"></div>
 
-<div id="rotateWarn" class="rotate-warning" style="display:none;">
+<div id="rotateWarn" class="rotate-warning">
   🔄 Tournez votre téléphone en mode paysage
   <span>Pour une meilleure lecture du spectre</span>
 </div>
 
+<!-- Boutons overlay fullscreen -->
+<button id="fsExit" type="button">✖ Quitter</button>
+<div id="fsHUD">Pan: glisser ↔ (Hz)<br>Play = spectre live</div>
+
 <script>
 (() => {
+  "use strict";
 
-  /* =========================================================
-     CONSTANTES / OUTILS
-     ========================================================= */
+  /* ===================== CONSTANTES ===================== */
   const TAU = Math.PI * 2;
   const IN_TO_MM = 25.4;
 
   const clamp = (v,a,b)=>Math.max(a, Math.min(b, v));
+  const isNum = (x)=>Number.isFinite(x);
 
-  function dprNow(){
-    return Math.min(3, window.devicePixelRatio || 1);
-  }
+  function dprNow(){ return Math.min(3, window.devicePixelRatio || 1); }
 
-  /* =========================================================
-     ÉTAT GLOBAL
-     ========================================================= */
-  let running   = false;  // animé uniquement si Play
-  let lastTS    = null;
+  /* ===================== ÉTAT ===================== */
+  let running = false;
 
-  // temps “animation courroie + poulies”
-  let t = 0;
+  // temps séparés, MAIS une seule boucle RAF
+  let tMotion = 0; // courroie / poulies
+  let tSpec   = 0; // spectre (avance uniquement si running)
 
-  // temps “spectre” : DOIT avancer uniquement si running
-  let specTime = 0;
-
-  // angles poulies
   let ang1 = 0;
   let ang2 = 0;
 
-  // largeur verrouillée (mise en page stable)
+  // largeur (pour éviter que ça saute visuellement sur mobile)
   let lockedWidth = null;
 
-  // mode plein écran spectre
+  // fullscreen spectre
   let spectrumFS = false;
 
-  /* =========================================================
-     DOM
-     ========================================================= */
-  const canvas    = document.getElementById("scene");
-  const ctx       = canvas.getContext("2d");
+  /* ===================== DOM ===================== */
+  const canvas     = document.getElementById("scene");
+  const ctx        = canvas.getContext("2d");
 
-  const specCanvas= document.getElementById("spectrum");
-  const specCtx   = specCanvas.getContext("2d");
+  const specCanvas = document.getElementById("spectrum");
+  const specCtx    = specCanvas.getContext("2d");
 
   const rpmEl   = document.getElementById("rpm");
   const d1El    = document.getElementById("d1");
@@ -236,46 +254,37 @@ body.spectrum-mode canvas#spectrum{
   const resetBtn = document.getElementById("reset");
   const fsBtn    = document.getElementById("fs");
 
-  /* =========================================================
-     VUE SPECTRE (pan Hz)
-     ========================================================= */
-  const spectrumView = {
-    minHz: 0,
-    spanHz: 50,
-    maxHz: 300
-  };
+  const fsExit   = document.getElementById("fsExit");
+
+  /* ===================== VUE SPECTRE (PAN) ===================== */
+  const spectrumView = { minHz:0, spanHz:50, maxHz:300 };
 
   let isPanning   = false;
   let panStartX   = 0;
   let panStartMin = 0;
 
-  /* =========================================================
-     LECTURE / VALIDATION DES ENTRÉES
-     ========================================================= */
+  /* ===================== INPUTS / VALIDATION ===================== */
   function readInputs(){
     let rpm = parseFloat(rpmEl.value);
     let d1  = parseFloat(d1El.value);
     let d2  = parseFloat(d2El.value);
     let cc  = parseFloat(ccEl.value);
 
-    if(!isFinite(rpm) || !isFinite(d1) || !isFinite(d2) || !isFinite(cc)) return null;
+    if(!isNum(rpm) || !isNum(d1) || !isNum(d2) || !isNum(cc)) return null;
     if(rpm <= 0 || d1 <= 0 || d2 <= 0 || cc <= 0) return null;
 
     // conversion vers mm si impérial
     if(unitEl.value === "imperial"){
-      d1 *= IN_TO_MM;
-      d2 *= IN_TO_MM;
-      cc *= IN_TO_MM;
+      d1 *= IN_TO_MM; d2 *= IN_TO_MM; cc *= IN_TO_MM;
     }
 
     return { rpm, d1mm:d1, d2mm:d2, ccmm:cc };
   }
 
   function validateGeometryOpenBelt(inp){
-    // règle minimale : C > |R2 - R1|
-    const r1 = inp.d1mm / 2;
-    const r2 = inp.d2mm / 2;
-    const minCC = Math.abs(r2 - r1);
+    const r1 = inp.d1mm/2;
+    const r2 = inp.d2mm/2;
+    const minCC = Math.abs(r2 - r1); // condition math mini (open belt)
 
     if(inp.ccmm <= minCC){
       const minTxt = (unitEl.value === "imperial")
@@ -291,28 +300,21 @@ body.spectrum-mode canvas#spectrum{
         `
       };
     }
-
-    // (optionnel) suggestion “confort” : C > (R1+R2) est généralement plus réaliste
-    // mais on n’empêche pas (tu voulais seulement incohérence mathématique)
     return { ok:true, html:"" };
   }
 
-  /* =========================================================
-     CALCULS (courroie, vitesses, longueur)
-     ========================================================= */
+  /* ===================== CALCULS ===================== */
   function beltLengthOpenBeltMM(D1mm, D2mm, Cmm){
-    // L = 2C + π/2(D1 + D2) + (D2-D1)^2/(4C)
+    // L = 2C + (π/2)(D1 + D2) + (D2 − D1)^2/(4C)
     return 2*Cmm + (Math.PI/2)*(D1mm + D2mm) + ((D2mm - D1mm)**2)/(4*Cmm);
   }
 
   function beltLinearSpeed_mm_s(d1mm, rpm){
-    // v = π D (rpm/60)   (mm/s si D en mm)
+    // v = π D (rpm/60)  -> mm/s si D en mm
     return Math.PI * d1mm * (rpm/60);
   }
 
-  /* =========================================================
-     GÉOMÉTRIE TRAJECTOIRE COURROIE (points)
-     ========================================================= */
+  /* ===================== GÉOMÉTRIE COURROIE ===================== */
   function buildBeltPath(x1,y1,r1, x2,y2,r2){
     const C = Math.hypot(x2-x1, y2-y1);
     const R = Math.max(r1,r2);
@@ -331,18 +333,18 @@ body.spectrum-mode canvas#spectrum{
     const Rtop = {x:x2 + r2*Math.cos(aR_top), y:y2 + r2*Math.sin(aR_top)};
     const Rbot = {x:x2 + r2*Math.cos(aR_bot), y:y2 + r2*Math.sin(aR_bot)};
 
-    // sweeps
+    // sweeps (sens visuel cohérent)
     const sweepRight = -(TAU - 2*phi); // arc long
-    const sweepLeft  = -(2*phi);       // arc court (sens cohérent visuellement ici)
+    const sweepLeft  = -(2*phi);       // arc court
 
-    function arcPoints(cx,cy,r, aStart, sweep){
+    function arcPoints(cx,cy,rad, aStart, sweep){
       const absSweep = Math.abs(sweep);
-      const steps = Math.max(22, Math.floor((absSweep * r) / 9));
+      const steps = Math.max(22, Math.floor((absSweep * rad) / 9));
       const pts = [];
       for(let i=0;i<=steps;i++){
         const u = i/steps;
         const a = aStart + sweep*u;
-        pts.push({x:cx + r*Math.cos(a), y:cy + r*Math.sin(a)});
+        pts.push({x:cx + rad*Math.cos(a), y:cy + rad*Math.sin(a)});
       }
       return pts;
     }
@@ -359,15 +361,13 @@ body.spectrum-mode canvas#spectrum{
     const arcL = arcPoints(x1,y1,r1, aL_bot, sweepLeft);
     for(let i=1;i<arcL.length;i++) clean.push(arcL[i]); // finit sur Ltop
 
-    return { pts: clean, phi };
+    return clean;
   }
 
   function polylineLength(pts){
     let L=0;
     for(let i=1;i<pts.length;i++){
-      const dx = pts[i].x-pts[i-1].x;
-      const dy = pts[i].y-pts[i-1].y;
-      L += Math.hypot(dx,dy);
+      L += Math.hypot(pts[i].x-pts[i-1].x, pts[i].y-pts[i-1].y);
     }
     return L;
   }
@@ -386,9 +386,6 @@ body.spectrum-mode canvas#spectrum{
     return pts[pts.length-1];
   }
 
-  /* =========================================================
-     RENDER POU LIE
-     ========================================================= */
   function drawPulley(cx, cy, r, col, angle){
     ctx.strokeStyle = col;
     ctx.lineWidth = 4;
@@ -396,211 +393,150 @@ body.spectrum-mode canvas#spectrum{
     ctx.arc(cx, cy, r, 0, TAU);
     ctx.stroke();
 
-    // repère de rotation
     ctx.fillStyle = col;
     ctx.beginPath();
-    ctx.arc(
-      cx + (r - 6) * Math.cos(angle),
-      cy + (r - 6) * Math.sin(angle),
-      3,
-      0,
-      TAU
-    );
+    ctx.arc(cx + (r-6)*Math.cos(angle), cy + (r-6)*Math.sin(angle), 3, 0, TAU);
     ctx.fill();
   }
 
-  /* =========================================================
-     SPECTRE : PICS (BLOC COMPLET, LIVE UNIQUEMENT EN PLAY)
-     ========================================================= */
+  /* ===================== SPECTRE (PICS) ===================== */
+  // Table des défauts: chaque entrée renvoie un tableau de pics
+  function peaks_normal(fMotor, _fBelt, t){
+    const a_base = 1.00 + 0.10*Math.sin(t);
+    return [
+      { hz:fMotor, amp:a_base, col:"#00a2ff", label:"1× moteur" },
+      { hz:fMotor*2, amp:0.35 + 0.05*Math.sin(t*1.7), col:"#5fbfff", label:"2× moteur" }
+    ];
+  }
+
+  function peaks_unbalance(fMotor, _fBelt, t){
+    return [
+      { hz:fMotor, amp:1.85 + 0.25*Math.sin(t), col:"#ff5555", label:"Balourd (1×)" },
+      { hz:fMotor*2, amp:0.35 + 0.10*Math.sin(t*1.7), col:"#ff8888", label:"Harmonique (2×)" }
+    ];
+  }
+
+  function peaks_misalign(fMotor, _fBelt, t){
+    return [
+      { hz:fMotor, amp:1.10 + 0.20*Math.sin(t*1.7), col:"#ff9800", label:"Désalign. (1×)" },
+      { hz:fMotor*2, amp:1.55 + 0.25*Math.sin(t), col:"#ff9800", label:"Désalign. (2×)" },
+      { hz:fMotor*3, amp:0.55 + 0.10*Math.sin(t*2.3), col:"#ffb74d", label:"3× (souvent)" }
+    ];
+  }
+
+  function peaks_looseness(fMotor, _fBelt, t){
+    return [
+      { hz:fMotor*0.5, amp:0.65 + 0.15*Math.sin(t*0.9), col:"#ffd54f", label:"0.5× (jeu)" },
+      { hz:fMotor,     amp:1.05 + 0.20*Math.sin(t),     col:"#ffd54f", label:"Jeu 1×" },
+      { hz:fMotor*2,   amp:0.95 + 0.20*Math.sin(t*1.7), col:"#ffd54f", label:"Jeu 2×" },
+      { hz:fMotor*3,   amp:0.80 + 0.20*Math.sin(t*2.3), col:"#ffd54f", label:"Jeu 3×" }
+    ];
+  }
+
+  function peaks_belt(fMotor, fBelt, t){
+    const fb = fBelt;
+    return [
+      { hz:fb,   amp:1.20 + 0.20*Math.sin(t),     col:"#ffffff", label:"Courroie (1×)" },
+      { hz:fb*2, amp:0.65 + 0.15*Math.sin(t*1.7), col:"#bbbbbb", label:"Courroie (2×)" },
+      { hz:Math.max(0, fb - fMotor), amp:0.35 + 0.10*Math.sin(t*1.7), col:"#e0e0e0", label:"SB (fb−1×)" },
+      { hz:fb + fMotor,              amp:0.35 + 0.10*Math.sin(t*2.3), col:"#e0e0e0", label:"SB (fb+1×)" }
+    ];
+  }
+
+  function peaks_slip(_fMotor, fBelt, t){
+    const slip = 0.92 + 0.08*Math.sin(t*1.5);
+    return [
+      { hz:fBelt*slip, amp:0.95 + 0.20*Math.sin(t*1.7), col:"#ffcc00", label:"Glissement (fb×slip)" },
+      { hz:fBelt,      amp:0.45 + 0.10*Math.sin(t*2.3), col:"#fff59d", label:"fb (réf.)" }
+    ];
+  }
+
+  function peaks_bearing(fMotor, _fBelt, t){
+    const bpfo = fMotor * 4.0;
+    const bpfi = fMotor * 5.2;
+    const bsf  = fMotor * 2.6;
+    return [
+      { hz:bpfo,   amp:0.70 + 0.25*Math.sin(t*2.3), col:"#c77dff", label:"Roulement (BPFO)" },
+      { hz:bpfi,   amp:0.60 + 0.25*Math.sin(t*1.7), col:"#c77dff", label:"Roulement (BPFI)" },
+      { hz:bsf,    amp:0.45 + 0.20*Math.sin(t),     col:"#d7a7ff", label:"Roulement (BSF)" },
+      { hz:bpfo*2, amp:0.35 + 0.10*Math.sin(t),     col:"#b388ff", label:"BPFO×2" },
+      { hz:bpfi*2, amp:0.30 + 0.10*Math.sin(t*1.7), col:"#b388ff", label:"BPFI×2" }
+    ];
+  }
+
+  function peaks_resonance(fMotor, _fBelt, t){
+    const fr = fMotor * 2.6;
+    return [
+      { hz:fr-0.8, amp:1.10 + 0.20*Math.sin(t),     col:"#ff1744", label:"Réson. (fr−)" },
+      { hz:fr,     amp:2.20 + 0.35*Math.sin(t),     col:"#ff1744", label:"Réson. (fr)" },
+      { hz:fr+0.8, amp:1.00 + 0.20*Math.sin(t*1.7), col:"#ff1744", label:"Réson. (fr+)" }
+    ];
+  }
+
+  const FAULT_TABLE = {
+    none      : (fM,fB,t)=>peaks_normal(fM,fB,t),
+    unbalance : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_unbalance(fM,fB,t) ],
+    misalign  : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_misalign(fM,fB,t) ],
+    looseness : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_looseness(fM,fB,t) ],
+    belt      : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_belt(fM,fB,t) ],
+    slip      : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_slip(fM,fB,t) ],
+    bearing   : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_bearing(fM,fB,t) ],
+    resonance : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_resonance(fM,fB,t) ],
+    all       : (fM,fB,t)=>[
+      ...peaks_normal(fM,fB,t).slice(0,1),
+      ...peaks_unbalance(fM,fB,t),
+      ...peaks_misalign(fM,fB,t),
+      ...peaks_looseness(fM,fB,t),
+      ...peaks_belt(fM,fB,t),
+      ...peaks_slip(fM,fB,t),
+      ...peaks_bearing(fM,fB,t),
+      ...peaks_resonance(fM,fB,t),
+      { hz:fM*4, amp:0.35 + 0.10*Math.sin(t*1.7), col:"#90caf9", label:"4× moteur" },
+      { hz:fM*6, amp:0.25 + 0.10*Math.sin(t*2.3), col:"#90caf9", label:"6× moteur" }
+    ]
+  };
+
   function buildPeaks(fMotor, fBelt, time, fault){
-    // IMPORTANT : time est “specTime”
-    // => specTime n’avance QUE si running
-    // => donc “live” seulement quand Play.
+    const fn = FAULT_TABLE[fault] || FAULT_TABLE.none;
+    const raw = fn(fMotor, fBelt, time);
 
-    const peaks = [];
-
-    // ===== bases temps (3 vitesses) =====
-    const t1 = time;
-    const t2 = time * 1.7;
-    const t3 = time * 2.3;
-
-    // ===== fréquences moteur =====
-    const f1 = fMotor;        // 1×
-    const f2 = fMotor * 2;    // 2×
-    const f3 = fMotor * 3;    // 3×
-    const f4 = fMotor * 4;    // 4×
-
-    // ===== amplitudes vivantes (quand Play) =====
-    const a_base = 1.00 + 0.10*Math.sin(t1);
-    const a_mid  = 0.70 + 0.15*Math.sin(t2);
-    const a_high = 0.45 + 0.20*Math.sin(t3);
-
-    // ===================================================
-    // 0) NORMAL (toujours présent)
-    // ===================================================
-    peaks.push({ hz: f1, amp: a_base, col:"#00a2ff", label:"1× moteur" });
-
-    // (petit 2× de référence en mode normal)
-    if(fault === "none"){
-      peaks.push({ hz: f2, amp: 0.35 + 0.05*Math.sin(t2), col:"#5fbfff", label:"2× moteur" });
+    // Nettoyage + clamp
+    const out = [];
+    for(const p of raw){
+      if(!p) continue;
+      if(!isNum(p.hz) || p.hz < 0) continue;
+      const amp = isNum(p.amp) ? Math.max(0, p.amp) : 0;
+      out.push({ hz:p.hz, amp, col:p.col || "#fff", label:p.label || "" });
     }
+    return out;
+  }
 
-    // ===================================================
-    // 1) BALOURD : 1× dominant + un peu de bruit
-    // ===================================================
-    if(fault === "unbalance" || fault === "all"){
-      peaks.push(
-        { hz: f1, amp: 1.85 + 0.25*Math.sin(t1), col:"#ff5555", label:"Balourd (1×)" },
-        { hz: f2, amp: 0.35 + 0.10*Math.sin(t2), col:"#ff8888", label:"Harmonique (2×)" }
-      );
-    }
-
-    // ===================================================
-    // 2) DÉSALIGNEMENT : 1× + 2× plus élevés
-    // ===================================================
-    if(fault === "misalign" || fault === "all"){
-      peaks.push(
-        { hz: f1, amp: 1.10 + 0.20*Math.sin(t2), col:"#ff9800", label:"Désalignement (1×)" },
-        { hz: f2, amp: 1.55 + 0.25*Math.sin(t1), col:"#ff9800", label:"Désalignement (2×)" },
-        { hz: f3, amp: 0.55 + 0.10*Math.sin(t3), col:"#ffb74d", label:"3× (souvent présent)" }
-      );
-    }
-
-    // ===================================================
-    // 3) JEU / LOOSENESS : 1×,2×,3× + sous-harmonique parfois
-    // ===================================================
-    if(fault === "looseness" || fault === "all"){
-      peaks.push(
-        { hz: f1*0.5, amp: 0.65 + 0.15*Math.sin(t1*0.9), col:"#ffd54f", label:"0.5× (jeu)" },
-        { hz: f1,     amp: 1.05 + 0.20*Math.sin(t1),     col:"#ffd54f", label:"Jeu 1×" },
-        { hz: f2,     amp: 0.95 + 0.20*Math.sin(t2),     col:"#ffd54f", label:"Jeu 2×" },
-        { hz: f3,     amp: 0.80 + 0.20*Math.sin(t3),     col:"#ffd54f", label:"Jeu 3×" }
-      );
-    }
-
-    // ===================================================
-    // 4) DÉFAUT COURROIE : fBelt + 2×fBelt + sidebands (±1× moteur)
-    // ===================================================
-    if(fault === "belt" || fault === "all"){
-      const fb = fBelt;
-
-      peaks.push(
-        { hz: fb,     amp: 1.20 + 0.20*Math.sin(t1), col:"#ffffff", label:"Courroie (1×)" },
-        { hz: fb*2,   amp: 0.65 + 0.15*Math.sin(t2), col:"#bbbbbb", label:"Courroie (2×)" }
-      );
-
-      // sidebands autour de la courroie (pédagogique)
-      peaks.push(
-        { hz: Math.max(0, fb - f1), amp: 0.35 + 0.10*Math.sin(t2), col:"#e0e0e0", label:"SB (fb−1×)" },
-        { hz: fb + f1,              amp: 0.35 + 0.10*Math.sin(t3), col:"#e0e0e0", label:"SB (fb+1×)" }
-      );
-    }
-
-    // ===================================================
-    // 5) GLISSEMENT : la fréquence courroie “flotte” (live) quand Play
-    // ===================================================
-    if(fault === "slip" || fault === "all"){
-      const slip = 0.92 + 0.08*Math.sin(t1*1.5); // 0.84..1.00
-      peaks.push(
-        { hz: fBelt * slip, amp: 0.95 + 0.20*Math.sin(t2), col:"#ffcc00", label:"Glissement (fb×slip)" },
-        { hz: fBelt,        amp: 0.45 + 0.10*Math.sin(t3), col:"#fff59d", label:"fb (référence)" }
-      );
-    }
-
-    // ===================================================
-    // 6) ROULEMENT (général) : pics “hautes fréquences” + large bruit
-    //     (ici on simule des familles BPFO / BPFI / BSF
-    //      sans calcul réel des facteurs géométriques)
-    // ===================================================
-    if(fault === "bearing" || fault === "all"){
-      // facteurs “typiques” (pédagogiques)
-      const bpfo = f1 * 4.0;   // ~3–5×
-      const bpfi = f1 * 5.2;   // ~4–6×
-      const bsf  = f1 * 2.6;   // ~2–3×
-
-      peaks.push(
-        { hz: bpfo,        amp: 0.70 + 0.25*Math.sin(t3), col:"#c77dff", label:"Roulement (BPFO)" },
-        { hz: bpfi,        amp: 0.60 + 0.25*Math.sin(t2), col:"#c77dff", label:"Roulement (BPFI)" },
-        { hz: bsf,         amp: 0.45 + 0.20*Math.sin(t1), col:"#d7a7ff", label:"Roulement (BSF)" },
-        { hz: bpfo*2,      amp: 0.35 + 0.10*Math.sin(t1), col:"#b388ff", label:"BPFO×2" },
-        { hz: bpfi*2,      amp: 0.30 + 0.10*Math.sin(t2), col:"#b388ff", label:"BPFI×2" }
-      );
-    }
-
-    // ===================================================
-    // 7) RÉSONANCE : pic plus haut + “largeur” simulée par 3 pics proches
-    // ===================================================
-    if(fault === "resonance" || fault === "all"){
-      const fr = fMotor * 2.6; // exemple
-      peaks.push(
-        { hz: fr - 0.8, amp: 1.10 + 0.20*Math.sin(t1), col:"#ff1744", label:"Résonance (fr−)" },
-        { hz: fr,       amp: 2.20 + 0.35*Math.sin(t1), col:"#ff1744", label:"Résonance (fr)" },
-        { hz: fr + 0.8, amp: 1.00 + 0.20*Math.sin(t2), col:"#ff1744", label:"Résonance (fr+)" }
-      );
-    }
-
-    // ===================================================
-    // 8) ALL : ajoute aussi quelques harmoniques “haut”
-    // ===================================================
-    if(fault === "all"){
-  peaks.push(
-    {
-      hz: f4,
-      amp: 0.35 + 0.10 * Math.sin(t2),
-      col:"#90caf9",
-      label:"4× moteur"
-    },
-    {
-      hz: f1 * 6,
-      amp: 0.25 + 0.10 * Math.sin(t3),
-      col:"#90caf9",
-      label:"6× moteur"
-    }
-  );
-}
-
-    return peaks;
-
-    }
-  /* =========================================================
-     DESSIN SPECTRE
-     ========================================================= */
+  /* ===================== DESSIN SPECTRE ===================== */
   function drawSpectrum(hzMotor, hzBelt, time){
     const dpr = dprNow();
-    const W = specCanvas.width  / dpr;
+    const W = specCanvas.width / dpr;
     const H = specCanvas.height / dpr;
 
-    // ===== layout zone Hz =====
     const hzZoneHeight = 42;
-
-    let hzZoneY;
-    if(spectrumFS){
-      hzZoneY = H - hzZoneHeight - 80;  // marge iOS fullscreen
-    }else{
-      hzZoneY = H - hzZoneHeight - 10;  // marge normal
-    }
+    let hzZoneY = spectrumFS ? (H - hzZoneHeight - 80) : (H - hzZoneHeight - 10);
     hzZoneY = Math.max(80, hzZoneY);
 
     const gridTop    = 16;
     const gridBottom = hzZoneY - 10;
     const gridHeight = gridBottom - gridTop;
 
-    // marge gauche mm/s
     const ampLabelWidth = 58;
     const plotLeft  = ampLabelWidth;
     const plotRight = W;
     const plotWidth = plotRight - plotLeft;
 
-    // amplitude mm/s
     const AMP_MAX  = 10;
     const AMP_STEP = 2;
 
-    // fenêtre Hz visible
     const minHz = spectrumView.minHz;
-    const maxHz = spectrumView.minHz + spectrumView.spanHz;
+    const maxHz = minHz + spectrumView.spanHz;
     const scaleX = plotWidth / (maxHz - minHz);
 
-    // fond
     specCtx.clearRect(0,0,W,H);
     specCtx.fillStyle = "#05080f";
     specCtx.fillRect(0,0,W,H);
@@ -633,7 +569,7 @@ body.spectrum-mode canvas#spectrum{
       }
     }
 
-    // grille verticale (Hz)
+    // grille verticale
     specCtx.strokeStyle = "rgba(255,255,255,0.08)";
     for(let i=0;i<=8;i++){
       const x = plotLeft + i * plotWidth / 8;
@@ -643,7 +579,7 @@ body.spectrum-mode canvas#spectrum{
       specCtx.stroke();
     }
 
-    // grille horizontale + mm/s à gauche
+    // grille horizontale + labels mm/s
     specCtx.strokeStyle = "rgba(255,255,255,0.12)";
     specCtx.fillStyle   = "#cfd6ff";
     specCtx.font        = "11px Arial";
@@ -652,27 +588,23 @@ body.spectrum-mode canvas#spectrum{
 
     for(let a=0; a<=AMP_MAX; a+=AMP_STEP){
       const y = gridBottom - (a / AMP_MAX) * gridHeight;
-
       specCtx.beginPath();
       specCtx.moveTo(plotLeft, y);
       specCtx.lineTo(plotRight, y);
       specCtx.stroke();
-
       specCtx.fillText(a + " mm/s", plotLeft - 6, y);
     }
 
-    // ===== PICS =====
     const fault = faultEl.value || "none";
     const peaks = buildPeaks(hzMotor, hzBelt, time, fault);
 
-    // dessin barres
-    peaks.forEach(p=>{
-      if(!isFinite(p.hz) || p.hz < minHz || p.hz > maxHz) return;
+    // barres
+    for(const p of peaks){
+      if(!isNum(p.hz) || p.hz < minHz || p.hz > maxHz) continue;
 
       const x = plotLeft + (p.hz - minHz) * scaleX;
 
-      // conversion pédagogique : amp -> mm/s (ton facteur)
-      const ampMMs = p.amp * 5;
+      const ampMMs = p.amp * 5; // facteur pédagogique
       const h = (ampMMs / AMP_MAX) * gridHeight;
       const yTop = gridBottom - h;
 
@@ -683,13 +615,12 @@ body.spectrum-mode canvas#spectrum{
       specCtx.lineTo(x, yTop);
       specCtx.stroke();
 
-      // label
       specCtx.fillStyle = "#cfd6ff";
       specCtx.font = "12px Arial";
       specCtx.textAlign = "center";
       specCtx.textBaseline = "bottom";
       specCtx.fillText(p.label, x, Math.max(yTop - 6, gridTop + 14));
-    });
+    }
 
     // axe
     specCtx.fillStyle = "#9aa5d6";
@@ -699,30 +630,28 @@ body.spectrum-mode canvas#spectrum{
     specCtx.fillText("Hz →", W - 6, 6);
   }
 
-  /* =========================================================
-     RESIZE (scène + spectre) — IMPORTANT (plein écran)
-     ========================================================= */
+  /* ===================== RESIZE ===================== */
   function resize(){
     const dpr = dprNow();
 
-    // ---- scène (poulies) ----
-    if(!lockedWidth){
-      lockedWidth = Math.min(window.innerWidth - 24, 720);
-    }
+    // largeur verrouillée, MAIS si l'écran devient plus petit: on re-réduit
+    const maxW = Math.min(window.innerWidth - 24, 720);
+    if(!lockedWidth) lockedWidth = maxW;
+    lockedWidth = Math.min(lockedWidth, maxW);
+
     const w = lockedWidth;
     const h = w * 0.55;
 
+    // scène
     canvas.style.width  = w + "px";
     canvas.style.height = h + "px";
     canvas.width  = Math.round(w * dpr);
     canvas.height = Math.round(h * dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
 
-    // ---- spectre ----
+    // spectre
     let specW, specH;
-
     if(spectrumFS){
-      // iOS : visualViewport donne la vraie taille visible
       const vv = window.visualViewport || { width: window.innerWidth, height: window.innerHeight };
       specW = vv.width;
       specH = vv.height;
@@ -750,87 +679,74 @@ body.spectrum-mode canvas#spectrum{
     specCtx.imageSmoothingEnabled = false;
   }
 
-  /* =========================================================
-     MODE FULLSCREEN SPECTRE
-     ========================================================= */
+  /* ===================== FULLSCREEN / ORIENTATION ===================== */
   function checkOrientation(){
-    if(!spectrumFS){
-      rotateWarn.style.display = "none";
-      return;
-    }
+    if(!spectrumFS){ rotateWarn.style.display = "none"; return; }
+
     const vv = window.visualViewport;
     const vw = vv ? vv.width  : window.innerWidth;
     const vh = vv ? vv.height : window.innerHeight;
 
-    const isPortrait = vh > vw + 40; // marge anti faux positif
+    const isPortrait = vh > vw + 40;
     rotateWarn.style.display = isPortrait ? "flex" : "none";
   }
 
-function autoExitOnPortrait(){
-  if(!spectrumFS) return;
-
-  const vv = window.visualViewport;
-  const vw = vv ? vv.width  : window.innerWidth;
-  const vh = vv ? vv.height : window.innerHeight;
-
-  // Portrait réel (tolérance iOS)
-  if(vh > vw + 40){
-    toggleSpectrumFS(); // sortie propre
+  function autoExitOnPortrait(){
+    if(!spectrumFS) return;
+    const vv = window.visualViewport;
+    const vw = vv ? vv.width  : window.innerWidth;
+    const vh = vv ? vv.height : window.innerHeight;
+    if(vh > vw + 40){
+      // sortie propre
+      setSpectrumFS(false);
+    }
   }
-}
 
+  function setSpectrumFS(on){
+    spectrumFS = !!on;
 
-  // ✅ FULL SCREEN = UNIQUEMENT LE CANVAS
+    specCanvas.classList.toggle("spectrum-only", spectrumFS);
+    document.body.classList.toggle("spectrum-mode", spectrumFS);
+
+    resize();
+    checkOrientation();
+    redrawSpectrumNow();
+  }
+
   function toggleSpectrumFS(){
-  spectrumFS = !spectrumFS;
+    setSpectrumFS(!spectrumFS);
+  }
 
-  // canvas en plein écran
-  specCanvas.classList.toggle("spectrum-only", spectrumFS);
-
-  // masquer le reste de la page (PAS le parent du canvas)
-  document.body.classList.toggle("spectrum-mode", spectrumFS);
-
-  resize();
-  checkOrientation();
-  redrawSpectrumNow();
-}
-  /* =========================================================
-     REDRAW SPECTRE (même en pause)
-     ========================================================= */
+  /* ===================== REDRAW SPECTRE (pause ok) ===================== */
   function redrawSpectrumNow(){
     const inp = readInputs();
     if(!inp){
-      // pas d’inputs valides : on dessine un spectre “vide”
-      drawSpectrum(0, 0, specTime);
+      drawSpectrum(0, 0, tSpec);
       return;
     }
 
     const geo = validateGeometryOpenBelt(inp);
+    const hzMotor = inp.rpm/60;
+
     if(!geo.ok){
-      // géométrie impossible : on garde spectre, mais avec valeurs calculables quand même
-      // (ici, on évite division par zéro)
-      drawSpectrum(inp.rpm/60, 0, specTime);
+      drawSpectrum(hzMotor, 0, tSpec);
       return;
     }
 
-    const hzMotor = inp.rpm / 60;
+    const Lmm  = beltLengthOpenBeltMM(inp.d1mm, inp.d2mm, inp.ccmm);
+    const vmm  = beltLinearSpeed_mm_s(inp.d1mm, inp.rpm);
+    const hzBelt = (Lmm > 0) ? (vmm / Lmm) : 0;
 
-    const Lmm = beltLengthOpenBeltMM(inp.d1mm, inp.d2mm, inp.ccmm);
-    const vmm = beltLinearSpeed_mm_s(inp.d1mm, inp.rpm);
-    const hzBelt = vmm / Lmm;
-
-    drawSpectrum(hzMotor, hzBelt, specTime);
+    drawSpectrum(hzMotor, hzBelt, tSpec);
   }
 
-  /* =========================================================
-     DRAW (SCÈNE + OUTPUTS + SPECTRE)
-     ========================================================= */
+  /* ===================== DRAW GLOBAL ===================== */
   function draw(){
     const dpr = dprNow();
     const W = canvas.width / dpr;
     const H = canvas.height / dpr;
 
-    // fond
+    // fond scène
     ctx.clearRect(0,0,W,H);
     ctx.fillStyle="#000";
     ctx.fillRect(0,0,W,H);
@@ -838,26 +754,23 @@ function autoExitOnPortrait(){
     const inp = readInputs();
     if(!inp){
       infoEl.innerHTML = `<span class="bad">⛔ Entre RPM, Ø menante, Ø menée et C-C.</span>`;
-      // sorties
       outLength.textContent = "—";
       outRPM1.textContent = outCPM1.textContent = outHZ1.textContent = "—";
       outRPM2.textContent = outCPM2.textContent = outHZ2.textContent = "—";
       outHZBelt.textContent = outFPM.textContent = outStrobe.textContent = "—";
-      // spectre (statique)
-      drawSpectrum(0,0,specTime);
+      drawSpectrum(0,0,tSpec);
       return;
     }
 
-    // validation géométrie (message uniquement quand invalide)
     const geo = validateGeometryOpenBelt(inp);
     if(!geo.ok){
       infoEl.innerHTML = geo.html;
 
-      // on stoppe l’animation si c’était en cours (évite bug)
+      // stop play (évite “angles qui partent en NaN” dans certaines configs)
       running = false;
 
-      // on affiche quand même les sorties “de base” (sauf hzBelt)
       const hzMotor = inp.rpm/60;
+
       outRPM1.textContent = inp.rpm.toFixed(0);
       outCPM1.textContent = inp.rpm.toFixed(0);
       outHZ1.textContent  = hzMotor.toFixed(2);
@@ -873,54 +786,46 @@ function autoExitOnPortrait(){
       outStrobe.textContent = "—";
       outLength.textContent = "—";
 
-      // spectre (moteur seulement)
-      drawSpectrum(hzMotor, 0, specTime);
+      drawSpectrum(hzMotor, 0, tSpec);
       return;
     }else{
-      infoEl.innerHTML = ""; // PAS de message “validé” (comme tu voulais)
+      infoEl.innerHTML = "";
     }
 
-    // ===== calculs longueur + vitesses =====
+    // calculs
     const Lmm = beltLengthOpenBeltMM(inp.d1mm, inp.d2mm, inp.ccmm);
-
-    const v_mm_s = beltLinearSpeed_mm_s(inp.d1mm, inp.rpm);
-    const v_in_s = v_mm_s / IN_TO_MM;
+    const v_mm_s   = beltLinearSpeed_mm_s(inp.d1mm, inp.rpm);
+    const v_in_s   = v_mm_s / IN_TO_MM;
     const v_ft_min = v_in_s * 5;
 
     const hzMotor = inp.rpm / 60;
-    const hzBelt  = v_mm_s / Lmm;
+    const hzBelt  = (Lmm > 0) ? (v_mm_s / Lmm) : 0;
 
-    // stroboscope : flash/min = Hz×60
     const strobeFPM = hzBelt * 60;
 
-    // longueur affichée
-    const Ldisplay = (unitEl.value === "imperial")
+    // outputs
+    outLength.textContent = (unitEl.value === "imperial")
       ? (Lmm / IN_TO_MM).toFixed(2) + " po"
       : Lmm.toFixed(1) + " mm";
-    outLength.textContent = Ldisplay;
 
-    // RPM/CPM/Hz menante
     outRPM1.textContent = inp.rpm.toFixed(0);
     outCPM1.textContent = inp.rpm.toFixed(0);
     outHZ1.textContent  = hzMotor.toFixed(2);
 
-    // menée
     const rpmMenee = inp.rpm * (inp.d1mm / inp.d2mm);
     const hzMenee  = rpmMenee / 60;
     outRPM2.textContent = rpmMenee.toFixed(0);
     outCPM2.textContent = rpmMenee.toFixed(0);
     outHZ2.textContent  = hzMenee.toFixed(2);
 
-    // courroie
     outHZBelt.textContent = hzBelt.toFixed(3);
     outFPM.textContent    = v_ft_min.toFixed(0);
     outStrobe.textContent = strobeFPM.toFixed(0);
 
-    // ===== spectre =====
-    // IMPORTANT: “live” uniquement si running, car specTime n’avance que si running
-    drawSpectrum(hzMotor, hzBelt, specTime);
+    // spectre (live uniquement si running car tSpec n’avance que si running)
+    drawSpectrum(hzMotor, hzBelt, tSpec);
 
-    // ===== dessin poulies + courroie =====
+    // dessin scène courroie + poulies
     const r1mm = inp.d1mm/2;
     const r2mm = inp.d2mm/2;
     const Cmm  = inp.ccmm;
@@ -932,15 +837,12 @@ function autoExitOnPortrait(){
     );
 
     const r1 = r1mm*s, r2 = r2mm*s, C = Cmm*s;
-
     const x1 = margin + r1;
     const x2 = x1 + C;
     const y  = H/2;
 
-    const path = buildBeltPath(x1,y,r1, x2,y,r2);
-    const pts  = path.pts;
+    const pts = buildBeltPath(x1,y,r1, x2,y,r2);
 
-    // courroie
     ctx.strokeStyle = "#9a9a9a";
     ctx.lineWidth = 4;
     ctx.lineCap="round";
@@ -950,16 +852,14 @@ function autoExitOnPortrait(){
     for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x, pts[i].y);
     ctx.stroke();
 
-    // poulies
     drawPulley(x1, y, r1, "#00a2ff", ang1);
     drawPulley(x2, y, r2, "#ff9800", ang2);
 
-    // point sur la courroie (se déplace uniquement si running car t n’avance que si running)
+    // point sur courroie
     const w1 = TAU*(inp.rpm/60);
     const v_px_s = Math.abs(w1) * r1;
     const totalLen = polylineLength(pts);
-
-    const sPos = (totalLen - (v_px_s * t) % totalLen) % totalLen;
+    const sPos = (totalLen - (v_px_s * tMotion) % totalLen) % totalLen;
     const P = pointAt(pts, sPos);
 
     ctx.fillStyle="#fff";
@@ -968,113 +868,80 @@ function autoExitOnPortrait(){
     ctx.fill();
   }
 
-  /* =========================================================
-     LOOP (animation)
-     ========================================================= */
+  /* ===================== LOOP UNIQUE RAF ===================== */
+  let lastTS = null;
   function loop(ts){
     if(lastTS === null) lastTS = ts;
     const dt = (ts - lastTS) / 1000;
     lastTS = ts;
 
     if(running){
-      const slow = parseFloat(slowEl.value) || 1;
+      const slow = Math.max(1, parseFloat(slowEl.value) || 1);
 
-      // advance temps (uniquement si Play)
-      t += dt / slow;
-      specTime += dt; // spectre “live” UNIQUEMENT en Play
+      // avance temps (Play seulement)
+      tMotion += dt / slow;
+      tSpec   += dt;
 
-      // avance angles
-      const rpm = parseFloat(rpmEl.value) || 0;
-      const d1  = parseFloat(d1El.value)  || 1;
-      const d2  = parseFloat(d2El.value)  || 1;
-
-      const w1 = TAU * (rpm / 60);
-      const w2 = w1 * (d1 / d2);
-
-      ang1 += (w1 * dt) / slow;
-      ang2 += (w2 * dt) / slow;
+      // angles: utilisent les valeurs converties (mm) pour ratio correct même en impérial
+      const inp = readInputs();
+      if(inp){
+        const w1 = TAU * (inp.rpm / 60);
+        const ratio = inp.d1mm / inp.d2mm;
+        const w2 = w1 * ratio;
+        ang1 += (w1 * dt) / slow;
+        ang2 += (w2 * dt) / slow;
+      }
     }
 
     draw();
     requestAnimationFrame(loop);
   }
 
-  /* =========================================================
-     EVENTS UI
-     ========================================================= */
-
-  // Play : démarre SEULEMENT si inputs + géométrie OK
-  playBtn.onclick = () => {
+  /* ===================== EVENTS UI ===================== */
+  playBtn.addEventListener("click", () => {
     const inp = readInputs();
-    if(!inp){
-      running = false;
-      draw();
-      return;
-    }
+    if(!inp){ running = false; draw(); return; }
     const geo = validateGeometryOpenBelt(inp);
-    if(!geo.ok){
-      running = false;
-      draw();
-      return;
-    }
+    if(!geo.ok){ running = false; draw(); return; }
     running = true;
-  };
+  });
 
-  pauseBtn.onclick = () => { running = false; };
+  pauseBtn.addEventListener("click", () => { running = false; });
 
-  resetBtn.onclick = () => {
+  resetBtn.addEventListener("click", () => {
     running = false;
-    t = 0;
-    specTime = 0;
+    tMotion = 0;
+    tSpec   = 0;
     ang1 = 0;
     ang2 = 0;
     draw();
-  };
+  });
 
-  
-  fsBtn.onclick = () => {
-  console.log("FS CLICK");
-  toggleSpectrumFS();
-};
+  fsBtn.addEventListener("click", () => toggleSpectrumFS());
+  fsExit.addEventListener("click", () => setSpectrumFS(false));
 
-  // changements inputs : on redraw tout (sans rendre “live”)
+  // Inputs : redraw (spectre figé si pause)
   [rpmEl,d1El,d2El,ccEl,unitEl,slowEl,faultEl].forEach(el=>{
     el.addEventListener("input", () => {
-      // si on change des valeurs en plein Play, ça reste Play.
-      // sinon, ça reste figé (specTime n’avance pas).
+      // si la géométrie devient invalide en Play, draw() stoppera running
       draw();
     });
   });
 
-  // plein écran: resize / orientation
-  // plein écran: resize / orientation
-window.addEventListener("resize", () => {
-  resize();
-  checkOrientation();
-  autoExitOnPortrait();   // ✅ AJOUT
-  draw();
-});
-
-window.addEventListener("orientationchange", () => {
-  resize();
-  checkOrientation();
-  autoExitOnPortrait();   // ✅ AJOUT
-  draw();
-});
-
-if(window.visualViewport){
-  window.visualViewport.addEventListener("resize", () => {
+  // Resize / orientation
+  function handleViewportChange(){
     resize();
     checkOrientation();
-    autoExitOnPortrait(); // ✅ AJOUT
+    autoExitOnPortrait();
     draw();
-  });
-}
-  /* =========================================================
-     PAN SUR LE SPECTRE (drag)
-     - Fonctionne en pause
-     - Redraw immédiat sans “live”
-     ========================================================= */
+  }
+  window.addEventListener("resize", handleViewportChange);
+  window.addEventListener("orientationchange", handleViewportChange);
+  if(window.visualViewport){
+    window.visualViewport.addEventListener("resize", handleViewportChange);
+  }
+
+  /* ===================== PAN SPECTRE (pause ok) ===================== */
   specCanvas.addEventListener("pointerdown", e => {
     isPanning = true;
     panStartX = e.clientX;
@@ -1093,20 +960,20 @@ if(window.visualViewport){
     newMin = Math.max(0, Math.min(spectrumView.maxHz - spectrumView.spanHz, newMin));
     spectrumView.minHz = newMin;
 
-    // redraw immédiat (specTime figé si pause)
+    // redraw immédiat (tSpec figé si pause)
     redrawSpectrumNow();
   });
 
-  specCanvas.addEventListener("pointerup", e => {
+  function endPan(e){
     isPanning = false;
-    try{ specCanvas.releasePointerCapture(e.pointerId); }catch(_){}
-  });
+    if(e && e.pointerId != null){
+      try{ specCanvas.releasePointerCapture(e.pointerId); }catch(_){}
+    }
+  }
+  specCanvas.addEventListener("pointerup", endPan);
+  specCanvas.addEventListener("pointercancel", endPan);
 
-  specCanvas.addEventListener("pointercancel", () => { isPanning = false; });
-
-  /* =========================================================
-     INIT (IMPORTANT : sinon fullscreen/premier draw bug)
-     ========================================================= */
+  /* ===================== INIT ===================== */
   resize();
   draw();
   requestAnimationFrame(loop);
