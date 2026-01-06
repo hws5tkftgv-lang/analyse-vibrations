@@ -80,8 +80,13 @@ canvas.spectrum-only{
   z-index: 9999;
 }
 /* cache le conteneur du spectre quand fullscreen */
-.stage.hidden {
-  display: none;
+/* ===== MODE SPECTRE SEUL ===== */
+body.spectrum-mode > *:not(#specStage):not(#rotateWarn){
+  display: none !important;
+}
+
+body.spectrum-mode{
+  overflow: hidden;
 }
 /* ===== MODE SPECTRE : cacher le reste (sans cacher le parent du canvas) ===== */
 
@@ -772,23 +777,16 @@ function autoExitOnPortrait(){
   function toggleSpectrumFS(){
   spectrumFS = !spectrumFS;
 
-  // canvas plein écran
+  // canvas en plein écran
   specCanvas.classList.toggle("spectrum-only", spectrumFS);
 
-  // ⚠️ cache le conteneur NORMAL du spectre
-  document.getElementById("specStage")
-    .classList.toggle("hidden", spectrumFS);
-
-  // bloque le scroll proprement
-  document.documentElement.style.overflow = spectrumFS ? "hidden" : "";
+  // masquer le reste de la page (PAS le parent du canvas)
+  document.body.classList.toggle("spectrum-mode", spectrumFS);
 
   resize();
   checkOrientation();
   redrawSpectrumNow();
 }
-
-  
-
   /* =========================================================
      REDRAW SPECTRE (même en pause)
      ========================================================= */
@@ -1026,7 +1024,7 @@ function autoExitOnPortrait(){
     draw();
   };
 
-  fsBtn.onclick = () => { toggleSpectrumFS(); };
+  
   fsBtn.onclick = () => {
   console.log("FS CLICK");
   toggleSpectrumFS();
