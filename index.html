@@ -434,7 +434,11 @@ function drawSpectrum(hzMotor, hzBelt, time){
 
   /* ===== Layout ===== */
   const hzZoneHeight = 42;
+
+// 🔒 position sûre, jamais mangée par iOS
 const hzZoneY = spectrumFS
+  ? H - hzZoneHeight - 80   // ← CRITIQUE iPhone
+  : H - hzZoneHeight - 10;
   ? H - hzZoneHeight - 14   // 🔑 marge iOS fullscreen
   : H - hzZoneHeight;
 
