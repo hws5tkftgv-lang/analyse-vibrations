@@ -175,6 +175,8 @@ body.spectrum-mode{
 (() => {
   
 const spectrumView = {
+  let liveHzMotor = 0;
+let liveHzBelt  = 0;
   minHz: 0,     // début visible
   spanHz: 50,   // largeur affichée (0–50 Hz)
   maxHz: 300    // limite totale
@@ -213,7 +215,9 @@ specCanvas.addEventListener("pointermove", e => {
   spectrumView.minHz = newMin;
 
   // 🔴 REDRAW IMMÉDIAT DU SPECTRE
-  drawSpectrum(hzMotor, hzBelt, t);
+  liveHzMotor = hzMotor;
+liveHzBelt  = hzBelt;
+drawSpectrum(liveHzMotor, liveHzBelt, t);
 });
 
 specCanvas.addEventListener("pointerup", e => {
@@ -658,7 +662,7 @@ const v_ft_min = v_in_s * 5;
 const hzBelt    = v_mm_s / Lmm;
 const fpmStrobe = hzBelt * 60;
 const hzMotor = rpm / 60;
-drawSpectrum(hzMotor, hzBelt, t);
+drawSpectrum(liveHzMotor, liveHzBelt, t);
 
 const Ldisplay =
   (unitEl.value === "imperial")
