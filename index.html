@@ -436,11 +436,19 @@ function drawSpectrum(hzMotor, hzBelt, time){
   const hzZoneHeight = 42;
 
 // 🔒 position sûre, jamais mangée par iOS
-const hzZoneY = spectrumFS
-  ? H - hzZoneHeight - 80   // ← CRITIQUE iPhone
-  : H - hzZoneHeight - 10;
-  ? H - hzZoneHeight - 14   // 🔑 marge iOS fullscreen
-  : H - hzZoneHeight;
+/* ===== Layout ===== */
+const hzZoneHeight = 42;
+
+// 🔒 position sûre, jamais mangée par iOS (une seule fois, pas de doublon)
+let hzZoneY;
+if (spectrumFS) {
+  hzZoneY = H - hzZoneHeight - 80;   // marge iOS fullscreen
+} else {
+  hzZoneY = H - hzZoneHeight - 10;   // marge mode normal
+}
+
+// sécurité : éviter que la règle monte trop haut si écran petit
+hzZoneY = Math.max(80, hzZoneY);
 
   const gridTop    = 16;
   const gridBottom = hzZoneY - 10;
