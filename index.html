@@ -55,7 +55,7 @@ canvas.spectrum-only{
 }
 
 /* Mode spectre : cacher tout sauf specStage + warning + boutons overlay */
-body.spectrum-mode > *:not(#specStage):not(#rotateWarn):not(#fsExit):not(#fsHUD){
+body.spectrum-mode > *:not(#specStage):not(#rotateWarn):not(#fsHUD){
   display:none !important;
 }
 body.spectrum-mode{
@@ -66,22 +66,6 @@ body.spectrum-mode #specStage{
   margin:0 !important;
 }
 
-/* ===== OVERLAYS FULLSCREEN ===== */
-#fsExit{
-  position: fixed;
-  z-index: 10001;
-  right: 12px;
-  top: 12px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: none;
-  background: rgba(28,43,106,0.92);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-  display: none;
-}
-body.spectrum-mode #fsExit{ display:block; }
 
 #fsHUD{
   position: fixed;
@@ -188,7 +172,7 @@ body.spectrum-mode #fsHUD{ display:block; }
 </div>
 
 <!-- Boutons overlay fullscreen -->
-<button id="fsExit" type="button">✖ Quitter</button>
+
 <div id="fsHUD">Pan: glisser ↔ (Hz)<br>Play = spectre live</div>
 
 <script>
@@ -252,9 +236,9 @@ body.spectrum-mode #fsHUD{ display:block; }
   const playBtn  = document.getElementById("play");
   const pauseBtn = document.getElementById("pause");
   const resetBtn = document.getElementById("reset");
-  const fsBtn    = document.getElementById("fs");
+  
 
-  const fsExit   = document.getElementById("fsExit");
+  
 
   /* ===================== VUE SPECTRE (PAN) ===================== */
   const spectrumView = { minHz:0, spanHz:50, maxHz:300 };
@@ -708,17 +692,6 @@ function updateSpectrumModeByOrientation(){
 
   /* ===================== FULLSCREEN / ORIENTATION ===================== */
   
-  function setSpectrumFS(on){
-    spectrumFS = !!on;
-
-    specCanvas.classList.toggle("spectrum-only", spectrumFS);
-    document.body.classList.toggle("spectrum-mode", spectrumFS);
-
-    resize();
-    checkOrientation();
-    redrawSpectrumNow();
-  }
-
   
 
   /* ===================== REDRAW SPECTRE (pause ok) ===================== */
@@ -940,8 +913,8 @@ if(window.visualViewport){
     draw();
   });
 
-  fsBtn.addEventListener("click", () => toggleSpectrumFS());
-  fsExit.addEventListener("click", () => setSpectrumFS(false));
+  
+  
 
   // Inputs : redraw (spectre figé si pause)
   [rpmEl,d1El,d2El,ccEl,unitEl,slowEl,faultEl].forEach(el=>{
@@ -954,8 +927,8 @@ if(window.visualViewport){
   // Resize / orientation
   function handleViewportChange(){
     resize();
-    checkOrientation();
-    autoExitOnPortrait();
+    
+    
     draw();
   }
   
