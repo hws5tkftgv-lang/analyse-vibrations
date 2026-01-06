@@ -68,7 +68,7 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
 }
 
 /* empêche le scroll quand plein écran spectre */
-.lock-scroll{ overflow: hidden; height: 100vh; }
+
 
 /* canvas spectre en plein écran */
 canvas.spectrum-only{
@@ -766,18 +766,18 @@ function autoExitOnPortrait(){
 
 
   function toggleSpectrumFS(){
-    spectrumFS = !spectrumFS;
+  spectrumFS = !spectrumFS;
 
-    document.body.classList.toggle("spectrum-mode", spectrumFS);
-    document.body.classList.toggle("lock-scroll", spectrumFS);
-    specCanvas.classList.toggle("spectrum-only", spectrumFS);
+  // ✅ FULL SCREEN = UNIQUEMENT LE CANVAS
+  specCanvas.classList.toggle("spectrum-only", spectrumFS);
 
-    resize();
-    checkOrientation();
+  // ✅ bloquer le scroll sans toucher au body
+  document.documentElement.style.overflow = spectrumFS ? "hidden" : "";
 
-    // redraw immédiat (même en pause) avec specTime figé
-    redrawSpectrumNow();
-  }
+  resize();
+  checkOrientation();
+  redrawSpectrumNow();
+}
 
   /* =========================================================
      REDRAW SPECTRE (même en pause)
