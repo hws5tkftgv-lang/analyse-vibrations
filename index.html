@@ -174,7 +174,7 @@ body.spectrum-mode #fsHUD{ display:block; }
   <button id="play">Play</button>
   <button id="pause">Pause</button>
   <button id="reset">Reset</button>
-  <button id="fs">Full screen (spectre)</button>
+
 </div>
 
 <div class="stage" id="sceneStage"><canvas id="scene"></canvas></div>
@@ -630,6 +630,33 @@ body.spectrum-mode #fsHUD{ display:block; }
     specCtx.fillText("Hz →", W - 6, 6);
   }
 
+function updateSpectrumModeByOrientation(){
+  const vv = window.visualViewport;
+  const vw = vv ? vv.width  : window.innerWidth;
+  const vh = vv ? vv.height : window.innerHeight;
+
+  const isLandscape = vw > vh + 40;
+
+  // ---- ENTRÉE AUTO FULLSCREEN ----
+  if(isLandscape && !spectrumFS){
+    spectrumFS = true;
+    specCanvas.classList.add("spectrum-only");
+    document.body.classList.add("spectrum-mode");
+    resize();
+    redrawSpectrumNow();
+  }
+
+  // ---- SORTIE AUTO ----
+  if(!isLandscape && spectrumFS){
+    spectrumFS = false;
+    specCanvas.classList.remove("spectrum-only");
+    document.body.classList.remove("spectrum-mode");
+    resize();
+    redrawSpectrumNow();
+  }
+}
+
+
   /* ===================== RESIZE ===================== */
   function resize(){
     const dpr = dprNow();
@@ -680,28 +707,7 @@ body.spectrum-mode #fsHUD{ display:block; }
   }
 
   /* ===================== FULLSCREEN / ORIENTATION ===================== */
-  function checkOrientation(){
-    if(!spectrumFS){ rotateWarn.style.display = "none"; return; }
-
-    const vv = window.visualViewport;
-    const vw = vv ? vv.width  : window.innerWidth;
-    const vh = vv ? vv.height : window.innerHeight;
-
-    const isPortrait = vh > vw + 40;
-    rotateWarn.style.display = isPortrait ? "flex" : "none";
-  }
-
-  function autoExitOnPortrait(){
-    if(!spectrumFS) return;
-    const vv = window.visualViewport;
-    const vw = vv ? vv.width  : window.innerWidth;
-    const vh = vv ? vv.height : window.innerHeight;
-    if(vh > vw + 40){
-      // sortie propre
-      setSpectrumFS(false);
-    }
-  }
-
+  
   function setSpectrumFS(on){
     spectrumFS = !!on;
 
@@ -713,9 +719,7 @@ body.spectrum-mode #fsHUD{ display:block; }
     redrawSpectrumNow();
   }
 
-  function toggleSpectrumFS(){
-    setSpectrumFS(!spectrumFS);
-  }
+  
 
   /* ===================== REDRAW SPECTRE (pause ok) ===================== */
   function redrawSpectrumNow(){
@@ -898,6 +902,25 @@ body.spectrum-mode #fsHUD{ display:block; }
   }
 
   /* ===================== EVENTS UI ===================== */
+
+window.addEventListener("resize", () => {
+  updateSpectrumModeByOrientation();
+  draw();
+});
+
+window.addEventListener("orientationchange", () => {
+  updateSpectrumModeByOrientation();
+  draw();
+});
+
+if(window.visualViewport){
+  window.visualViewport.addEventListener("resize", () => {
+    updateSpectrumModeByOrientation();
+    draw();
+  });
+}
+
+
   playBtn.addEventListener("click", () => {
     const inp = readInputs();
     if(!inp){ running = false; draw(); return; }
@@ -935,12 +958,7 @@ body.spectrum-mode #fsHUD{ display:block; }
     autoExitOnPortrait();
     draw();
   }
-  window.addEventListener("resize", handleViewportChange);
-  window.addEventListener("orientationchange", handleViewportChange);
-  if(window.visualViewport){
-    window.visualViewport.addEventListener("resize", handleViewportChange);
-  }
-
+  
   /* ===================== PAN SPECTRE (pause ok) ===================== */
   specCanvas.addEventListener("pointerdown", e => {
     isPanning = true;
@@ -975,9 +993,9 @@ body.spectrum-mode #fsHUD{ display:block; }
 
   /* ===================== INIT ===================== */
   resize();
-  draw();
-  requestAnimationFrame(loop);
-
+updateSpectrumModeByOrientation();
+draw();
+requestAnimationFrame(loop);
 })();
 </script>
 </body>
