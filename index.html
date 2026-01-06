@@ -433,13 +433,9 @@ function drawSpectrum(hzMotor, hzBelt, time){
   const H = specCanvas.height / (devicePixelRatio || 1);
 
   /* ===== Layout ===== */
-  const hzZoneHeight = 42;
-
-// 🔒 position sûre, jamais mangée par iOS
-/* ===== Layout ===== */
 const hzZoneHeight = 42;
 
-// 🔒 position sûre, jamais mangée par iOS (une seule fois, pas de doublon)
+// 🔒 position sûre, jamais mangée par iOS
 let hzZoneY;
 if (spectrumFS) {
   hzZoneY = H - hzZoneHeight - 80;   // marge iOS fullscreen
@@ -449,7 +445,6 @@ if (spectrumFS) {
 
 // sécurité : éviter que la règle monte trop haut si écran petit
 hzZoneY = Math.max(80, hzZoneY);
-
   const gridTop    = 16;
   const gridBottom = hzZoneY - 10;
   const gridHeight = gridBottom - gridTop;
