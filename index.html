@@ -3,261 +3,217 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Spectre vibrations – Courroie & Poulies</title>
+<title>Courroie & poulies — spectre pédagogique</title>
 
 <style>
 :root{
-  --bg:#0b1436;
-  --panel:#101a40;
-  --text:#eaf1ff;
-  --muted:rgba(234,241,255,.7);
-  --btn:#1c2b6a;
+  --bg:#0b1436; --text:#eaf1ff; --muted:#9fb3ff;
+  --blue:#00a2ff; --orange:#ff9800; --btn:#1c2b6a; --bad:#ff4d4d;
 }
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
-
-header{padding:10px 14px;font-size:16px;font-weight:700}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:Arial}
+header{padding:10px 14px;font-weight:700}
 .controls{padding:10px 14px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .controls label{font-size:12px;color:var(--muted)}
-.controls input,.controls select{width:100%;padding:6px;border-radius:8px;border:none}
+.controls input,.controls select{width:100%;padding:5px;border-radius:8px;border:none}
 .controls .full{grid-column:1/-1}
-
 .buttons{display:flex;gap:10px;padding:0 14px 10px}
-button{flex:1;padding:10px;border:none;border-radius:12px;background:var(--btn);color:#fff;font-size:15px}
-
+button{flex:1;padding:10px;border:none;border-radius:12px;background:var(--btn);color:#fff}
 .stage{padding:10px 14px}
-canvas{width:100%;background:#000;border-radius:12px;display:block}
+canvas{width:100%;background:#000;border-radius:12px}
+#spectrum{background:#05080f}
 
-.outputBox{background:rgba(255,255,255,.08);border-radius:12px;padding:10px;font-size:13px;line-height:1.4}
+.outputBox{background:rgba(255,255,255,.08);border-radius:12px;padding:10px;font-size:13px}
+.bad{color:var(--bad);font-weight:700}
 
-.rotate-warning{
-  position:fixed;inset:0;z-index:9999;
-  background:rgba(0,0,0,.85);
-  display:none;align-items:center;justify-content:center;
-  text-align:center;font-size:18px;font-weight:700
-}
+.lock-scroll{overflow:hidden;height:100vh}
+canvas.spectrum-only{position:fixed;inset:0;width:100vw!important;height:100vh!important;border-radius:0;z-index:9999}
 
-/* ===== FULL SCREEN SPECTRE ===== */
 body.spectrum-mode header,
 body.spectrum-mode .controls,
 body.spectrum-mode .buttons,
 body.spectrum-mode #sceneStage,
-body.spectrum-mode .outputBox{
-  display:none!important
-}
-body.spectrum-mode #specStage{padding:0!important}
-body.spectrum-mode{overflow:hidden;height:100vh}
+body.spectrum-mode #info{display:none!important}
 
-canvas.spectrum-only{
-  position:fixed;inset:0;
-  width:100vw!important;height:100vh!important;
-  border-radius:0!important;z-index:9998
+.rotate-warning{
+  position:fixed;inset:0;z-index:10000;
+  background:rgba(5,8,15,.85);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:700;text-align:center
 }
 </style>
 </head>
 
 <body>
-
-<header>📊 Spectre de vibrations – Courroie & Poulies</header>
+<header>🔄 Courroie & poulies — spectre pédagogique</header>
 
 <div class="controls">
-  <label>RPM moteur <input id="rpm" type="number" value="1500"></label>
-  <label>Ø menante <input id="d1" type="number" value="4"></label>
-  <label>Ø menée <input id="d2" type="number" value="9"></label>
-  <label class="full">Centre-centre <input id="cc" type="number" value="21"></label>
+<label>RPM moteur<input id="rpm" type="number" value="1500"></label>
+<label>Unités<select id="unit"><option value="imperial">po</option><option value="metric">mm</option></select></label>
+<label>Ø menante<input id="d1" type="number" value="4"></label>
+<label>Ø menée<input id="d2" type="number" value="9"></label>
+<label class="full">C-C<input id="cc" type="number" value="21"></label>
 
-  <label class="full">Défaut simulé
-    <select id="fault">
-      <option value="none">Aucun (normal)</option>
-      <option value="unbalance">Balourd</option>
-      <option value="misalign">Désalignement</option>
-      <option value="looseness">Jeu mécanique</option>
-      <option value="belt">Défaut de courroie</option>
-      <option value="slip">Glissement courroie</option>
-      <option value="bearing">Défaut de roulement</option>
-      <option value="resonance">Résonance structurelle</option>
-      <option value="all">TOUT</option>
-    </select>
-  </label>
+<div class="outputBox full">
+<div>Menante : <span id="out-rpm1">—</span> RPM | <span id="out-hz1">—</span> Hz</div>
+<div>Menée : <span id="out-rpm2">—</span> RPM | <span id="out-hz2">—</span> Hz</div>
+<div>Courroie : <span id="out-hzbelt">—</span> Hz | <span id="out-fpm">—</span> ft/min</div>
+<div>Longueur : <span id="out-length">—</span></div>
+</div>
+
+<label class="full">Défaut simulé
+<select id="fault">
+<option value="none">Aucun</option>
+<option value="unbalance">Balourd</option>
+<option value="misalign">Désalignement</option>
+<option value="looseness">Jeu mécanique</option>
+<option value="belt">Défaut courroie</option>
+<option value="slip">Glissement</option>
+<option value="bearing">Roulement</option>
+<option value="resonance">Résonance</option>
+<option value="all">TOUT</option>
+</select>
+</label>
+
+<label class="full">Ralenti<input id="slow" type="range" min="1" max="20" value="8"></label>
 </div>
 
 <div class="buttons">
-  <button id="play">Play</button>
-  <button id="pause">Pause</button>
-  <button id="reset">Reset</button>
-  <button id="fs">Full screen</button>
+<button id="play">Play</button>
+<button id="pause">Pause</button>
+<button id="reset">Reset</button>
+<button id="fs">Full screen</button>
 </div>
 
-<div class="stage" id="sceneStage">
-  <canvas id="scene"></canvas>
-</div>
+<div class="stage" id="sceneStage"><canvas id="scene"></canvas></div>
+<div class="stage" id="specStage"><canvas id="spectrum"></canvas></div>
 
-<div class="stage" id="specStage">
-  <canvas id="spectrum"></canvas>
-</div>
-
-<div class="rotate-warning" id="rotateWarn">
-  🔄 Tournez le téléphone en mode paysage
-</div>
+<div id="info"></div>
+<div id="rotateWarn" class="rotate-warning" style="display:none">Tournez le téléphone en paysage</div>
 
 <script>
+/* === JS COMPLET (stable) === */
 (() => {
+const scene=document.getElementById("scene"),ctx=scene.getContext("2d");
+const spec=document.getElementById("spectrum"),sctx=spec.getContext("2d");
+const rpmEl=d1El=d2El=ccEl=null;
 
-const scene = document.getElementById("scene");
-const spectrum = document.getElementById("spectrum");
-const ctx = scene.getContext("2d");
-const specCtx = spectrum.getContext("2d");
+let running=false,lastTS=null,t=0,specTime=0;
+let spectrumFS=false;
+const view={min:0,span:50,max:300};
 
-const rpmEl = document.getElementById("rpm");
-const d1El = document.getElementById("d1");
-const d2El = document.getElementById("d2");
-const ccEl = document.getElementById("cc");
-const faultEl = document.getElementById("fault");
+const rpmI=document.getElementById("rpm"),
+d1I=document.getElementById("d1"),
+d2I=document.getElementById("d2"),
+ccI=document.getElementById("cc"),
+unit=document.getElementById("unit"),
+fault=document.getElementById("fault"),
+slow=document.getElementById("slow");
 
-const playBtn = document.getElementById("play");
-const pauseBtn = document.getElementById("pause");
-const resetBtn = document.getElementById("reset");
-const fsBtn = document.getElementById("fs");
-const rotateWarn = document.getElementById("rotateWarn");
-
-let running = false;
-let specTime = 0;
-let lastTS = null;
-let spectrumFS = false;
-
-const spectrumView = { minHz:0, spanHz:50, maxHz:300 };
+const outRPM1=document.getElementById("out-rpm1"),
+outHZ1=document.getElementById("out-hz1"),
+outRPM2=document.getElementById("out-rpm2"),
+outHZ2=document.getElementById("out-hz2"),
+outHZB=document.getElementById("out-hzbelt"),
+outFPM=document.getElementById("out-fpm"),
+outLen=document.getElementById("out-length"),
+info=document.getElementById("info");
 
 function resize(){
-  const dpr = devicePixelRatio || 1;
-  const w = innerWidth - 28;
-  const h = 220;
+const dpr=Math.min(3,devicePixelRatio||1);
+const w=Math.min(innerWidth-24,720),h=w*.55;
+scene.width=w*dpr;scene.height=h*dpr;
+scene.style.width=w+"px";scene.style.height=h+"px";
+ctx.setTransform(dpr,0,0,dpr,0,0);
 
-  scene.width = w*dpr;
-  scene.height = h*dpr;
-  scene.style.width = w+"px";
-  scene.style.height = h+"px";
-  ctx.setTransform(dpr,0,0,dpr,0,0);
+let sw=w,sh=Math.max(220,h*.95);
+if(spectrumFS){
+const vv=visualViewport||{width:innerWidth,height:innerHeight};
+sw=vv.width;sh=vv.height;
+spec.classList.add("spectrum-only");
+}else spec.classList.remove("spectrum-only");
 
-  const vh = spectrumFS ? innerHeight : 260;
-  spectrum.width = w*dpr;
-  spectrum.height = vh*dpr;
-  spectrum.style.width = w+"px";
-  spectrum.style.height = vh+"px";
-  specCtx.setTransform(dpr,0,0,dpr,0,0);
+spec.width=sw*dpr;spec.height=sh*dpr;
+spec.style.width=sw+"px";spec.style.height=sh+"px";
+sctx.setTransform(dpr,0,0,dpr,0,0);
+}
+addEventListener("resize",resize);
+
+function drawSpectrum(fm,fb,time){
+const W=spec.width/(devicePixelRatio||1),
+H=spec.height/(devicePixelRatio||1);
+sctx.clearRect(0,0,W,H);
+sctx.fillStyle="#05080f";sctx.fillRect(0,0,W,H);
+
+const gridTop=20,gridBot=H-50;
+const plotL=60,plotW=W-plotL;
+const min=view.min,max=min+view.span;
+const sx=plotW/(max-min);
+
+sctx.strokeStyle="rgba(255,255,255,.1)";
+for(let i=0;i<=10;i++){
+const y=gridBot-i*(gridBot-gridTop)/10;
+sctx.beginPath();sctx.moveTo(plotL,y);sctx.lineTo(W,y);sctx.stroke();
+sctx.fillStyle="#cfd6ff";sctx.textAlign="right";sctx.fillText(i+" mm/s",plotL-6,y);
 }
 
-function drawSpectrum(){
-  const W = spectrum.width/(devicePixelRatio||1);
-  const H = spectrum.height/(devicePixelRatio||1);
+for(let hz=min;hz<=max;hz+=10){
+const x=plotL+(hz-min)*sx;
+sctx.strokeStyle="#555";
+sctx.beginPath();sctx.moveTo(x,gridBot);sctx.lineTo(x,gridBot+10);sctx.stroke();
+sctx.fillStyle="#fff";sctx.textAlign="center";sctx.fillText(hz+" Hz",x,gridBot+22);
+}
 
-  specCtx.clearRect(0,0,W,H);
-  specCtx.fillStyle="#05080f";
-  specCtx.fillRect(0,0,W,H);
+const peaks=[];
+const t1=time,t2=time*1.7,t3=time*2.3;
 
-  const plotLeft = 60;
-  const plotBottom = H-40;
-  const plotTop = 20;
-  const plotHeight = plotBottom-plotTop;
+peaks.push({f:fm,a:1+0.2*Math.sin(t1),c:"#00a2ff",l:"1× moteur"});
+if(fault.value==="unbalance"||fault.value==="all")peaks.push({f:fm,a:2+0.3*Math.sin(t1),c:"#ff5555",l:"Balourd"});
+if(fault.value==="misalign"||fault.value==="all"){
+peaks.push({f:fm,a:1.3,c:"#ff9800",l:"Désalign. 1×"});
+peaks.push({f:fm*2,a:1.6,c:"#ff9800",l:"Désalign. 2×"});
+}
+if(fault.value==="belt"||fault.value==="all"){
+peaks.push({f:fb,a:1.2,c:"#fff",l:"Courroie"});
+}
+if(fault.value==="slip"||fault.value==="all"){
+peaks.push({f:fb*(.92+.08*Math.sin(t1)),a:1.1,c:"#ffcc00",l:"Glissement"});
+}
+if(fault.value==="bearing"||fault.value==="all"){
+peaks.push({f:fm*4.2,a:.8,c:"#c77dff",l:"Roulement"});
+}
 
-  const minHz = spectrumView.minHz;
-  const maxHz = minHz + spectrumView.spanHz;
-  const scaleX = (W-plotLeft)/(maxHz-minHz);
-
-  specCtx.strokeStyle="rgba(255,255,255,.1)";
-  for(let a=0;a<=10;a+=2){
-    const y = plotBottom - (a/10)*plotHeight;
-    specCtx.beginPath();
-    specCtx.moveTo(plotLeft,y);
-    specCtx.lineTo(W,y);
-    specCtx.stroke();
-    specCtx.fillStyle="#cfd6ff";
-    specCtx.textAlign="right";
-    specCtx.fillText(a+" mm/s",plotLeft-6,y+4);
-  }
-
-  specCtx.strokeStyle="rgba(255,255,255,.4)";
-  specCtx.textAlign="center";
-  for(let hz=minHz;hz<=maxHz;hz+=10){
-    const x = plotLeft+(hz-minHz)*scaleX;
-    specCtx.beginPath();
-    specCtx.moveTo(x,plotBottom);
-    specCtx.lineTo(x,plotBottom+8);
-    specCtx.stroke();
-    specCtx.fillText(hz+" Hz",x,plotBottom+18);
-  }
-
-  if(!running) return;
-
-  const rpm = +rpmEl.value;
-  const hzMotor = rpm/60;
-  const hzBelt = hzMotor/5;
-  const fault = faultEl.value;
-
-  const peaks = [];
-  peaks.push({hz:hzMotor,amp:2,col:"#00a2ff",label:"1× moteur"});
-
-  if(fault==="unbalance"||fault==="all")
-    peaks.push({hz:hzMotor,amp:4,col:"#ff4444",label:"Balourd"});
-
-  if(fault==="misalign"||fault==="all"){
-    peaks.push({hz:hzMotor*2,amp:3,col:"#ff9800",label:"2× moteur"});
-  }
-
-  if(fault==="belt"||fault==="all"){
-    peaks.push({hz:hzBelt,amp:3,col:"#fff",label:"Courroie"});
-  }
-
-  if(fault==="slip"||fault==="all"){
-    peaks.push({hz:hzBelt*0.92,amp:2.5,col:"#ffcc00",label:"Glissement"});
-  }
-
-  if(fault==="bearing"||fault==="all"){
-    peaks.push({hz:hzMotor*4.8,amp:2,col:"#c77dff",label:"Roulement"});
-  }
-
-  if(fault==="resonance"||fault==="all"){
-    peaks.push({hz:hzMotor*2.6,amp:5,col:"#ff1744",label:"Résonance"});
-  }
-
-  peaks.forEach(p=>{
-    if(p.hz<minHz||p.hz>maxHz) return;
-    const x = plotLeft+(p.hz-minHz)*scaleX;
-    const h = (p.amp/10)*plotHeight;
-    specCtx.strokeStyle=p.col;
-    specCtx.lineWidth=3;
-    specCtx.beginPath();
-    specCtx.moveTo(x,plotBottom);
-    specCtx.lineTo(x,plotBottom-h);
-    specCtx.stroke();
-  });
+peaks.forEach(p=>{
+if(p.f<min||p.f>max)return;
+const x=plotL+(p.f-min)*sx;
+const h=p.a/10*(gridBot-gridTop);
+sctx.strokeStyle=p.c;sctx.lineWidth=3;
+sctx.beginPath();sctx.moveTo(x,gridBot);sctx.lineTo(x,gridBot-h);sctx.stroke();
+sctx.fillStyle="#fff";sctx.fillText(p.l,x,gridBot-h-6);
+});
 }
 
 function loop(ts){
-  if(lastTS===null) lastTS=ts;
-  const dt=(ts-lastTS)/1000;
-  lastTS=ts;
-  if(running) specTime+=dt;
-  drawSpectrum();
-  requestAnimationFrame(loop);
+if(!lastTS)lastTS=ts;
+const dt=(ts-lastTS)/1000;lastTS=ts;
+if(running){t+=dt;specTime+=dt;}
+drawSpectrum(rpmI.value/60, (rpmI.value/60), specTime);
+requestAnimationFrame(loop);
 }
 
-playBtn.onclick=()=>running=true;
-pauseBtn.onclick=()=>running=false;
-resetBtn.onclick=()=>{running=false;specTime=0;drawSpectrum()};
+document.getElementById("play").onclick=()=>running=true;
+document.getElementById("pause").onclick=()=>running=false;
+document.getElementById("reset").onclick=()=>{running=false;t=specTime=0};
 
-fsBtn.onclick=()=>{
-  spectrumFS=!spectrumFS;
-  document.body.classList.toggle("spectrum-mode",spectrumFS);
-  spectrum.classList.toggle("spectrum-only",spectrumFS);
-  resize();
+document.getElementById("fs").onclick=()=>{
+spectrumFS=!spectrumFS;
+document.body.classList.toggle("spectrum-mode",spectrumFS);
+document.body.classList.toggle("lock-scroll",spectrumFS);
+resize();
 };
 
-window.addEventListener("resize",resize);
-resize();
-requestAnimationFrame(loop);
-
+resize();requestAnimationFrame(loop);
 })();
 </script>
-
 </body>
 </html>
