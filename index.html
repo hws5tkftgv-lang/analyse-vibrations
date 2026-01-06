@@ -768,6 +768,20 @@ body.spectrum-mode{
     rotateWarn.style.display = isPortrait ? "flex" : "none";
   }
 
+function autoExitOnPortrait(){
+  if(!spectrumFS) return;
+
+  const vv = window.visualViewport;
+  const vw = vv ? vv.width  : window.innerWidth;
+  const vh = vv ? vv.height : window.innerHeight;
+
+  // Portrait réel (tolérance iOS)
+  if(vh > vw + 40){
+    toggleSpectrumFS(); // sortie propre
+  }
+}
+
+
   function toggleSpectrumFS(){
     spectrumFS = !spectrumFS;
 
@@ -1031,12 +1045,25 @@ body.spectrum-mode{
   });
 
   // plein écran: resize / orientation
-  window.addEventListener("resize", () => { resize(); checkOrientation(); draw(); });
-  window.addEventListener("orientationchange", () => { resize(); checkOrientation(); draw(); });
-  if(window.visualViewport){
-    window.visualViewport.addEventListener("resize", () => { resize(); checkOrientation(); draw(); });
-  }
+  window.addEventListener("resize", () => {
+  resize();
+  checkOrientation();
+  draw();
+});
 
+window.addEventListener("orientationchange", () => {
+  resize();
+  checkOrientation();
+  draw();
+});
+
+if(window.visualViewport){
+  window.visualViewport.addEventListener("resize", () => {
+    resize();
+    checkOrientation();
+    draw();
+  });
+}
   /* =========================================================
      PAN SUR LE SPECTRE (drag)
      - Fonctionne en pause
