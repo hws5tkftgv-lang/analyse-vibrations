@@ -186,6 +186,22 @@ body.spectrum-mode #fsHUD{ display:block; }
 
   const clamp = (v,a,b)=>Math.max(a, Math.min(b, v));
   const isNum = (x)=>Number.isFinite(x);
+  // ===== ISO 20816 (ex ISO 10816) - Classe II (machines industrielles standard) =====
+const ISO_CLASS = "II"; // affichage seulement
+
+const ISO_ZONES = [
+  { name:"A", label:"Bon",         max:1.12, col:"rgba(  0,200,  0,0.12)" },
+  { name:"B", label:"Acceptable",  max:2.80, col:"rgba(  0,162,255,0.12)" },
+  { name:"C", label:"Mauvais",     max:7.10, col:"rgba(255,165,  0,0.12)" },
+  { name:"D", label:"Critique",    max:Infinity, col:"rgba(255, 77, 77,0.12)" }
+];
+
+function isoVerdict(mm_s_rms){
+  for(const z of ISO_ZONES){
+    if(mm_s_rms <= z.max) return z;
+  }
+  return ISO_ZONES[ISO_ZONES.length-1];
+}
 
   function dprNow(){ return Math.min(3, window.devicePixelRatio || 1); }
 
@@ -560,6 +576,38 @@ const AMP_STEP = AMP_MAX <= 6 ? 1 : 2;
     specCtx.fillStyle = "rgba(0,162,255,0.15)";
     specCtx.fillRect(0, hzZoneY, W, hzZoneHeight);
 
+// ===== BANDES ISO (derrière les barres) =====
+// mapping mm/s -> Y
+const yFromAmp = (amp) => gridBottom - (amp / AMP_MAX) * gridHeight;
+
+// on dessine A, B, C, D en bandes horizontales
+let prev = 0;
+for(const z of ISO_ZONES){
+  const topAmp = Math.min(z.max, AMP_MAX);
+  const yTop = yFromAmp(topAmp);
+  const yBot = yFromAmp(prev);
+
+  // si la bande dépasse l'échelle actuelle, on coupe
+  const y1 = Math.max(gridTop, Math.min(gridBottom, yTop));
+  const y2 = Math.max(gridTop, Math.min(gridBottom, yBot));
+  const hBand = Math.abs(y2 - y1);
+
+  if(hBand > 0.5){
+    specCtx.fillStyle = z.col;
+    specCtx.fillRect(plotLeft, Math.min(y1,y2), (plotRight - plotLeft), hBand);
+
+    // petit label de zone à gauche
+    specCtx.fillStyle = "rgba(234,241,255,0.85)";
+    specCtx.font = "11px Arial";
+    specCtx.textAlign = "left";
+    specCtx.textBaseline = "middle";
+    specCtx.fillText(`ISO ${ISO_CLASS} ${z.name} (${z.label})`, plotLeft + 6, Math.min(y1,y2) + 12);
+  }
+
+  prev = z.max;
+}
+
+
     // règle Hz
     specCtx.strokeStyle = "rgba(255,255,255,0.35)";
     specCtx.fillStyle   = "#eaf1ff";
@@ -636,7 +684,26 @@ const AMP_STEP = AMP_MAX <= 6 ? 1 : 2;
       specCtx.textBaseline = "bottom";
       specCtx.fillText(p.label, x, Math.max(yTop - 6, gridTop + 14));
     }
+// ===== VERDICT ISO basé sur le pic max (dans la fenêtre affichée) =====
+let maxShown = 0;
+for(const p of peaks){
+  if(!Number.isFinite(p.hz)) continue;
+  if(p.hz < minHz || p.hz > maxHz) continue;  // seulement ce qui est visible
+  const ampMMs = (Number.isFinite(p.amp) ? p.amp : 0) * 5;
+  if(ampMMs > maxShown) maxShown = ampMMs;
+}
 
+const z = isoVerdict(maxShown);
+
+// bande de titre (en haut à gauche)
+specCtx.fillStyle = "rgba(0,0,0,0.35)";
+specCtx.fillRect(plotLeft, 0, 270, 18);
+
+specCtx.fillStyle = "#eaf1ff";
+specCtx.font = "12px Arial";
+specCtx.textAlign = "left";
+specCtx.textBaseline = "middle";
+specCtx.fillText(`ISO ${ISO_CLASS} : ${z.name} — ${z.label} (max ${maxShown.toFixed(2)} mm/s)`, plotLeft + 6, 9);
     // axe
     specCtx.fillStyle = "#9aa5d6";
     specCtx.font = "12px Arial";
@@ -657,7 +724,13 @@ function renderPeakList(){
   keys.sort((a,b) => peakRecord[b].amp - peakRecord[a].amp);
 
   let html = "<b>📸 Photo instantanée — pics max enregistrés</b><br><br>";
-
+// verdict global ISO basé sur le plus gros pic enregistré
+let maxRec = 0;
+for(const k of keys){
+  if(peakRecord[k].amp > maxRec) maxRec = peakRecord[k].amp;
+}
+const z = isoVerdict(maxRec);
+html += `<div style="margin-bottom:12px;"><b>ISO ${ISO_CLASS}</b> : ${z.name} — ${z.label} (max ${maxRec.toFixed(2)} mm/s)</div>`;
   for(const label of keys){
     const p = peakRecord[label];
     html += `
