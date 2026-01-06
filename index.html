@@ -956,9 +956,9 @@ if(window.visualViewport){
 
 playBtn.addEventListener("click", () => {
 
-  snapshotMode = false;     // ← on quitte le mode photo
-  snapshotData = false;    // ← on efface la fiche
-  infoEl.innerHTML = "";   // ← on nettoie l’affichage
+  snapshotMode = false;   // on quitte le mode photo
+  peakRecord = {};        // on repart un nouvel enregistrement
+  infoEl.innerHTML = "";  // nettoie l’affichage
 
   const inp = readInputs();
   if(!inp){ running = false; draw(); return; }
@@ -966,9 +966,8 @@ playBtn.addEventListener("click", () => {
   const geo = validateGeometryOpenBelt(inp);
   if(!geo.ok){ running = false; draw(); return; }
 
-  running = true;          // ← LIVE reprend
+  running = true;         // 🔴 LIVE reprend
 });
-  
   pauseBtn.addEventListener("click", () => {
   running = false;
   snapshotMode = true;   // 🔒 verrou affichage
