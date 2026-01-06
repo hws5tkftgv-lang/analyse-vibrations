@@ -202,7 +202,6 @@ specCanvas.addEventListener("pointermove", e => {
 
   let newMin = panStartMinHz - dxPx * hzPerPx;
 
-    // clamp 0 → max-span
   newMin = Math.max(
     0,
     Math.min(
@@ -212,6 +211,9 @@ specCanvas.addEventListener("pointermove", e => {
   );
 
   spectrumView.minHz = newMin;
+
+  // 🔴 REDRAW IMMÉDIAT DU SPECTRE
+  drawSpectrum(hzMotor, hzBelt, t);
 });
 
 specCanvas.addEventListener("pointerup", e => {
