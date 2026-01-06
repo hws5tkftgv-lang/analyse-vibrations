@@ -781,6 +781,33 @@ const rotateWarn = document.getElementById("rotateWarn");
 
 let spectrumFS = false;
 
+function exitSpectrumMode(){
+  spectrumFS = false;
+  document.body.classList.remove("spectrum-mode");
+  document.body.classList.remove("lock-scroll");
+  specCanvas.classList.remove("spectrum-only");
+  rotateWarn.style.display = "none";
+  resize();
+}
+
+
+function exitSpectrumMode(){
+
+  // état
+  spectrumFS = false;
+
+  // classes CSS
+  document.body.classList.remove("spectrum-mode");
+  document.body.classList.remove("lock-scroll");
+  specCanvas.classList.remove("spectrum-only");
+
+  // message rotation OFF
+  rotateWarn.style.display = "none";
+
+  // recalcul tailles
+  resize();
+}
+
 function checkOrientation(){
   if(!spectrumFS){
     rotateWarn.style.display = "none";
