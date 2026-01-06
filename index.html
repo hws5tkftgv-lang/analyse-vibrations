@@ -545,11 +545,21 @@ body.spectrum-mode{
     // 8) ALL : ajoute aussi quelques harmoniques “haut”
     // ===================================================
     if(fault === "all"){
-      peaks.push(
-        { hz: f4, amp: a_highSZ(0.35, t2), col:"#90caf9", label:"4× moteur" },
-        { hz: f1*6, amp: aSZ(0.25, t3), col:"#90caf9", label:"6× moteur" }
-      );
+  peaks.push(
+    {
+      hz: f4,
+      amp: 0.35 + 0.10 * Math.sin(t2),
+      col:"#90caf9",
+      label:"4× moteur"
+    },
+    {
+      hz: f1 * 6,
+      amp: 0.25 + 0.10 * Math.sin(t3),
+      col:"#90caf9",
+      label:"6× moteur"
     }
+  );
+}
 
     return peaks;
 
