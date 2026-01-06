@@ -193,6 +193,7 @@ body.spectrum-mode #fsHUD{ display:block; }
   let running = false;
   // ===== ENREGISTREMENT (Peak Hold par élément) =====
 let peakRecord = {}; // { label: { hz, amp } }   amp en mm/s
+let snapshotMode = false;
 
   // temps séparés, MAIS une seule boucle RAF
   let tMotion = 0; // courroie / poulies
@@ -824,7 +825,9 @@ function updateSpectrumModeByOrientation(){
       drawSpectrum(hzMotor, 0, tSpec);
       return;
     }else{
-      infoEl.innerHTML = "";
+      if(!snapshotMode){
+  infoEl.innerHTML = "";
+}
     }
 
     // calculs
@@ -951,18 +954,25 @@ if(window.visualViewport){
   });
 }
 
+playBtn.addEventListener("click", () => {
 
-  playBtn.addEventListener("click", () => {
-    const inp = readInputs();
-    if(!inp){ running = false; draw(); return; }
-    const geo = validateGeometryOpenBelt(inp);
-    if(!geo.ok){ running = false; draw(); return; }
-    running = true;
-  });
+  snapshotMode = false;     // ← on quitte le mode photo
+  snapshotData = false;    // ← on efface la fiche
+  infoEl.innerHTML = "";   // ← on nettoie l’affichage
 
+  const inp = readInputs();
+  if(!inp){ running = false; draw(); return; }
+
+  const geo = validateGeometryOpenBelt(inp);
+  if(!geo.ok){ running = false; draw(); return; }
+
+  running = true;          // ← LIVE reprend
+});
+  
   pauseBtn.addEventListener("click", () => {
-  running = false;     // fige le spectre (tSpec n’avance plus)
-  renderPeakList();    // affiche la photo instantanée (max enregistrés)
+  running = false;
+  snapshotMode = true;   // 🔒 verrou affichage
+  renderPeakList();      // 📸 affiche la fiche
 });
 
   resetBtn.addEventListener("click", () => {
