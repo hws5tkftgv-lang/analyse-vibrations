@@ -1119,28 +1119,70 @@ playBtn.addEventListener("click", () => {
   resize();
 updateSpectrumModeByOrientation();
 draw();
+
+function iso10816Class(mm_s){
+  if(mm_s < 1.8) return { label:"BON", color:[0,150,0] };
+  if(mm_s < 4.5) return { label:"ACCEPTABLE", color:[255,165,0] };
+  if(mm_s < 7.1) return { label:"MAUVAIS", color:[255,100,0] };
+  return { label:"CRITIQUE", color:[200,0,0] };
+}
+
+
 function exportPDF(){
-  console.log("📄 Export PDF demandé");
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
 
-  // Vérification : y a-t-il une photo instantanée ?
   const keys = Object.keys(peakRecord);
-
   if(keys.length === 0){
-    alert("Aucune donnée enregistrée.\n\nAppuie sur Play, puis Pause pour prendre une photo.");
+    alert("Aucune donnée enregistrée.\n\nAppuie sur Play puis Pause.");
     return;
   }
 
-  // Test visuel temporaire (sera remplacé par le PDF)
-  let msg = "PHOTO INSTANTANÉE DES PICS\n\n";
+  let y = 14;
 
-  keys
-    .sort((a,b) => peakRecord[b].amp - peakRecord[a].amp)
-    .forEach(label => {
-      const p = peakRecord[label];
-      msg += `${label}\n  ${p.hz.toFixed(2)} Hz — ${p.amp.toFixed(2)} mm/s\n\n`;
-    });
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(16);
+  doc.text("Analyse vibratoire — Photo instantanée", 14, y);
+  y += 10;
 
-  alert(msg);
+  doc.setFontSize(11);
+  doc.setFont("helvetica","normal");
+  doc.text(`Date : ${new Date().toLocaleString()}`, 14, y);
+  y += 10;
+
+  doc.setFont("helvetica","bold");
+  doc.text("Résultats mesurés :", 14, y);
+  y += 8;
+
+  const sorted = keys.sort((a,b)=>peakRecord[b].amp - peakRecord[a].amp);
+
+  for(const label of sorted){
+    const p = peakRecord[label];
+    const iso = iso10816Class(p.amp);
+
+    if(y > 270){
+      doc.addPage();
+      y = 14;
+    }
+
+    doc.setFont("helvetica","bold");
+    doc.text(label, 14, y);
+
+    doc.setFont("helvetica","normal");
+    y += 6;
+    doc.text(`Fréquence : ${p.hz.toFixed(2)} Hz`, 18, y);
+    y += 6;
+    doc.text(`Amplitude : ${p.amp.toFixed(2)} mm/s`, 18, y);
+    y += 6;
+
+    doc.setTextColor(...iso.color);
+    doc.text(`Classe ISO : ${iso.label}`, 18, y);
+    doc.setTextColor(0,0,0);
+
+    y += 10;
+  }
+
+  doc.save("Analyse_vibratoire_ISO.pdf");
 }
 requestAnimationFrame(loop);
 })();
