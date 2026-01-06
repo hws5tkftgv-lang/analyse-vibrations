@@ -787,13 +787,7 @@ function autoExitOnPortrait(){
   redrawSpectrumNow();
 }
 
-  // ✅ bloquer le scroll sans toucher au body
-  document.documentElement.style.overflow = spectrumFS ? "hidden" : "";
-
-  resize();
-  checkOrientation();
-  redrawSpectrumNow();
-}
+  
 
   /* =========================================================
      REDRAW SPECTRE (même en pause)
@@ -1033,6 +1027,10 @@ function autoExitOnPortrait(){
   };
 
   fsBtn.onclick = () => { toggleSpectrumFS(); };
+  fsBtn.onclick = () => {
+  console.log("FS CLICK");
+  toggleSpectrumFS();
+};
 
   // changements inputs : on redraw tout (sans rendre “live”)
   [rpmEl,d1El,d2El,ccEl,unitEl,slowEl,faultEl].forEach(el=>{
