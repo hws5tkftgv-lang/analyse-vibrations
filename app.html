@@ -381,7 +381,7 @@ btnEnterFS.onclick = () => {
   resize();
   redrawSpectrumNow();
 
-  showFSHUD(); // 👈 AUTO-HIDE
+  if(!isMobile()) showFSHUD(); // PC seulement
 };
 
 btnExitFS.onclick = () => {
@@ -1258,6 +1258,7 @@ playBtn.addEventListener("click", () => {
   resize();
 updateSpectrumModeByOrientation();
 draw();
+enableLongPressFS();
 
 function iso10816Class(mm_s){
   if(mm_s < 1.8) return { label:"BON", color:[0,150,0] };
