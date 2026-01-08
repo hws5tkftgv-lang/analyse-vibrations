@@ -202,7 +202,7 @@ body.spectrum-mode #fsHUD{ display:block; }
 
 <!-- Boutons overlay fullscreen -->
 
-<div id="fsHUD">Pan: glisser ↔ (Hz)<br>Play = spectre live</div>
+
 
 <script>
 (() => {
@@ -827,31 +827,30 @@ html += `<div style="margin-bottom:12px;"><b>ISO ${ISO_CLASS}</b> : ${z.name} �
 
 
 function updateSpectrumModeByOrientation(){
+  if(!spectrumFS) return;
+
   const vv = window.visualViewport;
   const vw = vv ? vv.width  : window.innerWidth;
   const vh = vv ? vv.height : window.innerHeight;
 
   const isLandscape = vw > vh + 40;
 
-  // ---- ENTRÉE AUTO FULLSCREEN ----
-  //if(isLandscape && !spectrumFS){
-  //spectrumFS = true;
-    //specCanvas.classList.add("spectrum-only");
-    //document.body.classList.add("spectrum-mode");
-    //resize();
-    //redrawSpectrumNow();
-  //}
+  if(isMobile()){
+    if(isLandscape){
+      // ✅ paysage réel → fullscreen OK
+      rotateWarn.style.display = "none";
 
-  // ---- SORTIE AUTO ----
-  if(!isLandscape && spectrumFS){
-    spectrumFS = false;
-    specCanvas.classList.remove("spectrum-only");
-    document.body.classList.remove("spectrum-mode");
-    resize();
-    redrawSpectrumNow();
+      // 🔥 FORÇAGE iOS
+      setTimeout(() => {
+        resize();
+        redrawSpectrumNow();
+      }, 100);
+    }else{
+      // ❌ portrait → message obligatoire
+      rotateWarn.style.display = "flex";
+    }
   }
 }
-
 
   /* ===================== RESIZE ===================== */
   function resize(){
@@ -1270,7 +1269,11 @@ window.addEventListener("resize", () => {
     rotateWarn.style.display = "none";
   }
 });
-
+if(window.visualViewport){
+  window.visualViewport.addEventListener("resize", () => {
+    updateSpectrumModeByOrientation();
+  });
+}
 
 requestAnimationFrame(loop);
 })();
