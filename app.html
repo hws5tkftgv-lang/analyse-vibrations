@@ -762,13 +762,13 @@ function updateSpectrumModeByOrientation(){
   const isLandscape = vw > vh + 40;
 
   // ---- ENTRÉE AUTO FULLSCREEN ----
-  if(isLandscape && !spectrumFS){
-    spectrumFS = true;
-    specCanvas.classList.add("spectrum-only");
-    document.body.classList.add("spectrum-mode");
-    resize();
-    redrawSpectrumNow();
-  }
+  //if(isLandscape && !spectrumFS){
+  //spectrumFS = true;
+    //specCanvas.classList.add("spectrum-only");
+    //document.body.classList.add("spectrum-mode");
+    //resize();
+    //redrawSpectrumNow();
+  //}
 
   // ---- SORTIE AUTO ----
   if(!isLandscape && spectrumFS){
