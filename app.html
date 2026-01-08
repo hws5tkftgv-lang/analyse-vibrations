@@ -154,12 +154,18 @@ body.spectrum-mode #fsHUD{ display:block; }
   transition:opacity 0.3s ease;
 }
 /* ===== HUD strictement fullscreen ===== */
+/* ===== FS HUD : contrôlé uniquement par JS ===== */
 #fsHUD{
   display:none;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 0.3s ease;
 }
 
-body.spectrum-mode #fsHUD{
-  display:block;
+#fsHUD.visible{
+  display:flex;
+  opacity:1;
+  pointer-events:auto;
 }
 </style>
 
@@ -338,31 +344,35 @@ let fsHideTimer = null;
 
 function showFSHUD(){
   const hud = document.getElementById("fsHUD");
-  hud.classList.remove("hidden");
+
+  hud.classList.add("visible");
 
   clearTimeout(fsHideTimer);
   fsHideTimer = setTimeout(() => {
-    hud.classList.add("hidden");
+    hud.classList.remove("visible");
   }, 3000);
 }
 
 let longPressTimer = null;
 
-function enableLongPressFS(){
+
+  function enableLongPressFS(){
   if(!isMobile()) return;
 
-  specCanvas.addEventListener("touchstart", e => {
+  let pressTimer = null;
+
+  specCanvas.addEventListener("touchstart", () => {
     if(!spectrumFS) return;
 
-    longPressTimer = setTimeout(() => {
+    pressTimer = setTimeout(() => {
       showFSHUD();
-    }, 2000); // ⏱ 2 secondes
+    }, 2000);
   }, { passive:true });
 
   ["touchend","touchcancel","touchmove"].forEach(evt=>{
     specCanvas.addEventListener(evt, ()=>{
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
+      clearTimeout(pressTimer);
+      pressTimer = null;
     }, { passive:true });
   });
 }
@@ -396,6 +406,7 @@ btnExitFS.onclick = () => {
 
   resize();
   redrawSpectrumNow();
+  document.getElementById("fsHUD").classList.remove("visible");
 };
   const playBtn  = document.getElementById("play");
   const pauseBtn = document.getElementById("pause");
@@ -893,27 +904,19 @@ html += `<div style="margin-bottom:12px;"><b>ISO ${ISO_CLASS}</b> : ${z.name} �
 
 function updateSpectrumModeByOrientation(){
   if(!spectrumFS) return;
+  if(!isMobile()) return;
 
-  const vv = window.visualViewport;
-  const vw = vv ? vv.width  : window.innerWidth;
-  const vh = vv ? vv.height : window.innerHeight;
+  const isLandscape = window.innerWidth > window.innerHeight;
 
-  const isLandscape = vw > vh + 40;
+  if(isLandscape){
+    rotateWarn.style.display = "none";
 
-  if(isMobile()){
-    if(isLandscape){
-      // ✅ paysage réel → fullscreen OK
-      rotateWarn.style.display = "none";
-
-      // 🔥 FORÇAGE iOS
-      setTimeout(() => {
-        resize();
-        redrawSpectrumNow();
-      }, 100);
-    }else{
-      // ❌ portrait → message obligatoire
-      rotateWarn.style.display = "flex";
-    }
+    setTimeout(() => {
+      resize();
+      redrawSpectrumNow();
+    }, 150);
+  }else{
+    rotateWarn.style.display = "flex";
   }
 }
 
