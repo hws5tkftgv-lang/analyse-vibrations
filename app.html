@@ -229,6 +229,16 @@ function isoVerdict(mm_s_rms){
 
   function dprNow(){ return Math.min(3, window.devicePixelRatio || 1); }
 
+
+function isMobile(){
+  return /iphone|ipad|android/i.test(navigator.userAgent);
+}
+
+function isPortrait(){
+  return window.innerHeight > window.innerWidth;
+}
+
+
   /* ===================== ÉTAT ===================== */
   let running = false;
   // ===== ENREGISTREMENT (Peak Hold par élément) =====
@@ -289,16 +299,23 @@ btnEnterFS.onclick = () => {
   btnEnterFS.style.display = "none";
   btnExitFS.style.display = "inline-block";
 
+  // 📱 Mobile seulement → avertissement rotation
+  if(isMobile() && isPortrait()){
+    rotateWarn.style.display = "flex";
+  }else{
+    rotateWarn.style.display = "none";
+  }
+
   resize();
   redrawSpectrumNow();
 };
 
 btnExitFS.onclick = () => {
-  if(!spectrumFS) return;
-
   spectrumFS = false;
+
   specCanvas.classList.remove("spectrum-only");
   document.body.classList.remove("spectrum-mode");
+  rotateWarn.style.display = "none";
 
   btnExitFS.style.display = "none";
   btnEnterFS.style.display = "inline-block";
@@ -1233,6 +1250,19 @@ function exportPDF(){
 
   doc.save("Analyse_vibratoire_ISO.pdf");
 }
+
+// 🔄 Gestion rotation mobile en mode plein écran spectre
+window.addEventListener("resize", () => {
+  if(!spectrumFS) return;
+
+  if(isMobile() && isPortrait()){
+    rotateWarn.style.display = "flex";
+  }else{
+    rotateWarn.style.display = "none";
+  }
+});
+
+
 requestAnimationFrame(loop);
 })();
 </script>
