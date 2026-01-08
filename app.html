@@ -7,36 +7,130 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Vibration">
 <title>Courroie & poulies — trajectoire correcte</title>
-
 <style>
-html, body { height:100%; }
+/* ===================== BASE ===================== */
+html, body{
+  height:100%;
+}
+
 :root{
   --bg:#0b1436;
   --text:#eaf1ff;
-  --muted:rgba(234,241,255,.70);
+  --muted:rgba(234,241,255,.7);
   --btn:#1c2b6a;
   --bad:#ff4d4d;
 }
-*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html,body{ margin:0; background:var(--bg); color:var(--text); font-family:Arial,system-ui,sans-serif; }
-header{ padding:10px 14px; font-size:16px; font-weight:700; }
 
-.controls{ padding:10px 14px; display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
-.controls label{ font-size:12px; color:var(--muted); }
-.controls input,.controls select{ width:100%; padding:6px 8px; font-size:13px; border-radius:10px; border:none; }
-.controls .full{ grid-column:1/-1; }
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
 
-.buttons{ display:flex; gap:10px; padding:0 14px 10px; flex-wrap:wrap; }
-button{ flex:1; min-width:120px; padding:10px; font-size:15px; border:none; border-radius:12px; background:var(--btn); color:white; }
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,system-ui,sans-serif;
+  overflow-x:hidden;
+}
 
-.stage{ padding:10px 14px; }
-canvas{ width:100%; background:#000; border-radius:12px; display:block; }
-#spectrum{ background:#05080f; touch-action:none; }
+/* ===================== HEADER ===================== */
+header{
+  padding:10px 14px;
+  font-size:16px;
+  font-weight:700;
+}
 
-.results{ padding:10px 14px 18px; font-size:14px; line-height:1.45; }
-.bad{ color:var(--bad); font-weight:700; }
-.small{ font-size:12px; opacity:.75; margin-top:6px; }
+/* ===================== CONTROLS ===================== */
+.controls{
+  padding:10px 14px;
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px;
+}
 
+.controls label{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.controls input,
+.controls select{
+  width:100%;
+  padding:6px 8px;
+  font-size:13px;
+  border-radius:10px;
+  border:none;
+}
+
+.controls .full{
+  grid-column:1 / -1;
+}
+
+/* ===================== BUTTONS ===================== */
+.buttons{
+  display:flex;
+  gap:10px;
+  padding:0 14px 10px;
+  flex-wrap:wrap;
+}
+
+button{
+  flex:1;
+  min-width:120px;
+  padding:10px;
+  font-size:15px;
+  border:none;
+  border-radius:12px;
+  background:var(--btn);
+  color:white;
+  cursor:pointer;
+}
+
+button:active{
+  transform:scale(0.98);
+}
+
+/* ===================== STAGES ===================== */
+.stage{
+  padding:10px 14px;
+}
+
+canvas{
+  width:100%;
+  display:block;
+  background:#000;
+  border-radius:12px;
+}
+
+#scene{
+  background:#000;
+}
+
+#spectrum{
+  background:#05080f;
+  touch-action:none;
+}
+
+/* ===================== RESULTS ===================== */
+.results{
+  padding:10px 14px 18px;
+  font-size:14px;
+  line-height:1.45;
+}
+
+.bad{
+  color:var(--bad);
+  font-weight:700;
+}
+
+.small{
+  font-size:12px;
+  opacity:.75;
+  margin-top:6px;
+}
+
+/* ===================== OUTPUT BOX ===================== */
 .outputBox{
   background:rgba(255,255,255,0.08);
   border-radius:12px;
@@ -44,94 +138,70 @@ canvas{ width:100%; background:#000; border-radius:12px; display:block; }
   font-size:13px;
   line-height:1.4;
 }
-.outputBox b{ color:#cfe2ff; }
 
-/* ===== FULLSCREEN SPECTRE (canvas only) ===== */
-canvas.spectrum-only{
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 100dvw !important;
-  height: 100dvh !important;
-  border-radius: 0 !important;
-  z-index: 9999;
+.outputBox b{
+  color:#cfe2ff;
 }
 
-/* Mode spectre : cacher tout sauf specStage + warning + boutons overlay */
-body.spectrum-mode > *:not(#specStage):not(#rotateWarn):not(#fsHUD){
+/* ==================================================== */
+/* ===================== FULLSCREEN ==================== */
+/* ==================================================== */
+
+/* Canvas fullscreen ONLY */
+canvas.spectrum-only{
+  position:fixed;
+  inset:0;
+  width:100dvw !important;
+  height:100dvh !important;
+  border-radius:0 !important;
+  z-index:9999;
+}
+
+/* Mode spectre : cacher TOUT sauf spectre + HUD + warning */
+body.spectrum-mode > *:not(#specStage):not(#fsHUD):not(#rotateWarn){
   display:none !important;
 }
+
 body.spectrum-mode{
   overflow:hidden;
 }
+
 body.spectrum-mode #specStage{
   padding:0 !important;
   margin:0 !important;
 }
 
-
+/* ===================== HUD FULLSCREEN ===================== */
+/* ⚠️ HUD contrôlé UNIQUEMENT par JS */
 #fsHUD{
-  position: fixed;
-  z-index: 10001;
-  left: 12px;
-  top: 12px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: rgba(0,0,0,0.35);
+  position:fixed;
+  top:12px;
+  left:12px;
+  z-index:10001;
+
+  padding:10px 12px;
+  border-radius:12px;
+  background:rgba(0,0,0,0.35);
   color:#eaf1ff;
-  font-size: 12px;
-  line-height: 1.25;
+  font-size:12px;
+  line-height:1.25;
+
   display:none;
-}
-body.spectrum-mode #fsHUD{ display:block; }
-
-/* ===== MESSAGE ROTATION PAYSAGE ===== */
-.rotate-warning{
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  background: rgba(5,8,15,0.85);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 24px;
-  font-size: 18px;
-  font-weight: 700;
-  color: #eaf1ff;
-  pointer-events: none;
-}
-.rotate-warning span{
-  display:block;
-  font-size:14px;
-  font-weight:400;
-  opacity:0.85;
-  margin-top:10px;
-}
-.spectrum-controls{
-  display:flex;
-  gap:8px;
-  margin-top:10px;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .3s ease;
 }
 
-.spectrum-controls button{
-  padding:8px 12px;
-  border-radius:8px;
-  border:none;
-  background:#1c2b5a;
-  color:#eaf1ff;
-  font-weight:600;
-}
-#fsHUD{
+#fsHUD.visible{
   display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
   gap:12px;
-  max-width:calc(100vw - 24px);
+  align-items:flex-start;
+  opacity:1;
+  pointer-events:auto;
 }
 
 #fsHUD .fs-info{
-  pointer-events:none; /* ne gêne jamais le pan */
+  pointer-events:none;
 }
 
 #exitSpectrumFS{
@@ -142,30 +212,48 @@ body.spectrum-mode #fsHUD{ display:block; }
   white-space:nowrap;
 }
 
+/* ===================== ROTATION WARNING ===================== */
+.rotate-warning{
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  background:rgba(5,8,15,0.85);
 
-/* ===== FS HUD auto-hide ===== */
-#fsHUD.hidden{
-  opacity:0;
-  pointer-events:none;
-  transition:opacity 0.3s ease;
-}
-
-#fsHUD{
-  transition:opacity 0.3s ease;
-}
-/* ===== HUD strictement fullscreen ===== */
-/* ===== FS HUD : contrôlé uniquement par JS ===== */
-#fsHUD{
   display:none;
-  opacity:0;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+
+  padding:24px;
+  font-size:18px;
+  font-weight:700;
+  color:#eaf1ff;
+
   pointer-events:none;
-  transition:opacity 0.3s ease;
 }
 
-#fsHUD.visible{
+.rotate-warning span{
+  display:block;
+  font-size:14px;
+  font-weight:400;
+  opacity:.85;
+  margin-top:10px;
+}
+
+/* ===================== SPECTRUM CONTROLS ===================== */
+.spectrum-controls{
   display:flex;
-  opacity:1;
-  pointer-events:auto;
+  gap:8px;
+  padding:0 14px 10px;
+}
+
+.spectrum-controls button{
+  padding:8px 12px;
+  border-radius:8px;
+  border:none;
+  background:#1c2b5a;
+  color:#eaf1ff;
+  font-weight:600;
 }
 </style>
 
@@ -353,7 +441,7 @@ function showFSHUD(){
   }, 3000);
 }
 
-let longPressTimer = null;
+
 
 
   function enableLongPressFS(){
@@ -1328,16 +1416,7 @@ function exportPDF(){
   doc.save("Analyse_vibratoire_ISO.pdf");
 }
 
-// 🔄 Gestion rotation mobile en mode plein écran spectre
-window.addEventListener("resize", () => {
-  if(!spectrumFS) return;
 
-  if(isMobile() && isPortrait()){
-    rotateWarn.style.display = "flex";
-  }else{
-    rotateWarn.style.display = "none";
-  }
-});
 if(window.visualViewport){
   window.visualViewport.addEventListener("resize", () => {
     updateSpectrumModeByOrientation();
