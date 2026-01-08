@@ -108,6 +108,20 @@ body.spectrum-mode #fsHUD{ display:block; }
   opacity:0.85;
   margin-top:10px;
 }
+.spectrum-controls{
+  display:flex;
+  gap:8px;
+  margin-top:10px;
+}
+
+.spectrum-controls button{
+  padding:8px 12px;
+  border-radius:8px;
+  border:none;
+  background:#1c2b5a;
+  color:#eaf1ff;
+  font-weight:600;
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -167,7 +181,10 @@ body.spectrum-mode #fsHUD{ display:block; }
   <button id="reset">Reset</button>
   <button id="exportPDF">PDF</button>
 </div>
-
+<div class="spectrum-controls">
+  <button id="enterSpectrumFS">🔍 Plein écran spectre</button>
+  <button id="exitSpectrumFS" style="display:none;">❌ Quitter plein écran</button>
+</div>
 <div class="stage" id="sceneStage"><canvas id="scene"></canvas></div>
 <div class="stage" id="specStage"><canvas id="spectrum"></canvas></div>
 
@@ -259,7 +276,36 @@ let snapshotMode = false;
   const outHZBelt  = document.getElementById("out-hzbelt");
   const outFPM     = document.getElementById("out-fpm");
   const outStrobe  = document.getElementById("out-strobe");
+const btnEnterFS = document.getElementById("enterSpectrumFS");
+const btnExitFS  = document.getElementById("exitSpectrumFS");
 
+btnEnterFS.onclick = () => {
+  if(spectrumFS) return;
+
+  spectrumFS = true;
+  specCanvas.classList.add("spectrum-only");
+  document.body.classList.add("spectrum-mode");
+
+  btnEnterFS.style.display = "none";
+  btnExitFS.style.display = "inline-block";
+
+  resize();
+  redrawSpectrumNow();
+};
+
+btnExitFS.onclick = () => {
+  if(!spectrumFS) return;
+
+  spectrumFS = false;
+  specCanvas.classList.remove("spectrum-only");
+  document.body.classList.remove("spectrum-mode");
+
+  btnExitFS.style.display = "none";
+  btnEnterFS.style.display = "inline-block";
+
+  resize();
+  redrawSpectrumNow();
+};
   const playBtn  = document.getElementById("play");
   const pauseBtn = document.getElementById("pause");
   const resetBtn = document.getElementById("reset");
