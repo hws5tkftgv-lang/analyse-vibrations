@@ -122,6 +122,38 @@ body.spectrum-mode #fsHUD{ display:block; }
   color:#eaf1ff;
   font-weight:600;
 }
+#fsHUD{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  max-width:calc(100vw - 24px);
+}
+
+#fsHUD .fs-info{
+  pointer-events:none; /* ne gêne jamais le pan */
+}
+
+#exitSpectrumFS{
+  background:#b71c1c;
+  padding:8px 12px;
+  border-radius:10px;
+  font-size:13px;
+  white-space:nowrap;
+}
+
+
+/* ===== FS HUD auto-hide ===== */
+#fsHUD.hidden{
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 0.3s ease;
+}
+
+#fsHUD{
+  transition:opacity 0.3s ease;
+}
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -186,9 +218,11 @@ body.spectrum-mode #fsHUD{ display:block; }
 </div>
 
 <div id="fsHUD">
-  Pan: glisser ↔ (Hz)<br>
-  Play = spectre live<br><br>
-  <button id="exitSpectrumFS">❌ Quitter plein écran</button>
+  <div class="fs-info">
+    Pan: glisser ↔ (Hz)<br>
+    Play = spectre live
+  </div>
+  <button id="exitSpectrumFS">❌ Quitter</button>
 </div>
 <div class="stage" id="sceneStage"><canvas id="scene"></canvas></div>
 <div class="stage" id="specStage"><canvas id="spectrum"></canvas></div>
@@ -293,7 +327,17 @@ let snapshotMode = false;
   const outStrobe  = document.getElementById("out-strobe");
 const btnEnterFS = document.getElementById("enterSpectrumFS");
 const btnExitFS  = document.getElementById("exitSpectrumFS");
+let fsHideTimer = null;
 
+function showFSHUD(){
+  const hud = document.getElementById("fsHUD");
+  hud.classList.remove("hidden");
+
+  clearTimeout(fsHideTimer);
+  fsHideTimer = setTimeout(() => {
+    hud.classList.add("hidden");
+  }, 3000);
+}
 btnEnterFS.onclick = () => {
   if(spectrumFS) return;
 
@@ -304,19 +348,12 @@ btnEnterFS.onclick = () => {
   btnEnterFS.style.display = "none";
   btnExitFS.style.display = "inline-block";
 
-  // 📱 Mobile seulement → avertissement rotation
-  // toujours entrer en mode spectre
-rotateWarn.style.display = "none";
-
-// attendre le vrai resize iOS
-setTimeout(() => {
-  if(isMobile() && isPortrait()){
-    rotateWarn.style.display = "flex";
-  }
-}, 300);
+  rotateWarn.style.display = "none";
 
   resize();
   redrawSpectrumNow();
+
+  showFSHUD(); // 👈 AUTO-HIDE
 };
 
 btnExitFS.onclick = () => {
@@ -1274,6 +1311,12 @@ if(window.visualViewport){
     updateSpectrumModeByOrientation();
   });
 }
+["pointerdown","mousemove","touchstart"].forEach(evt=>{
+  document.addEventListener(evt, ()=>{
+    if(!spectrumFS) return;
+    showFSHUD();
+  }, { passive:true });
+});
 
 requestAnimationFrame(loop);
 })();
