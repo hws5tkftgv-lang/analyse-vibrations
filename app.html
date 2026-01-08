@@ -153,7 +153,14 @@ body.spectrum-mode #fsHUD{ display:block; }
 #fsHUD{
   transition:opacity 0.3s ease;
 }
+/* ===== HUD strictement fullscreen ===== */
+#fsHUD{
+  display:none;
+}
 
+body.spectrum-mode #fsHUD{
+  display:block;
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -337,6 +344,27 @@ function showFSHUD(){
   fsHideTimer = setTimeout(() => {
     hud.classList.add("hidden");
   }, 3000);
+}
+
+let longPressTimer = null;
+
+function enableLongPressFS(){
+  if(!isMobile()) return;
+
+  specCanvas.addEventListener("touchstart", e => {
+    if(!spectrumFS) return;
+
+    longPressTimer = setTimeout(() => {
+      showFSHUD();
+    }, 2000); // ⏱ 2 secondes
+  }, { passive:true });
+
+  ["touchend","touchcancel","touchmove"].forEach(evt=>{
+    specCanvas.addEventListener(evt, ()=>{
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }, { passive:true });
+  });
 }
 btnEnterFS.onclick = () => {
   if(spectrumFS) return;
@@ -1311,12 +1339,7 @@ if(window.visualViewport){
     updateSpectrumModeByOrientation();
   });
 }
-["pointerdown","mousemove","touchstart"].forEach(evt=>{
-  document.addEventListener(evt, ()=>{
-    if(!spectrumFS) return;
-    showFSHUD();
-  }, { passive:true });
-});
+
 
 requestAnimationFrame(loop);
 })();
