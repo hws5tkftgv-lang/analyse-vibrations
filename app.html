@@ -183,7 +183,12 @@ body.spectrum-mode #fsHUD{ display:block; }
 </div>
 <div class="spectrum-controls">
   <button id="enterSpectrumFS">🔍 Plein écran spectre</button>
-  <button id="exitSpectrumFS" style="display:none;">❌ Quitter plein écran</button>
+</div>
+
+<div id="fsHUD">
+  Pan: glisser ↔ (Hz)<br>
+  Play = spectre live<br><br>
+  <button id="exitSpectrumFS">❌ Quitter plein écran</button>
 </div>
 <div class="stage" id="sceneStage"><canvas id="scene"></canvas></div>
 <div class="stage" id="specStage"><canvas id="spectrum"></canvas></div>
@@ -300,11 +305,15 @@ btnEnterFS.onclick = () => {
   btnExitFS.style.display = "inline-block";
 
   // 📱 Mobile seulement → avertissement rotation
+  // toujours entrer en mode spectre
+rotateWarn.style.display = "none";
+
+// attendre le vrai resize iOS
+setTimeout(() => {
   if(isMobile() && isPortrait()){
     rotateWarn.style.display = "flex";
-  }else{
-    rotateWarn.style.display = "none";
   }
+}, 300);
 
   resize();
   redrawSpectrumNow();
