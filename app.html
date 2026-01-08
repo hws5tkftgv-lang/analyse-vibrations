@@ -997,13 +997,19 @@ function updateSpectrumModeByOrientation(){
   const isLandscape = window.innerWidth > window.innerHeight;
 
   if(isLandscape){
+    // ✅ paysage : on enlève l'avertissement
     rotateWarn.style.display = "none";
+
+    // ✅ on affiche le HUD pour donner accès au bouton Quitter
+    showFSHUD();
 
     setTimeout(() => {
       resize();
       redrawSpectrumNow();
     }, 150);
+
   }else{
+    // ❌ portrait : on bloque le spectre
     rotateWarn.style.display = "flex";
   }
 }
@@ -1415,7 +1421,11 @@ function exportPDF(){
 
   doc.save("Analyse_vibratoire_ISO.pdf");
 }
-
+document.addEventListener("keydown", (e) => {
+  if(e.key === "Escape" && spectrumFS){
+    btnExitFS.click();
+  }
+});
 
 if(window.visualViewport){
   window.visualViewport.addEventListener("resize", () => {
