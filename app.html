@@ -5,160 +5,139 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Vibration">
 
 <title>Courroie & poulies — trajectoire correcte</title>
 
 <style>
-/* ========================================================= */
-/* ======================= BASE ============================ */
-/* ========================================================= */
-html, body{
-  margin:0;
-  padding:0;
-  height:100%;
-}
-
+/* ================= BASE ================= */
 :root{
   --bg:#0b1436;
+  --panel:#ffffff;
+  --panelBlue:#162a66;
   --text:#eaf1ff;
-  --muted:rgba(234,241,255,.7);
+  --muted:#9fb0ff;
   --btn:#1c2b6a;
-  --bad:#ff4d4d;
 }
 
-*{
-  box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
-}
+*{ box-sizing:border-box; }
+html,body{ margin:0; background:var(--bg); color:var(--text); font-family:Arial,sans-serif; }
 
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:Arial,system-ui,sans-serif;
-  overflow-x:hidden;
-  font-size:16px;
-}
-
-/* ========================================================= */
-/* ======================= HEADER ========================== */
-/* ========================================================= */
+/* ================= HEADER ================= */
 header{
-  padding:10px 14px;
-  font-size:16px;
+  padding:12px 16px;
+  font-size:18px;
   font-weight:700;
 }
 
-/* ========================================================= */
-/* ======================= CONTROLS ======================== */
-/* ========================================================= */
-.controls{
-  padding:10px 14px;
+/* ================= PC GRID ================= */
+.pc-layout{
   display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:8px;
+  grid-template-columns:420px 1fr;
+  grid-template-rows:auto auto 1fr;
+  gap:16px;
+  padding:16px;
+  max-width:1600px;
+  margin:auto;
+}
+
+/* ================= LEFT ================= */
+.left-panel{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+/* ================= INPUTS ================= */
+.controls{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
 }
 
 .controls label{
-  font-size:12px;
-  color:var(--muted);
+  font-size:13px;
+  color:#000;
+  font-weight:600;
 }
 
 .controls input,
 .controls select{
   width:100%;
-  padding:6px 8px;
-  font-size:14px;
-  border-radius:10px;
-  border:none;
+  padding:8px;
+  font-size:15px;
+  border-radius:8px;
+  border:1px solid #ccd4ff;
+  margin-top:4px;
 }
 
 .controls .full{
   grid-column:1 / -1;
 }
 
-/* ========================================================= */
-/* ======================= OUTPUT BOX ====================== */
-/* ========================================================= */
+/* ================= OUTPUT ================= */
 .outputBox{
-  background:linear-gradient(
-    180deg,
-    rgba(255,255,255,0.06),
-    rgba(255,255,255,0.02)
-  );
+  background:var(--panelBlue);
   border-radius:12px;
-  padding:14px;
+  padding:12px;
   font-size:14px;
-  line-height:1.5;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+  line-height:1.45;
 }
 
-.outputBox b{ color:#cfe2ff; }
-.outputBox span{ font-weight:700; }
-
-.small{
-  font-size:12px;
-  opacity:.75;
-  margin-top:6px;
+/* ================= FAULT ================= */
+.faultBox{
+  background:var(--panel);
+  color:#000;
+  border-radius:12px;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
 }
 
-/* ========================================================= */
-/* ======================= BUTTONS ========================= */
-/* ========================================================= */
+/* ================= BUTTONS ================= */
 .buttons{
   display:flex;
   gap:10px;
-  padding:10px 14px;
-  flex-wrap:wrap;
 }
 
 button{
   flex:1;
-  min-width:120px;
   padding:10px;
   font-size:15px;
   border:none;
-  border-radius:12px;
+  border-radius:10px;
   background:var(--btn);
   color:white;
   cursor:pointer;
 }
 
-button:active{
-  transform:scale(0.98);
+/* ================= CANVAS ZONE ================= */
+.canvas-row{
+  grid-column:1 / -1;
+  display:grid;
+  grid-template-columns:420px 1fr;
+  gap:16px;
 }
 
-/* ========================================================= */
-/* ======================= CANVAS ========================== */
-/* ========================================================= */
 .stage{
-  padding:10px 14px;
+  background:#000;
+  border-radius:12px;
+  padding:10px;
 }
 
 canvas{
   width:100%;
   display:block;
-  background:#000;
-  border-radius:12px;
+  border-radius:10px;
 }
 
-/* ========================================================= */
-/* ======================= RESULTS ========================= */
-/* ========================================================= */
+/* ================= INFO ================= */
 .results{
-  padding:10px 14px 18px;
+  padding:12px;
   font-size:14px;
-  line-height:1.45;
 }
 
-.bad{
-  color:var(--bad);
-  font-weight:700;
-}
-
-/* ========================================================= */
-/* ======================= FULLSCREEN ====================== */
-/* ========================================================= */
+/* ================= FULLSCREEN ================= */
 canvas.spectrum-only{
   position:fixed;
   inset:0;
@@ -172,112 +151,34 @@ body.spectrum-mode > *:not(#specStage):not(#fsHUD):not(#rotateWarn){
   display:none !important;
 }
 
-body.spectrum-mode{
-  overflow:hidden;
-}
-
 #fsHUD{
   position:fixed;
   top:12px;
   left:12px;
-  z-index:10001;
-  padding:10px 12px;
-  border-radius:12px;
-  background:rgba(0,0,0,0.35);
-  color:#eaf1ff;
-  font-size:12px;
-  line-height:1.25;
+  background:rgba(0,0,0,.4);
+  padding:10px;
+  border-radius:10px;
   display:none;
-  opacity:0;
-  pointer-events:none;
-  transition:opacity .3s ease;
+  z-index:10001;
 }
 
-#fsHUD.visible{
-  display:flex;
-  gap:12px;
-  align-items:flex-start;
-  opacity:1;
-  pointer-events:auto;
-}
+#fsHUD.visible{ display:flex; gap:10px; }
 
 #exitSpectrumFS{
   background:#b71c1c;
-  padding:8px 12px;
-  border-radius:10px;
-  font-size:13px;
 }
 
-/* ========================================================= */
-/* ======================= ROTATION ======================== */
-/* ========================================================= */
-.rotate-warning{
+/* ================= ROTATE ================= */
+#rotateWarn{
   position:fixed;
   inset:0;
-  z-index:10000;
-  background:rgba(5,8,15,0.85);
+  background:rgba(0,0,0,.85);
   display:none;
   align-items:center;
   justify-content:center;
-  text-align:center;
-  padding:24px;
   font-size:18px;
-  font-weight:700;
-  color:#eaf1ff;
-}
-
-.rotate-warning span{
-  display:block;
-  font-size:14px;
-  font-weight:400;
-  opacity:.85;
-  margin-top:10px;
-}
-
-/* ========================================================= */
-/* ======================= PC LAYOUT ======================= */
-/* ========================================================= */
-@media (min-width:1200px){
-
-  .pc-layout{
-    display:grid;
-    grid-template-columns:420px 1fr;
-    grid-template-rows:auto auto 1fr;
-    gap:16px;
-    padding:16px;
-    max-width:1600px;
-    margin:0 auto;
-  }
-
-  .left-panel{
-    grid-column:1;
-    grid-row:1;
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-  }
-
-  .buttons-row{
-    grid-column:1;
-    grid-row:2;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-  }
-
-  .canvas-row{
-    grid-column:1 / -1;
-    grid-row:3;
-    display:grid;
-    grid-template-columns:420px 1fr;
-    gap:16px;
-    align-items:start;
-  }
-
-  #sceneStage canvas,
-  #specStage canvas{
-    max-height:420px;
-  }
+  text-align:center;
+  z-index:10000;
 }
 </style>
 </head>
@@ -287,25 +188,71 @@ body.spectrum-mode{
 <div class="pc-layout">
 
   <div class="left-panel">
-    <header>🔄 Courroie & poulies — trajectoire correcte (open belt)</header>
+    <header>🔄 Courroie & poulies — trajectoire correcte</header>
 
     <div class="controls">
-      <!-- TES INPUTS ICI -->
+      <label>RPM moteur
+        <input id="rpm" type="number" value="1500">
+      </label>
+
+      <label>Unités
+        <select id="unit">
+          <option value="imperial">po</option>
+          <option value="metric">mm</option>
+        </select>
+      </label>
+
+      <label>Ø menante
+        <input id="d1" type="number" value="4">
+      </label>
+
+      <label>Ø menée
+        <input id="d2" type="number" value="9">
+      </label>
+
+      <label class="full">C-C
+        <input id="cc" type="number" value="21">
+      </label>
     </div>
 
-    <div class="results-row">
-      <!-- OUTPUT BOX + DÉFAUT / RALENTI -->
+    <div class="outputBox">
+      Menante : <b><span id="out-rpm1"></span> RPM</b> |
+      <span id="out-hz1"></span> Hz<br>
+      Menée : <b><span id="out-rpm2"></span> RPM</b> |
+      <span id="out-hz2"></span> Hz<br>
+      Courroie : <span id="out-hzbelt"></span> Hz |
+      <span id="out-fpm"></span> FPM<br>
+      Longueur : <span id="out-length"></span>
     </div>
-  </div>
 
-  <div class="buttons-row">
+    <div class="faultBox">
+      <label>Défaut simulé
+        <select id="fault">
+          <option value="none">Aucun</option>
+          <option value="unbalance">Balourd</option>
+          <option value="misalign">Désalignement</option>
+          <option value="looseness">Jeu</option>
+          <option value="belt">Courroie</option>
+          <option value="slip">Glissement</option>
+          <option value="bearing">Roulement</option>
+          <option value="resonance">Résonance</option>
+          <option value="all">Tous</option>
+        </select>
+      </label>
+
+      <label>Ralenti
+        <input id="slow" type="range" min="1" max="10" step="1" value="1">
+      </label>
+    </div>
+
     <div class="buttons">
-      <!-- Play / Pause / Reset / PDF -->
+      <button id="play">Play</button>
+      <button id="pause">Pause</button>
+      <button id="reset">Reset</button>
+      <button id="exportPDF">PDF</button>
     </div>
 
-    <div class="spectrum-controls">
-      <button id="enterSpectrumFS">🔍 Plein écran spectre</button>
-    </div>
+    <button id="enterSpectrumFS">🔍 Plein écran spectre</button>
   </div>
 
   <div class="canvas-row">
@@ -320,21 +267,15 @@ body.spectrum-mode{
 
 </div>
 
+<div id="info" class="results"></div>
+
 <div id="fsHUD">
-  <div class="fs-info">
-    Pan: glisser ↔ (Hz)<br>
-    Play = spectre live
-  </div>
   <button id="exitSpectrumFS">❌ Quitter</button>
 </div>
 
-<div id="rotateWarn" class="rotate-warning">
-  🔄 Tournez votre téléphone en mode paysage
-  <span>Pour une meilleure lecture du spectre</span>
-</div>
+<div id="rotateWarn">🔄 Tournez votre téléphone</div>
 
-<!-- ⛔ NE RIEN METTRE ICI -->
-<!-- ⛔ TON <script> COMMENCE JUSTE APRÈS -->
+<!-- ⚠️ TON SCRIPT COMMENCE ICI -->
 <script>
 (() => {
   "use strict";
