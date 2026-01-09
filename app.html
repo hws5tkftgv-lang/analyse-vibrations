@@ -332,6 +332,15 @@ body.spectrum-mode #specStage{
   }
 
 }
+
+
+/* 🔒 HUD TOUJOURS VISIBLE quand rotation warning actif */
+body.spectrum-mode #rotateWarn ~ #fsHUD{
+  display:flex !important;
+  opacity:1 !important;
+  pointer-events:auto !important;
+}
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -1103,10 +1112,15 @@ function updateSpectrumModeByOrientation(){
     }, 120);
 
     showFSHUD();
-  }else{
-    // ❌ portrait + fullscreen → message autorisé
-    rotateWarn.style.display = "flex";
-  }
+}else{
+  // 📱 Portrait + fullscreen → message + HUD OBLIGATOIRE
+  rotateWarn.style.display = "flex";
+
+  const hud = document.getElementById("fsHUD");
+  hud.classList.add("visible");
+
+  clearTimeout(fsHideTimer); // ⛔ empêche disparition
+}
 }
   /* ===================== RESIZE ===================== */
   function resize(){
