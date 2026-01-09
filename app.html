@@ -158,10 +158,16 @@ canvas.spectrum-only{
 }
 
 /* Mode spectre : cacher TOUT sauf spectre + HUD + warning */
-body.spectrum-mode > *:not(#specStage):not(#fsHUD):not(#rotateWarn){
+body.spectrum-mode *{
   display:none !important;
 }
 
+body.spectrum-mode #specStage,
+body.spectrum-mode #specStage *,
+body.spectrum-mode #fsHUD,
+body.spectrum-mode #rotateWarn{
+  display:block !important;
+}
 body.spectrum-mode{
   overflow:hidden;
 }
