@@ -135,10 +135,11 @@ canvas{
 .outputBox{
   background:rgba(255,255,255,0.08);
   border-radius:12px;
-  padding:10px;
-  font-size:13px;
-  line-height:1.4;
+  padding:14px;
+  font-size:16px;   /* ← ici */
+  line-height:1.55;
 }
+
 
 .outputBox b{
   color:#cfe2ff;
@@ -343,6 +344,9 @@ body.spectrum-mode #specStage{
 <script>
 (() => {
   "use strict";
+const FONT_BASE = 13;      // taille normale
+const FONT_FS   = 16;      // plein écran
+const FONT_MOB  = 15;      // mobile
 
 
   /* ===================== CONSTANTES ===================== */
@@ -369,6 +373,9 @@ function isoVerdict(mm_s_rms){
 }
 
   function dprNow(){ return Math.min(3, window.devicePixelRatio || 1); }
+function spectrumFont(px){
+  specCtx.font = `${px}px Arial`;
+}
 
 
 function isMobile(){
@@ -843,7 +850,7 @@ for(const z of ISO_ZONES){
 
     // petit label de zone à gauche
     specCtx.fillStyle = "rgba(234,241,255,0.85)";
-    specCtx.font = "11px Arial";
+   
     specCtx.textAlign = "left";
     specCtx.textBaseline = "middle";
     specCtx.fillText(`ISO ${ISO_CLASS} ${z.name} (${z.label})`, plotLeft + 6, Math.min(y1,y2) + 12);
@@ -945,6 +952,13 @@ specCtx.fillStyle = "rgba(0,0,0,0.35)";
 specCtx.fillRect(plotLeft, 0, 270, 18);
 
 specCtx.fillStyle = "#eaf1ff";
+let fontSize = FONT_BASE;
+
+if(isMobile()) fontSize = FONT_MOB;
+if(spectrumFS) fontSize = FONT_FS;
+
+spectrumFont(fontSize);
+    
 specCtx.font = "12px Arial";
 specCtx.textAlign = "left";
 specCtx.textBaseline = "middle";
