@@ -310,6 +310,47 @@ body.spectrum-mode #specStage{
   }
 
 }
+/* ========================================================= */
+/* =============== AJUSTEMENTS PC UNIQUEMENT =============== */
+/* ========================================================= */
+@media (min-width: 900px){
+
+  /* 🔹 Réduire l’espace vertical global */
+  .controls{
+    gap:10px 14px;              /* avant trop large */
+  }
+
+  .controls label{
+    margin-bottom:4px;
+  }
+
+  /* 🔹 Inputs plus lisibles */
+  .controls input,
+  .controls select{
+    font-size:15px;             /* ↑ texte */
+    padding:8px 10px;           /* ↓ hauteur visuelle */
+  }
+
+  /* 🔹 Titres de labels plus présents */
+  .controls label{
+    font-size:13px;
+    font-weight:600;
+  }
+
+  /* 🔹 Output box (tableau résultats) */
+  .outputBox{
+    font-size:15px;             /* ↑ texte */
+    line-height:1.45;           /* ↓ hauteur globale */
+    padding:12px 14px;          /* ↓ espace intérieur */
+  }
+
+  /* 🔹 Texte secondaire */
+  .outputBox .small{
+    font-size:12px;
+    margin-top:4px;
+  }
+
+}
 
 </style>
 
