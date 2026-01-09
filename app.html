@@ -340,7 +340,19 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   opacity:1 !important;
   pointer-events:auto !important;
 }
+.fault-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+  gap:6px 12px;
+  margin-top:6px;
+}
 
+.fault-grid label{
+  font-size:14px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -373,21 +385,19 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   </div>
 
   <div class="full">
-    <label class="full">
-      Défaut simulé
-      <select id="fault">
-        <option value="none">Aucun (normal)</option>
-        <option value="unbalance">Balourd (1×)</option>
-        <option value="misalign">Désalignement (1× & 2×)</option>
-        <option value="looseness">Jeu mécanique / Looseness (1×,2×,3×)</option>
-        <option value="belt">Défaut de courroie (1× & 2× courroie)</option>
-        <option value="slip">Glissement courroie (bande qui “flotte”)</option>
-        <option value="bearing">Défaut roulement (harmoniques hautes)</option>
-        <option value="resonance">Résonance structurelle (pic large)</option>
-        <option value="all">TOUT</option>
-      </select>
-    </label>
+   <div class="full">
+  <label><b>Défauts simulés</b> (choix multiples)</label>
 
+  <div class="fault-grid">
+    <label><input type="checkbox" value="unbalance"> Balourd (1×)</label>
+    <label><input type="checkbox" value="misalign"> Désalignement</label>
+    <label><input type="checkbox" value="looseness"> Jeu mécanique</label>
+    <label><input type="checkbox" value="belt"> Défaut de courroie</label>
+    <label><input type="checkbox" value="slip"> Glissement</label>
+    <label><input type="checkbox" value="bearing"> Roulement</label>
+    <label><input type="checkbox" value="resonance"> Résonance</label>
+  </div>
+</div>
     <label style="display:block;margin-bottom:4px;">Ralenti (plus grand = plus lent)</label>
     <input id="slow" type="range" min="1" max="20" value="8">
   </div>
@@ -828,21 +838,25 @@ pdfBtn.addEventListener("click", exportPDF);
     ]
   };
 
-  function buildPeaks(fMotor, fBelt, time, fault){
-    const fn = FAULT_TABLE[fault] || FAULT_TABLE.none;
-    const raw = fn(fMotor, fBelt, time);
+  function buildPeaks(fMotor, fBelt, time){
+  const selected = getSelectedFaults();
 
-    // Nettoyage + clamp
-    const out = [];
-    for(const p of raw){
-      if(!p) continue;
-      if(!isNum(p.hz) || p.hz < 0) continue;
-      const amp = isNum(p.amp) ? Math.max(0, p.amp) : 0;
-      out.push({ hz:p.hz, amp, col:p.col || "#fff", label:p.label || "" });
-    }
-    return out;
+  // Aucun défaut sélectionné → normal
+  if(selected.length === 0){
+    return peaks_normal(fMotor, fBelt, time);
   }
 
+  let peaks = [];
+
+  for(const key of selected){
+    const fn = FAULT_TABLE[key];
+    if(fn){
+      peaks = peaks.concat(fn(fMotor, fBelt, time));
+    }
+  }
+
+  return peaks;
+}
   /* ===================== DESSIN SPECTRE ===================== */
   function drawSpectrum(hzMotor, hzBelt, time){
     const dpr = dprNow();
@@ -863,7 +877,7 @@ pdfBtn.addEventListener("click", exportPDF);
     const plotWidth = plotRight - plotLeft;
 
     // ===== AUTO-SCALE AMPLITUDE (OPTION 1) =====
-const peaks = buildPeaks(hzMotor, hzBelt, time, faultEl.value);
+const peaks = buildPeaks(hzMotor, hzBelt, time);
 // ===== ENREGISTREMENT AUTO (uniquement quand Play) =====
 if(running){
   for(const p of peaks){
@@ -989,7 +1003,7 @@ for(const z of ISO_ZONES){
       specCtx.fillText(a + " mm/s", plotLeft - 6, y);
     }
 
-    const fault = faultEl.value || "none";
+    
     
 
     // barres
@@ -1046,6 +1060,12 @@ specCtx.fillText(
     specCtx.textBaseline = "top";
     specCtx.fillText("Hz →", W - 6, 6);
   }
+
+function getSelectedFaults(){
+  return Array.from(
+    document.querySelectorAll(".fault-grid input:checked")
+  ).map(cb => cb.value);
+}
 
 function renderPeakList(){
   const keys = Object.keys(peakRecord);
