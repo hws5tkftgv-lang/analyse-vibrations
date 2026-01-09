@@ -255,6 +255,70 @@ body.spectrum-mode #specStage{
   color:#eaf1ff;
   font-weight:600;
 }
+
+/* ================================================= */
+/* ================= LAYOUT PC ===================== */
+/* ================================================= */
+@media (min-width: 1024px){
+
+  /* conteneur principal animation + spectre */
+  .pc-layout{
+    display:grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap:20px;
+    padding:10px 14px 20px;
+    align-items:start;
+  }
+
+  /* on enlève le padding double */
+  .pc-layout .stage{
+    padding:0;
+  }
+
+  /* canvas animation */
+  #scene{
+    height:420px;
+  }
+
+  /* canvas spectre */
+  #spectrum{
+    height:420px;
+  }
+
+  /* ================== TEXTE PLUS GROS ================== */
+
+  body{
+    font-size:16px;
+  }
+
+  header{
+    font-size:18px;
+  }
+
+  .controls label{
+    font-size:14px;
+  }
+
+  .controls input,
+  .controls select{
+    font-size:15px;
+    padding:8px 10px;
+  }
+
+  .outputBox{
+    font-size:15px;
+  }
+
+  .results{
+    font-size:15px;
+  }
+
+  .buttons button{
+    font-size:16px;
+    padding:12px;
+  }
+
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -324,8 +388,15 @@ body.spectrum-mode #specStage{
   </div>
   <button id="exitSpectrumFS">❌ Quitter</button>
 </div>
-<div class="stage" id="sceneStage"><canvas id="scene"></canvas></div>
-<div class="stage" id="specStage"><canvas id="spectrum"></canvas></div>
+<div class="pc-layout">
+  <div class="stage" id="sceneStage">
+    <canvas id="scene"></canvas>
+  </div>
+
+  <div class="stage" id="specStage">
+    <canvas id="spectrum"></canvas>
+  </div>
+</div>
 
 <div class="results" id="info"></div>
 
