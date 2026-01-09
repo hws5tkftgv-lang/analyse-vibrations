@@ -1104,58 +1104,55 @@ function updateSpectrumModeByOrientation(){
 }
   /* ===================== RESIZE ===================== */
   function resize(){
-    const dpr = dprNow();
+  const dpr = dprNow();
 
-    // largeur verrouillée, MAIS si l'écran devient plus petit: on re-réduit
-    const maxW = Math.min(window.innerWidth - 24, 720);
-    if(!lockedWidth) lockedWidth = maxW;
-    lockedWidth = Math.min(lockedWidth, maxW);
+  /* ========= ANIMATION ========= */
+  const maxW = Math.min(window.innerWidth - 24, 720);
+  if(!lockedWidth) lockedWidth = maxW;
+  lockedWidth = Math.min(lockedWidth, maxW);
 
-    const w = lockedWidth;
-    const h = w * 0.55;
+  const w = lockedWidth;
+  const h = w * 0.55;
 
-    // scène
-    canvas.style.width  = w + "px";
-    canvas.style.height = h + "px";
-    canvas.width  = Math.round(w * dpr);
-    canvas.height = Math.round(h * dpr);
-    ctx.setTransform(dpr,0,0,dpr,0,0);
+  canvas.style.width  = w + "px";
+  canvas.style.height = h + "px";
+  canvas.width  = Math.round(w * dpr);
+  canvas.height = Math.round(h * dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
 
-    // spectre
-    let specW, specH;
-    if(spectrumFS){
-  specW = window.innerWidth;
-  specH = window.innerHeight;
+  /* ========= SPECTRE ========= */
+  let specW, specH;
 
-  specCanvas.style.position = "fixed";
-  specCanvas.style.left = "0";
-  specCanvas.style.top  = "0";
-  specCanvas.style.zIndex = "9999";
-}
+  if(spectrumFS){
+    // 🔴 FULLSCREEN
+    specW = window.innerWidth;
+    specH = window.innerHeight;
 
-      specCanvas.style.position = "fixed";
-      specCanvas.style.left = "0";
-      specCanvas.style.top  = "0";
-      specCanvas.style.margin = "0";
-      specCanvas.style.borderRadius = "0";
-    }else{
-      specW = w;
-      specH = Math.max(220, h * 0.95);
+    specCanvas.style.position = "fixed";
+    specCanvas.style.left = "0";
+    specCanvas.style.top  = "0";
+    specCanvas.style.margin = "0";
+    specCanvas.style.borderRadius = "0";
+    specCanvas.style.zIndex = "9999";
+  }else{
+    // 🟢 MODE NORMAL
+    specW = w;
+    specH = Math.max(220, h * 0.95);
 
-      specCanvas.style.position = "relative";
-      specCanvas.style.marginTop = "18px";
-      specCanvas.style.borderRadius = "12px";
-    }
-
-    specCanvas.style.width  = specW + "px";
-    specCanvas.style.height = specH + "px";
-    specCanvas.width  = Math.round(specW * dpr);
-    specCanvas.height = Math.round(specH * dpr);
-
-    specCtx.setTransform(dpr,0,0,dpr,0,0);
-    specCtx.imageSmoothingEnabled = false;
+    specCanvas.style.position = "relative";
+    specCanvas.style.marginTop = "18px";
+    specCanvas.style.borderRadius = "12px";
+    specCanvas.style.zIndex = "auto";
   }
 
+  specCanvas.style.width  = specW + "px";
+  specCanvas.style.height = specH + "px";
+  specCanvas.width  = Math.round(specW * dpr);
+  specCanvas.height = Math.round(specH * dpr);
+
+  specCtx.setTransform(dpr,0,0,dpr,0,0);
+  specCtx.imageSmoothingEnabled = false;
+}
   /* ===================== FULLSCREEN / ORIENTATION ===================== */
   
   
