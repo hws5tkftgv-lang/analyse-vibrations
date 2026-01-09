@@ -133,11 +133,19 @@ canvas{
 
 /* ===================== OUTPUT BOX ===================== */
 .outputBox{
-  background:rgba(255,255,255,0.08);
+  background:linear-gradient(
+    180deg,
+    rgba(255,255,255,0.06),
+    rgba(255,255,255,0.02)
+  );
   border-radius:12px;
   padding:14px;
-  font-size:16px;   /* ← ici */
-  line-height:1.55;
+  font-size:14px;
+  line-height:1.5;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+}
+.outputBox span{
+  font-weight:700;
 }
 
 
@@ -257,6 +265,52 @@ body.spectrum-mode #specStage{
   color:#eaf1ff;
   font-weight:600;
 }
+
+  /* ===================== PC ONLY ===================== */
+@media (min-width: 900px){
+
+  /* Labels plus discrets, style panneau */
+  .controls label{
+    background:rgba(255,255,255,0.04);
+    padding:10px 12px;
+    border-radius:10px;
+    font-size:13px;
+    font-weight:600;
+  }
+
+  /* Inputs moins blancs, plus industriels */
+  .controls input,
+  .controls select{
+    background:#10183f;
+    color:#eaf1ff;
+    font-size:15px;
+    padding:8px 10px;
+    border-radius:8px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+  }
+
+  .controls input:focus,
+  .controls select:focus{
+    outline:none;
+    box-shadow: inset 0 0 0 2px rgba(0,162,255,0.8);
+  }
+}
+/* ===================== PC ONLY – Layout inputs ===================== */
+@media (min-width: 900px){
+
+  /* Grille plus respirante */
+  .controls{
+    grid-template-columns: 1.3fr 0.7fr;
+    gap:14px 16px;
+  }
+
+  /* Les champs importants prennent toute la largeur */
+  .controls .full{
+    grid-column:1 / -1;
+  }
+
+}
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
