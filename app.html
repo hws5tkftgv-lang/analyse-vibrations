@@ -1,4 +1,4 @@
-J’aime ce que j’ai.   <!doctype html>
+<!doctype html>
 <html lang="fr">
 <head>
 <meta charset="utf-8" />
@@ -531,13 +531,13 @@ pdfBtn.addEventListener("click", exportPDF);
         : minCC.toFixed(1) + " mm";
 
       return {
-        ok:false,
-        html: 
-          <div class="bad">⛔ Géométrie impossible (open belt)</div>
-          <div>C-C doit être <b>&gt; |R2 − R1|</b>.</div>
-          <div class="small">Minimum = ${minTxt}</div>
-        
-      };
+  ok:false,
+  html: `
+    <div class="bad">⛔ Géométrie impossible (open belt)</div>
+    <div>C-C doit être <b>&gt; |R2 − R1|</b>.</div>
+    <div class="small">Minimum = ${minTxt}</div>
+  `
+};
     }
     return { ok:true, html:"" };
   }
@@ -836,7 +836,11 @@ for(const z of ISO_ZONES){
     specCtx.font = "11px Arial";
     specCtx.textAlign = "left";
     specCtx.textBaseline = "middle";
-    specCtx.fillText(ISO ${ISO_CLASS} ${z.name} (${z.label}), plotLeft + 6, Math.min(y1,y2) + 12);
+    specCtx.fillText(
+  `ISO ${ISO_CLASS} ${z.name} (${z.label})`,
+  plotLeft + 6,
+  Math.min(y1,y2) + 12
+);
   }
 
   prev = z.max;
@@ -937,7 +941,11 @@ specCtx.fillStyle = "#eaf1ff";
 specCtx.font = "12px Arial";
 specCtx.textAlign = "left";
 specCtx.textBaseline = "middle";
-specCtx.fillText(ISO ${ISO_CLASS} : ${z.name} — ${z.label} (max ${maxShown.toFixed(2)} mm/s), plotLeft + 6, 9);
+specCtx.fillText(
+  `ISO ${ISO_CLASS} : ${z.name} — ${z.label} (max ${maxShown.toFixed(2)} mm/s)`,
+  plotLeft + 6,
+  9
+);
     // axe
     specCtx.fillStyle = "#9aa5d6";
     specCtx.font = "12px Arial";
@@ -964,15 +972,20 @@ for(const k of keys){
   if(peakRecord[k].amp > maxRec) maxRec = peakRecord[k].amp;
 }
 const z = isoVerdict(maxRec);
-html += <div style="margin-bottom:12px;"><b>ISO ${ISO_CLASS}</b> : ${z.name} — ${z.label} (max ${maxRec.toFixed(2)} mm/s)</div>;
+html += `
+  <div style="margin-bottom:12px;">
+    <b>ISO ${ISO_CLASS}</b> : ${z.name} — ${z.label}
+    (max ${maxRec.toFixed(2)} mm/s)
+  </div>
+`;
   for(const label of keys){
     const p = peakRecord[label];
-    html += 
-      <div style="margin-bottom:10px;">
-        • <b>${label}</b><br>
-        &nbsp;&nbsp;${p.hz.toFixed(2)} Hz — ${p.amp.toFixed(2)} mm/s
-      </div>
-    ;
+    html += `
+  <div style="margin-bottom:10px;">
+    • <b>${label}</b><br>
+    &nbsp;&nbsp;${p.hz.toFixed(2)} Hz — ${p.amp.toFixed(2)} mm/s
+  </div>
+`;
   }
 
   infoEl.innerHTML = html;
@@ -1095,7 +1108,7 @@ function updateSpectrumModeByOrientation(){
 
     const inp = readInputs();
     if(!inp){
-      infoEl.innerHTML = <span class="bad">⛔ Entre RPM, Ø menante, Ø menée et C-C.</span>;
+      infoEl.innerHTML = `<span class="bad">⛔ Entre RPM, Ø menante, Ø menée et C-C.</span>`;
       outLength.textContent = "—";
       outRPM1.textContent = outCPM1.textContent = outHZ1.textContent = "—";
       outRPM2.textContent = outCPM2.textContent = outHZ2.textContent = "—";
@@ -1374,7 +1387,7 @@ function exportPDF(){
 
   doc.setFontSize(11);
   doc.setFont("helvetica","normal");
-  doc.text(Date : ${new Date().toLocaleString()}, 14, y);
+  doc.text(`Date : ${new Date().toLocaleString()}`, 14, y);
   y += 10;
 
   doc.setFont("helvetica","bold");
@@ -1397,13 +1410,13 @@ function exportPDF(){
 
     doc.setFont("helvetica","normal");
     y += 6;
-    doc.text(Fréquence : ${p.hz.toFixed(2)} Hz, 18, y);
+    doc.text(`Fréquence : ${p.hz.toFixed(2)} Hz`, 18, y);
     y += 6;
-    doc.text(Amplitude : ${p.amp.toFixed(2)} mm/s, 18, y);
+    doc.text(`Amplitude : ${p.amp.toFixed(2)} mm/s`, 18, y);
     y += 6;
 
     doc.setTextColor(...iso.color);
-    doc.text(Classe ISO : ${iso.label}, 18, y);
+    doc.text(`Classe ISO : ${iso.label}`, 18, y);
     doc.setTextColor(0,0,0);
 
     y += 10;
