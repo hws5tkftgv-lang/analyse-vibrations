@@ -395,26 +395,58 @@ body.spectrum-mode #specStage{
 <header>🔄 Courroie & poulies — trajectoire correcte (open belt)</header>
 
 <div class="controls">
-  <label>RPM moteur <input id="rpm" type="number" inputmode="decimal" value="1500"></label>
 
-  <label>Unités
+  <label>
+    RPM moteur
+    <input id="rpm" type="number" inputmode="decimal" value="1500">
+  </label>
+
+  <label>
+    Unités
     <select id="unit">
       <option value="imperial" selected>po</option>
       <option value="metric">mm</option>
     </select>
   </label>
 
-  <label>Ø menante <input id="d1" type="number" inputmode="decimal" value="4"></label>
-  <label>Ø menée <input id="d2" type="number" inputmode="decimal" value="9"></label>
-  <label class="full">C-C <input id="cc" type="number" inputmode="decimal" value="21"></label>
+  <label>
+    Ø menante
+    <input id="d1" type="number" inputmode="decimal" value="4">
+  </label>
 
-  <div class="outputBox full">
+  <label>
+    Ø menée
+    <input id="d2" type="number" inputmode="decimal" value="9">
+  </label>
+
+  <label>
+    C-C
+    <input id="cc" type="number" inputmode="decimal" value="21">
+  </label>
+
+  <label>
+    Défaut simulé
+    <select id="fault">
+      <option value="none">Aucun (normal)</option>
+      <option value="unbalance">Balourd (1×)</option>
+      <option value="misalign">Désalignement</option>
+      <option value="looseness">Jeu mécanique</option>
+      <option value="belt">Défaut de courroie</option>
+      <option value="slip">Glissement</option>
+      <option value="bearing">Roulement</option>
+      <option value="resonance">Résonance</option>
+      <option value="all">TOUT</option>
+    </select>
+  </label>
+
+  <div class="outputBox">
     <div><b>Menante</b> : <span id="out-rpm1">—</span> RPM | <span id="out-cpm1">—</span> CPM | <span id="out-hz1">—</span> Hz</div>
     <div><b>Menée</b> : <span id="out-rpm2">—</span> RPM | <span id="out-cpm2">—</span> CPM | <span id="out-hz2">—</span> Hz</div>
     <div><b>Courroie</b> : <span id="out-hzbelt">—</span> Hz | <span id="out-fpm">—</span> ft/min | <span id="out-strobe">—</span> FPM</div>
     <div><b>Longueur courroie</b> : <span id="out-length">—</span></div>
-    <div class="small">Note : “FPM” ici = <b>Feet/min</b> (vitesse linéaire), et “FPM (strobe)” = <b>Flash/min</b> (≈ Hz×60).</div>
   </div>
+
+</div>
 
   <div class="full">
     <label class="full">
