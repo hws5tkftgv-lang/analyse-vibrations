@@ -364,6 +364,46 @@ body.spectrum-mode #specStage{
   }
 
 }
+
+/* ================================================= */
+/* ========== PC — STRUCTURE PRINCIPALE ============ */
+/* ================================================= */
+@media (min-width: 1200px){
+
+  body{
+    display:grid;
+    grid-template-columns: 420px 1fr;
+    grid-template-rows: auto auto 1fr;
+    gap:16px;
+  }
+
+  /* Tous les blocs du haut (inputs + résultats) */
+  header,
+  .controls,
+  .results-row{
+    grid-column:1;
+  }
+
+  /* Boutons sous les inputs */
+  .buttons,
+  .spectrum-controls{
+    grid-column:1;
+  }
+
+  /* Dessin courroie (reste à gauche) */
+  #sceneStage{
+    grid-column:1;
+    grid-row:3;
+  }
+
+  /* Spectre à droite du dessin */
+  #specStage{
+    grid-column:2;
+    grid-row:2 / span 2;
+  }
+
+}
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
