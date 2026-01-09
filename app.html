@@ -230,7 +230,7 @@ body.spectrum-mode #specStage{
 .rotate-warning{
   position:fixed;
   inset:0;
-  z-index:10000;
+  z-index:9998; /* ⬅️ TOUJOURS SOUS le canvas fullscreen */
   background:rgba(5,8,15,0.85);
 
   display:none;
@@ -245,7 +245,6 @@ body.spectrum-mode #specStage{
 
   pointer-events:none;
 }
-
 .rotate-warning span{
   display:block;
   font-size:14px;
@@ -1077,28 +1076,35 @@ html += `
 }
 
 function updateSpectrumModeByOrientation(){
-  if(!spectrumFS) return;
 
-  // 💻 PC : AUCUN warning, JAMAIS
+  // 🔴 Si PAS en plein écran spectre → JAMAIS de message
+  if(!spectrumFS){
+    rotateWarn.style.display = "none";
+    return;
+  }
+
+  // 💻 PC → JAMAIS de message
   if(!isMobile()){
     rotateWarn.style.display = "none";
     return;
   }
 
   // 📱 Mobile
-  const landscape = window.innerWidth > window.innerHeight;
+  const isLandscape = window.innerWidth > window.innerHeight;
 
-  if(landscape){
+  if(isLandscape){
+    // ✅ OK → on enlève le message
     rotateWarn.style.display = "none";
 
-    // recalcul FORCÉ du canvas
+    // recalcul propre
     setTimeout(() => {
       resize();
       redrawSpectrumNow();
-    }, 100);
+    }, 120);
 
     showFSHUD();
   }else{
+    // ❌ portrait + fullscreen → message autorisé
     rotateWarn.style.display = "flex";
   }
 }
