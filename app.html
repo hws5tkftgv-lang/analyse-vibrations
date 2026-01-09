@@ -383,7 +383,41 @@ body.spectrum-mode #specStage{
     color:#333;
   }
 }
+/* ================================================= */
+/* ===== ALIGNEMENT RÉSULTATS / DÉFAUT (PC) ======== */
+/* ================================================= */
+@media (min-width: 900px){
 
+  .results-row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:16px;
+    padding:10px 14px;
+    align-items:start;
+  }
+
+  /* 🔵 Bloc bleu conservé */
+  .blueBox{
+    background:linear-gradient(
+      180deg,
+      rgba(255,255,255,0.06),
+      rgba(255,255,255,0.02)
+    );
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+  }
+
+  /* ⬜ Colonne droite */
+  .faultBox{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .faultBox select,
+  .faultBox input[type="range"]{
+    width:100%;
+  }
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -394,7 +428,8 @@ body.spectrum-mode #specStage{
 <body>
 <header>🔄 Courroie & poulies — trajectoire correcte (open belt)</header>
 
-<div class="controls">
+
+  <div class="controls">
 
   <label>
     RPM moteur
@@ -439,35 +474,42 @@ body.spectrum-mode #specStage{
     </select>
   </label>
 
-  <div class="outputBox">
+<!-- ===== LIGNE RÉSULTATS + DÉFAUT (PC) ===== -->
+<div class="results-row">
+
+  <!-- 🔵 BLOC RÉSULTATS -->
+  <div class="outputBox blueBox">
     <div><b>Menante</b> : <span id="out-rpm1">—</span> RPM | <span id="out-cpm1">—</span> CPM | <span id="out-hz1">—</span> Hz</div>
     <div><b>Menée</b> : <span id="out-rpm2">—</span> RPM | <span id="out-cpm2">—</span> CPM | <span id="out-hz2">—</span> Hz</div>
     <div><b>Courroie</b> : <span id="out-hzbelt">—</span> Hz | <span id="out-fpm">—</span> ft/min | <span id="out-strobe">—</span> FPM</div>
-    <div><b>Longueur courroie</b> : <span id="out-length">—</span></div>
+    <div><b>Longueur</b> : <span id="out-length">—</span></div>
   </div>
 
-</div>
+  <!-- ⬜ DÉFAUT + RALENTI -->
+  <div class="faultBox">
+  <label>
+  Défaut simulé
+  <select id="fault">
+    <option value="none">Aucun (normal)</option>
+    <option value="unbalance">Balourd (1×)</option>
+    <option value="misalign">Désalignement</option>
+    <option value="looseness">Jeu mécanique</option>
+    <option value="belt">Défaut de courroie</option>
+    <option value="slip">Glissement</option>
+    <option value="bearing">Roulement</option>
+    <option value="resonance">Résonance</option>
+    <option value="all">TOUT</option>
+  </select>
+</label>
 
-  <div class="full">
-    <label class="full">
-      Défaut simulé
-      <select id="fault">
-        <option value="none">Aucun (normal)</option>
-        <option value="unbalance">Balourd (1×)</option>
-        <option value="misalign">Désalignement (1× & 2×)</option>
-        <option value="looseness">Jeu mécanique / Looseness (1×,2×,3×)</option>
-        <option value="belt">Défaut de courroie (1× & 2× courroie)</option>
-        <option value="slip">Glissement courroie (bande qui “flotte”)</option>
-        <option value="bearing">Défaut roulement (harmoniques hautes)</option>
-        <option value="resonance">Résonance structurelle (pic large)</option>
-        <option value="all">TOUT</option>
-      </select>
-    </label>
+<label class="small">
+  Ralenti (plus grand = plus lent)
+</label>
+<input id="slow" type="range" min="1" max="20" value="8">
 
-    <label style="display:block;margin-bottom:4px;">Ralenti (plus grand = plus lent)</label>
-    <input id="slow" type="range" min="1" max="20" value="8">
-  </div>
-</div>
+   </div>
+
+
 
 <div class="buttons">
   <button id="play">Play</button>
