@@ -158,10 +158,18 @@ canvas.spectrum-only{
 }
 
 /* Mode spectre : cacher TOUT sauf spectre + HUD + warning */
-body.spectrum-mode *{
-  display:none !important;
+body.spectrum-mode{
+  overflow:hidden;
 }
 
+body.spectrum-mode header,
+body.spectrum-mode .controls,
+body.spectrum-mode .buttons,
+body.spectrum-mode .spectrum-controls,
+body.spectrum-mode #sceneStage,
+body.spectrum-mode .results{
+  display:none !important;
+}
 body.spectrum-mode #specStage,
 body.spectrum-mode #specStage *,
 body.spectrum-mode #fsHUD,
@@ -1071,29 +1079,27 @@ html += `
 function updateSpectrumModeByOrientation(){
   if(!spectrumFS) return;
 
-  const isLandscape = window.innerWidth > window.innerHeight;
-
-  if(isMobile()){
-    if(isLandscape){
-      // ✅ paysage mobile
-      rotateWarn.style.display = "none";
-
-      // 🔐 HUD OBLIGATOIREMENT visible en paysage
-      showFSHUD();
-
-      // recalcul canvas
-      setTimeout(() => {
-        resize();
-        redrawSpectrumNow();
-      }, 120);
-
-    }else{
-      // ❌ portrait mobile = BLOQUANT
-      rotateWarn.style.display = "flex";
-    }
-  }else{
-    // 💻 PC : jamais de message rotation
+  // 💻 PC : AUCUN warning, JAMAIS
+  if(!isMobile()){
     rotateWarn.style.display = "none";
+    return;
+  }
+
+  // 📱 Mobile
+  const landscape = window.innerWidth > window.innerHeight;
+
+  if(landscape){
+    rotateWarn.style.display = "none";
+
+    // recalcul FORCÉ du canvas
+    setTimeout(() => {
+      resize();
+      redrawSpectrumNow();
+    }, 100);
+
+    showFSHUD();
+  }else{
+    rotateWarn.style.display = "flex";
   }
 }
   /* ===================== RESIZE ===================== */
@@ -1118,9 +1124,14 @@ function updateSpectrumModeByOrientation(){
     // spectre
     let specW, specH;
     if(spectrumFS){
-      const vv = window.visualViewport || { width: window.innerWidth, height: window.innerHeight };
-      specW = vv.width;
-      specH = vv.height;
+  specW = window.innerWidth;
+  specH = window.innerHeight;
+
+  specCanvas.style.position = "fixed";
+  specCanvas.style.left = "0";
+  specCanvas.style.top  = "0";
+  specCanvas.style.zIndex = "9999";
+}
 
       specCanvas.style.position = "fixed";
       specCanvas.style.left = "0";
