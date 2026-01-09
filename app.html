@@ -980,28 +980,32 @@ html += <div style="margin-bottom:12px;"><b>ISO ${ISO_CLASS}</b> : ${z.name} —
 
 function updateSpectrumModeByOrientation(){
   if(!spectrumFS) return;
-  if(!isMobile()) return;
 
   const isLandscape = window.innerWidth > window.innerHeight;
 
-  if(isLandscape){
-    // ✅ paysage : on enlève l'avertissement
-    rotateWarn.style.display = "none";
+  if(isMobile()){
+    if(isLandscape){
+      // ✅ paysage mobile
+      rotateWarn.style.display = "none";
 
-    // ✅ on affiche le HUD pour donner accès au bouton Quitter
-    showFSHUD();
+      // 🔐 HUD OBLIGATOIREMENT visible en paysage
+      showFSHUD();
 
-    setTimeout(() => {
-      resize();
-      redrawSpectrumNow();
-    }, 150);
+      // recalcul canvas
+      setTimeout(() => {
+        resize();
+        redrawSpectrumNow();
+      }, 120);
 
+    }else{
+      // ❌ portrait mobile = BLOQUANT
+      rotateWarn.style.display = "flex";
+    }
   }else{
-    // ❌ portrait : on bloque le spectre
-    rotateWarn.style.display = "flex";
+    // 💻 PC : jamais de message rotation
+    rotateWarn.style.display = "none";
   }
 }
-
   /* ===================== RESIZE ===================== */
   function resize(){
     const dpr = dprNow();
@@ -1420,6 +1424,11 @@ if(window.visualViewport){
 }
 
 enableLongPressFS();
+specCanvas.addEventListener("mousemove", () => {
+  if(spectrumFS && !isMobile()){
+    showFSHUD();
+  }
+});
 requestAnimationFrame(loop);
 })();
 </script>
