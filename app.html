@@ -266,92 +266,54 @@ body.spectrum-mode #specStage{
   font-weight:600;
 }
 
-  /* ===================== PC ONLY ===================== */
+/* ================================================= */
+/* ============== PC – COMPACT & LISIBLE =========== */
+/* ================================================= */
 @media (min-width: 900px){
 
-  /* Labels plus discrets, style panneau */
-  .controls label{
-    background:rgba(255,255,255,0.04);
-    padding:10px 12px;
-    border-radius:10px;
-    font-size:13px;
-    font-weight:600;
+  /* Zone inputs plus compacte */
+  .controls{
+    padding:8px 12px;
+    gap:8px 12px;
   }
 
-  /* Inputs moins blancs, plus industriels */
+  /* Chaque bloc label devient plus mince */
+  .controls label{
+    padding:6px 8px;
+    font-size:14px;
+    font-weight:600;
+    background:rgba(255,255,255,0.035);
+    border-radius:8px;
+  }
+
+  /* Inputs plus grands MAIS moins hauts */
   .controls input,
   .controls select{
-    background:#10183f;
-    color:#eaf1ff;
+    margin-top:4px;
+    padding:6px 8px;
     font-size:15px;
-    padding:8px 10px;
-    border-radius:8px;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+    background:#0f1738;
+    color:#eaf1ff;
+    border-radius:6px;
   }
 
-  .controls input:focus,
-  .controls select:focus{
-    outline:none;
-    box-shadow: inset 0 0 0 2px rgba(0,162,255,0.8);
-  }
-}
-/* ===================== PC ONLY – Layout inputs ===================== */
-@media (min-width: 900px){
-
-  /* Grille plus respirante */
-  .controls{
-    grid-template-columns: 1.3fr 0.7fr;
-    gap:14px 16px;
+  /* Output box : VRAIE réduction visuelle */
+  .outputBox{
+    padding:10px 12px;
+    font-size:15px;
+    line-height:1.35;
   }
 
-  /* Les champs importants prennent toute la largeur */
-  .controls .full{
-    grid-column:1 / -1;
-  }
-
-}
-/* ========================================================= */
-/* =============== AJUSTEMENTS PC UNIQUEMENT =============== */
-/* ========================================================= */
-@media (min-width: 900px){
-
-  /* 🔹 Réduire l’espace vertical global */
-  .controls{
-    gap:10px 14px;              /* avant trop large */
-  }
-
-  .controls label{
+  .outputBox div{
     margin-bottom:4px;
   }
 
-  /* 🔹 Inputs plus lisibles */
-  .controls input,
-  .controls select{
-    font-size:15px;             /* ↑ texte */
-    padding:8px 10px;           /* ↓ hauteur visuelle */
-  }
-
-  /* 🔹 Titres de labels plus présents */
-  .controls label{
-    font-size:13px;
-    font-weight:600;
-  }
-
-  /* 🔹 Output box (tableau résultats) */
-  .outputBox{
-    font-size:15px;             /* ↑ texte */
-    line-height:1.45;           /* ↓ hauteur globale */
-    padding:12px 14px;          /* ↓ espace intérieur */
-  }
-
-  /* 🔹 Texte secondaire */
   .outputBox .small{
     font-size:12px;
-    margin-top:4px;
+    margin-top:2px;
   }
 
 }
-
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
