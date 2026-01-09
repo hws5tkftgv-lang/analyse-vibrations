@@ -267,136 +267,53 @@ body.spectrum-mode #specStage{
 }
 
 /* ================================================= */
-/* ============== PC – COMPACT & LISIBLE =========== */
+/* ====== LAYOUT FINAL — PC PROPRE ET LISIBLE ====== */
 /* ================================================= */
+
 @media (min-width: 900px){
 
-  /* Zone inputs plus compacte */
+  /* ================= INPUTS ================= */
+
   .controls{
-    padding:8px 12px;
-    gap:8px 12px;
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:12px 16px;
+    padding:10px 14px;
+    max-width:1100px;
+    margin:auto;
   }
 
-  /* Chaque bloc label devient plus mince */
   .controls label{
-    padding:6px 8px;
     font-size:14px;
     font-weight:600;
-    background:rgba(255,255,255,0.035);
-    border-radius:8px;
+    color:#eaf1ff;
   }
 
-  /* Inputs plus grands MAIS moins hauts */
   .controls input,
   .controls select{
+    width:100%;
     margin-top:4px;
     padding:6px 8px;
-    font-size:15px;
-    background:#0f1738;
-    color:#eaf1ff;
-    border-radius:6px;
-  }
-
-  /* Output box : VRAIE réduction visuelle */
-  .outputBox{
-    padding:10px 12px;
-    font-size:15px;
-    line-height:1.35;
-  }
-
-  .outputBox div{
-    margin-bottom:4px;
-  }
-
-  .outputBox .small{
-    font-size:12px;
-    margin-top:2px;
-  }
-
-}
-
-
-/* ===================================================== */
-/* ========== PC — INPUTS CLAIRS & COMPACTS ============ */
-/* ===================================================== */
-@media (min-width: 1000px){
-
-  /* Grille plus compacte */
-  body .controls{
-    grid-template-columns: repeat(3, 1fr);
-    gap:8px 12px;
-    padding:8px 12px;
-  }
-
-  /* Labels sobres */
-  body .controls label{
-    background:transparent;
-    padding:2px 0;
-    font-size:14px;
-    font-weight:600;
-    color:#eaf1ff;
-  }
-
-  /* Champs clairs (BLANCS / GRIS) */
-  body .controls input,
-  body .controls select{
+    font-size:16px;
     background:#f2f4f8;
     color:#000;
-    font-size:16px;
-    padding:6px 8px;
     border-radius:6px;
     border:1px solid #cfd6e0;
-    box-shadow:none;
   }
 
-  body .controls input:focus,
-  body .controls select:focus{
-    outline:none;
-    border-color:#00a2ff;
-  }
-
-  /* Champs pleine largeur */
-  body .controls .full{
-    grid-column:1 / -1;
-  }
-
-  /* Bloc résultats plus dense */
-  body .outputBox{
-    background:#ffffff;
-    color:#000;
-    padding:10px 12px;
-    font-size:15px;
-    line-height:1.4;
-    border-radius:8px;
-  }
-
-  body .outputBox b{
-    color:#000;
-  }
-
-  body .outputBox span{
-    font-weight:700;
-  }
-
-  body .outputBox .small{
-    font-size:12px;
-    color:#333;
-  }
-}
-/* ================================================= */
-/* ===== ALIGNEMENT RÉSULTATS / DÉFAUT (PC) ======== */
-/* ================================================= */
-@media (min-width: 900px){
+  /* ================= RÉSULTATS + DÉFAUT ================= */
 
   .results-row{
     display:grid;
     grid-template-columns: 1fr 1fr;
-    gap:16px;
+    gap:18px;
     padding:10px 14px;
+    max-width:1100px;
+    margin:auto;
     align-items:start;
   }
 
-  /* 🔵 Bloc bleu conservé */
+  /* 🔵 BLOC BLEU — mêmes dimensions que inputs */
   .blueBox{
     background:linear-gradient(
       180deg,
@@ -404,19 +321,48 @@ body.spectrum-mode #specStage{
       rgba(255,255,255,0.02)
     );
     box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+    border-radius:12px;
+    padding:12px 14px;
+    font-size:15px;
+    line-height:1.45;
   }
 
-  /* ⬜ Colonne droite */
+  .blueBox div{
+    margin-bottom:4px;
+  }
+
+  .blueBox b{
+    color:#cfe2ff;
+  }
+
+  /* ⬜ COLONNE DROITE — défaut + ralenti */
   .faultBox{
     display:flex;
     flex-direction:column;
     gap:10px;
+    padding:12px 14px;
+    background:#ffffff;
+    color:#000;
+    border-radius:12px;
+  }
+
+  .faultBox label{
+    font-size:14px;
+    font-weight:600;
+    color:#000;
   }
 
   .faultBox select,
   .faultBox input[type="range"]{
     width:100%;
   }
+
+  .faultBox .small{
+    font-size:13px;
+    color:#333;
+    margin-top:4px;
+  }
+
 }
 </style>
 
@@ -429,11 +375,12 @@ body.spectrum-mode #specStage{
 <header>🔄 Courroie & poulies — trajectoire correcte (open belt)</header>
 
 
-  <div class="controls">
+<!-- ================= CONTROLS ================= -->
+<div class="controls">
 
   <label>
     RPM moteur
-    <input id="rpm" type="number" inputmode="decimal" value="1500">
+    <input id="rpm" type="number" value="1500">
   </label>
 
   <label>
@@ -446,90 +393,111 @@ body.spectrum-mode #specStage{
 
   <label>
     Ø menante
-    <input id="d1" type="number" inputmode="decimal" value="4">
+    <input id="d1" type="number" value="4">
   </label>
 
   <label>
     Ø menée
-    <input id="d2" type="number" inputmode="decimal" value="9">
+    <input id="d2" type="number" value="9">
   </label>
 
   <label>
     C-C
-    <input id="cc" type="number" inputmode="decimal" value="21">
+    <input id="cc" type="number" value="21">
   </label>
 
-  <label>
-    Défaut simulé
-    <select id="fault">
-      <option value="none">Aucun (normal)</option>
-      <option value="unbalance">Balourd (1×)</option>
-      <option value="misalign">Désalignement</option>
-      <option value="looseness">Jeu mécanique</option>
-      <option value="belt">Défaut de courroie</option>
-      <option value="slip">Glissement</option>
-      <option value="bearing">Roulement</option>
-      <option value="resonance">Résonance</option>
-      <option value="all">TOUT</option>
-    </select>
-  </label>
+</div>
 
-<!-- ===== LIGNE RÉSULTATS + DÉFAUT (PC) ===== -->
+<!-- ================= RÉSULTATS + DÉFAUT ================= -->
 <div class="results-row">
 
-  <!-- 🔵 BLOC RÉSULTATS -->
+  <!-- 🔵 BLOC BLEU : résultats (même largeur que inputs) -->
   <div class="outputBox blueBox">
-    <div><b>Menante</b> : <span id="out-rpm1">—</span> RPM | <span id="out-cpm1">—</span> CPM | <span id="out-hz1">—</span> Hz</div>
-    <div><b>Menée</b> : <span id="out-rpm2">—</span> RPM | <span id="out-cpm2">—</span> CPM | <span id="out-hz2">—</span> Hz</div>
-    <div><b>Courroie</b> : <span id="out-hzbelt">—</span> Hz | <span id="out-fpm">—</span> ft/min | <span id="out-strobe">—</span> FPM</div>
-    <div><b>Longueur</b> : <span id="out-length">—</span></div>
+
+    <div>
+      <b>Menante</b> :
+      <span id="out-rpm1">—</span> RPM |
+      <span id="out-cpm1">—</span> CPM |
+      <span id="out-hz1">—</span> Hz
+    </div>
+
+    <div>
+      <b>Menée</b> :
+      <span id="out-rpm2">—</span> RPM |
+      <span id="out-cpm2">—</span> CPM |
+      <span id="out-hz2">—</span> Hz
+    </div>
+
+    <div>
+      <b>Courroie</b> :
+      <span id="out-hzbelt">—</span> Hz |
+      <span id="out-fpm">—</span> ft/min |
+      <span id="out-strobe">—</span> FPM
+    </div>
+
+    <div>
+      <b>Longueur</b> :
+      <span id="out-length">—</span>
+    </div>
+
   </div>
 
-  <!-- ⬜ DÉFAUT + RALENTI -->
+  <!-- ⬜ COLONNE DROITE : défaut + ralenti -->
   <div class="faultBox">
-  <label>
-  Défaut simulé
-  <select id="fault">
-    <option value="none">Aucun (normal)</option>
-    <option value="unbalance">Balourd (1×)</option>
-    <option value="misalign">Désalignement</option>
-    <option value="looseness">Jeu mécanique</option>
-    <option value="belt">Défaut de courroie</option>
-    <option value="slip">Glissement</option>
-    <option value="bearing">Roulement</option>
-    <option value="resonance">Résonance</option>
-    <option value="all">TOUT</option>
-  </select>
-</label>
 
-<label class="small">
-  Ralenti (plus grand = plus lent)
-</label>
-<input id="slow" type="range" min="1" max="20" value="8">
+    <label>
+      Défaut simulé
+      <select id="fault">
+        <option value="none">Aucun (normal)</option>
+        <option value="unbalance">Balourd (1×)</option>
+        <option value="misalign">Désalignement</option>
+        <option value="looseness">Jeu mécanique</option>
+        <option value="belt">Défaut de courroie</option>
+        <option value="slip">Glissement</option>
+        <option value="bearing">Roulement</option>
+        <option value="resonance">Résonance</option>
+        <option value="all">TOUT</option>
+      </select>
+    </label>
 
-   </div>
+    <label class="small">
+      Ralenti (plus grand = plus lent)
+    </label>
 
+    <input id="slow" type="range" min="1" max="20" value="8">
 
+  </div>
 
+</div>
+
+<!-- ================= BOUTONS ================= -->
 <div class="buttons">
   <button id="play">Play</button>
   <button id="pause">Pause</button>
   <button id="reset">Reset</button>
   <button id="exportPDF">PDF</button>
 </div>
+
+<!-- ================= SPECTRE ================= -->
 <div class="spectrum-controls">
   <button id="enterSpectrumFS">🔍 Plein écran spectre</button>
 </div>
 
 <div id="fsHUD">
   <div class="fs-info">
-    Pan: glisser ↔ (Hz)<br>
+    Pan : glisser ↔ (Hz)<br>
     Play = spectre live
   </div>
   <button id="exitSpectrumFS">❌ Quitter</button>
 </div>
-<div class="stage" id="sceneStage"><canvas id="scene"></canvas></div>
-<div class="stage" id="specStage"><canvas id="spectrum"></canvas></div>
+
+<div class="stage" id="sceneStage">
+  <canvas id="scene"></canvas>
+</div>
+
+<div class="stage" id="specStage">
+  <canvas id="spectrum"></canvas>
+</div>
 
 <div class="results" id="info"></div>
 
@@ -537,8 +505,6 @@ body.spectrum-mode #specStage{
   🔄 Tournez votre téléphone en mode paysage
   <span>Pour une meilleure lecture du spectre</span>
 </div>
-
-<!-- Boutons overlay fullscreen -->
 
 
 
