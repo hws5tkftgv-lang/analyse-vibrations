@@ -203,6 +203,7 @@ body.spectrum-mode #fsHUD{ display:block; }
 
   // fullscreen spectre
   let spectrumFS = false;
+  const isDesktop = window.matchMedia("(pointer:fine)").matches;
 
   /* ===================== DOM ===================== */
   const canvas     = document.getElementById("scene");
@@ -615,13 +616,16 @@ body.spectrum-mode #fsHUD{ display:block; }
   }
 
 function updateSpectrumModeByOrientation(){
+  // ❌ jamais d’auto-fullscreen sur PC
+  if(isDesktop) return;
+
   const vv = window.visualViewport;
   const vw = vv ? vv.width  : window.innerWidth;
   const vh = vv ? vv.height : window.innerHeight;
 
   const isLandscape = vw > vh + 40;
 
-  // ---- ENTRÉE AUTO FULLSCREEN ----
+  // ---- ENTRÉE AUTO (MOBILE SEULEMENT) ----
   if(isLandscape && !spectrumFS){
     spectrumFS = true;
     specCanvas.classList.add("spectrum-only");
@@ -632,14 +636,22 @@ function updateSpectrumModeByOrientation(){
 
   // ---- SORTIE AUTO ----
   if(!isLandscape && spectrumFS){
-    spectrumFS = false;
-    specCanvas.classList.remove("spectrum-only");
-    document.body.classList.remove("spectrum-mode");
-    resize();
-    redrawSpectrumNow();
+    exitSpectrumFullscreen();
   }
 }
 
+function exitSpectrumFullscreen(){
+  spectrumFS = false;
+  specCanvas.classList.remove("spectrum-only");
+  document.body.classList.remove("spectrum-mode");
+  resize();
+  redrawSpectrumNow();
+}
+document.addEventListener("keydown", e => {
+  if(e.key === "Escape" && spectrumFS){
+    exitSpectrumFullscreen();
+  }
+});
 
   /* ===================== RESIZE ===================== */
   function resize(){
