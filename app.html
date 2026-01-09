@@ -3,358 +3,109 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Vibration">
 <title>Courroie & poulies — trajectoire correcte</title>
-<style>
-/* ===================== BASE ===================== */
-html, body{
-  height:100%;
-}
 
+<style>
+html, body { height:100%; }
 :root{
   --bg:#0b1436;
   --text:#eaf1ff;
-  --muted:rgba(234,241,255,.7);
+  --muted:rgba(234,241,255,.70);
   --btn:#1c2b6a;
   --bad:#ff4d4d;
 }
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ margin:0; background:var(--bg); color:var(--text); font-family:Arial,system-ui,sans-serif; }
+header{ padding:10px 14px; font-size:16px; font-weight:700; }
 
-*{
-  box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
-}
+.controls{ padding:10px 14px; display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+.controls label{ font-size:12px; color:var(--muted); }
+.controls input,.controls select{ width:100%; padding:6px 8px; font-size:13px; border-radius:10px; border:none; }
+.controls .full{ grid-column:1/-1; }
 
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family:Arial,system-ui,sans-serif;
-  overflow-x:hidden;
-  font-size:16px;
-}
+.buttons{ display:flex; gap:10px; padding:0 14px 10px; flex-wrap:wrap; }
+button{ flex:1; min-width:120px; padding:10px; font-size:15px; border:none; border-radius:12px; background:var(--btn); color:white; }
 
-/* ===================== HEADER ===================== */
-header{
-  padding:10px 14px;
-  font-size:16px;
-  font-weight:700;
-}
+.stage{ padding:10px 14px; }
+canvas{ width:100%; background:#000; border-radius:12px; display:block; }
+#spectrum{ background:#05080f; touch-action:none; }
 
-/* ===================== CONTROLS ===================== */
-.controls{
-  padding:10px 14px;
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:8px;
-}
+.results{ padding:10px 14px 18px; font-size:14px; line-height:1.45; }
+.bad{ color:var(--bad); font-weight:700; }
+.small{ font-size:12px; opacity:.75; margin-top:6px; }
 
-.controls label{
-  font-size:12px;
-  color:var(--muted);
-}
-
-.controls input,
-.controls select{
-  width:100%;
-  padding:6px 8px;
-  font-size:13px;
-  border-radius:10px;
-  border:none;
-}
-
-.controls .full{
-  grid-column:1 / -1;
-}
-
-/* ===================== BUTTONS ===================== */
-.buttons{
-  display:flex;
-  gap:10px;
-  padding:0 14px 10px;
-  flex-wrap:wrap;
-}
-
-button{
-  flex:1;
-  min-width:120px;
-  padding:10px;
-  font-size:15px;
-  border:none;
-  border-radius:12px;
-  background:var(--btn);
-  color:white;
-  cursor:pointer;
-}
-
-button:active{
-  transform:scale(0.98);
-}
-
-/* ===================== STAGES ===================== */
-.stage{
-  padding:10px 14px;
-}
-
-canvas{
-  width:100%;
-  display:block;
-  background:#000;
-  border-radius:12px;
-}
-
-#scene{
-  background:#000;
-}
-
-#spectrum{
-  background:#05080f;
-  touch-action:none;
-}
-
-/* ===================== RESULTS ===================== */
-.results{
-  padding:10px 14px 18px;
-  font-size:14px;
-  line-height:1.45;
-}
-
-.bad{
-  color:var(--bad);
-  font-weight:700;
-}
-
-.small{
-  font-size:12px;
-  opacity:.75;
-  margin-top:6px;
-}
-
-/* ===================== OUTPUT BOX ===================== */
 .outputBox{
-  background:linear-gradient(
-    180deg,
-    rgba(255,255,255,0.06),
-    rgba(255,255,255,0.02)
-  );
+  background:rgba(255,255,255,0.08);
   border-radius:12px;
-  padding:14px;
-  font-size:14px;
-  line-height:1.5;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+  padding:10px;
+  font-size:13px;
+  line-height:1.4;
 }
-.outputBox span{
-  font-weight:700;
-}
+.outputBox b{ color:#cfe2ff; }
 
-.outputBox b{
-  color:#cfe2ff;
-}
-
-/* ==================================================== */
-/* ===================== FULLSCREEN ==================== */
-/* ==================================================== */
-
-/* Canvas fullscreen ONLY */
+/* ===== FULLSCREEN SPECTRE (canvas only) ===== */
 canvas.spectrum-only{
-  position:fixed;
-  inset:0;
-  width:100dvw !important;
-  height:100dvh !important;
-  border-radius:0 !important;
-  z-index:9999;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100dvw !important;
+  height: 100dvh !important;
+  border-radius: 0 !important;
+  z-index: 9999;
 }
 
-/* Mode spectre : cacher TOUT sauf spectre + HUD + warning */
-body.spectrum-mode > *:not(#specStage):not(#fsHUD):not(#rotateWarn){
+/* Mode spectre : cacher tout sauf specStage + warning + boutons overlay */
+body.spectrum-mode > *:not(#specStage):not(#rotateWarn):not(#fsHUD){
   display:none !important;
 }
-
 body.spectrum-mode{
   overflow:hidden;
 }
-
 body.spectrum-mode #specStage{
   padding:0 !important;
   margin:0 !important;
 }
 
-/* ===================== HUD FULLSCREEN ===================== */
-/* ⚠️ HUD contrôlé UNIQUEMENT par JS */
+
 #fsHUD{
-  position:fixed;
-  top:12px;
-  left:12px;
-  z-index:10001;
-
-  padding:10px 12px;
-  border-radius:12px;
-  background:rgba(0,0,0,0.35);
+  position: fixed;
+  z-index: 10001;
+  left: 12px;
+  top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.35);
   color:#eaf1ff;
-  font-size:12px;
-  line-height:1.25;
-
+  font-size: 12px;
+  line-height: 1.25;
   display:none;
-  opacity:0;
-  pointer-events:none;
-  transition:opacity .3s ease;
 }
+body.spectrum-mode #fsHUD{ display:block; }
 
-#fsHUD.visible{
-  display:flex;
-  gap:12px;
-  align-items:flex-start;
-  opacity:1;
-  pointer-events:auto;
-}
-
-#fsHUD .fs-info{
-  pointer-events:none;
-}
-
-#exitSpectrumFS{
-  background:#b71c1c;
-  padding:8px 12px;
-  border-radius:10px;
-  font-size:13px;
-  white-space:nowrap;
-}
-
-/* ===================== ROTATION WARNING ===================== */
+/* ===== MESSAGE ROTATION PAYSAGE ===== */
 .rotate-warning{
-  position:fixed;
-  inset:0;
-  z-index:10000;
-  background:rgba(5,8,15,0.85);
-
-  display:none;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-
-  padding:24px;
-  font-size:18px;
-  font-weight:700;
-  color:#eaf1ff;
-
-  pointer-events:none;
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(5,8,15,0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #eaf1ff;
+  pointer-events: none;
 }
-
 .rotate-warning span{
   display:block;
   font-size:14px;
   font-weight:400;
-  opacity:.85;
+  opacity:0.85;
   margin-top:10px;
 }
-
-/* ===================== SPECTRUM CONTROLS ===================== */
-.spectrum-controls{
-  display:flex;
-  gap:8px;
-  padding:0 14px 10px;
-}
-
-.spectrum-controls button{
-  padding:8px 12px;
-  border-radius:8px;
-  border:none;
-  background:#1c2b5a;
-  color:#eaf1ff;
-  font-weight:600;
-}
-
-  /* ===================== PC ONLY ===================== */
-@media (min-width: 900px){
-
-  /* Labels plus discrets, style panneau */
-  .controls label{
-    background:rgba(255,255,255,0.04);
-    padding:10px 12px;
-    border-radius:10px;
-    font-size:13px;
-    font-weight:600;
-  }
-
-  /* Inputs moins blancs, plus industriels */
-  .controls input,
-  .controls select{
-    background:#10183f;
-    color:#eaf1ff;
-    font-size:15px;
-    padding:8px 10px;
-    border-radius:8px;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
-  }
-
-  .controls input:focus,
-  .controls select:focus{
-    outline:none;
-    box-shadow: inset 0 0 0 2px rgba(0,162,255,0.8);
-  }
-}
-/* ===================== PC ONLY – Layout inputs ===================== */
-@media (min-width: 900px){
-
-  /* Grille plus respirante */
-  .controls{
-    grid-template-columns: 1.3fr 0.7fr;
-    gap:14px 16px;
-  }
-
-  /* Les champs importants prennent toute la largeur */
-  .controls .full{
-    grid-column:1 / -1;
-  }
-
-}
-/* ========================================================= */
-/* =============== AJUSTEMENTS PC UNIQUEMENT =============== */
-/* ========================================================= */
-@media (min-width: 900px){
-
-  /* 🔹 Réduire l’espace vertical global */
-  .controls{
-    gap:10px 14px;              /* avant trop large */
-  }
-
-  .controls label{
-    margin-bottom:4px;
-  }
-
-  /* 🔹 Inputs plus lisibles */
-  .controls input,
-  .controls select{
-    font-size:15px;             /* ↑ texte */
-    padding:8px 10px;           /* ↓ hauteur visuelle */
-  }
-
-  /* 🔹 Titres de labels plus présents */
-  .controls label{
-    font-size:13px;
-    font-weight:600;
-  }
-
-  /* 🔹 Output box (tableau résultats) */
-  .outputBox{
-    font-size:15px;             /* ↑ texte */
-    line-height:1.45;           /* ↓ hauteur globale */
-    padding:12px 14px;          /* ↓ espace intérieur */
-  }
-
-  /* 🔹 Texte secondaire */
-  .outputBox .small{
-    font-size:12px;
-    margin-top:4px;
-  }
-
-}
-
 </style>
-
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-
 </head>
 
 <body>
@@ -407,19 +158,9 @@ body.spectrum-mode #specStage{
   <button id="play">Play</button>
   <button id="pause">Pause</button>
   <button id="reset">Reset</button>
-  <button id="exportPDF">PDF</button>
-</div>
-<div class="spectrum-controls">
-  <button id="enterSpectrumFS">🔍 Plein écran spectre</button>
+
 </div>
 
-<div id="fsHUD">
-  <div class="fs-info">
-    Pan: glisser ↔ (Hz)<br>
-    Play = spectre live
-  </div>
-  <button id="exitSpectrumFS">❌ Quitter</button>
-</div>
 <div class="stage" id="sceneStage"><canvas id="scene"></canvas></div>
 <div class="stage" id="specStage"><canvas id="spectrum"></canvas></div>
 
@@ -432,12 +173,11 @@ body.spectrum-mode #specStage{
 
 <!-- Boutons overlay fullscreen -->
 
+<div id="fsHUD">Pan: glisser ↔ (Hz)<br>Play = spectre live</div>
+
 <script>
 (() => {
   "use strict";
-const FONT_BASE = 13;      // taille normale
-const FONT_FS   = 16;      // plein écran
-const FONT_MOB  = 15;      // mobile
 
   /* ===================== CONSTANTES ===================== */
   const TAU = Math.PI * 2;
@@ -445,41 +185,11 @@ const FONT_MOB  = 15;      // mobile
 
   const clamp = (v,a,b)=>Math.max(a, Math.min(b, v));
   const isNum = (x)=>Number.isFinite(x);
-  // ===== ISO 20816 (ex ISO 10816) - Classe II (machines industrielles standard) =====
-const ISO_CLASS = "II"; // affichage seulement
-
-const ISO_ZONES = [
-  { name:"A", label:"Bon",         max:1.12, col:"rgba(  0,200,  0,0.12)" },
-  { name:"B", label:"Acceptable",  max:2.80, col:"rgba(  0,162,255,0.12)" },
-  { name:"C", label:"Mauvais",     max:7.10, col:"rgba(255,165,  0,0.12)" },
-  { name:"D", label:"Critique",    max:Infinity, col:"rgba(255, 77, 77,0.12)" }
-];
-
-function isoVerdict(mm_s_rms){
-  for(const z of ISO_ZONES){
-    if(mm_s_rms <= z.max) return z;
-  }
-  return ISO_ZONES[ISO_ZONES.length-1];
-}
 
   function dprNow(){ return Math.min(3, window.devicePixelRatio || 1); }
-function spectrumFont(px){
-  specCtx.font = ${px}px Arial;
-}
-
-function isMobile(){
-  return /iphone|ipad|android/i.test(navigator.userAgent);
-}
-
-function isPortrait(){
-  return window.innerHeight > window.innerWidth;
-}
 
   /* ===================== ÉTAT ===================== */
   let running = false;
-  // ===== ENREGISTREMENT (Peak Hold par élément) =====
-let peakRecord = {}; // { label: { hz, amp } }   amp en mm/s
-let snapshotMode = false;
 
   // temps séparés, MAIS une seule boucle RAF
   let tMotion = 0; // courroie / poulies
@@ -522,78 +232,11 @@ let snapshotMode = false;
   const outHZBelt  = document.getElementById("out-hzbelt");
   const outFPM     = document.getElementById("out-fpm");
   const outStrobe  = document.getElementById("out-strobe");
-const btnEnterFS = document.getElementById("enterSpectrumFS");
-const btnExitFS  = document.getElementById("exitSpectrumFS");
-let fsHideTimer = null;
 
-function showFSHUD(){
-  const hud = document.getElementById("fsHUD");
-
-  hud.classList.add("visible");
-
-  clearTimeout(fsHideTimer);
-  fsHideTimer = setTimeout(() => {
-    hud.classList.remove("visible");
-  }, 3000);
-}
-
-  function enableLongPressFS(){
-  if(!isMobile()) return;
-
-  let pressTimer = null;
-
-  specCanvas.addEventListener("touchstart", () => {
-    if(!spectrumFS) return;
-
-    pressTimer = setTimeout(() => {
-      showFSHUD();
-    }, 2000);
-  }, { passive:true });
-
-  ["touchend","touchcancel","touchmove"].forEach(evt=>{
-    specCanvas.addEventListener(evt, ()=>{
-      clearTimeout(pressTimer);
-      pressTimer = null;
-    }, { passive:true });
-  });
-}
-btnEnterFS.onclick = () => {
-  if(spectrumFS) return;
-
-  spectrumFS = true;
-  specCanvas.classList.add("spectrum-only");
-  document.body.classList.add("spectrum-mode");
-
-  btnEnterFS.style.display = "none";
-  btnExitFS.style.display = "inline-block";
-
-  rotateWarn.style.display = "none";
-
-  resize();
-  redrawSpectrumNow();
-
-  if(!isMobile()) showFSHUD(); // PC seulement
-};
-
-btnExitFS.onclick = () => {
-  spectrumFS = false;
-
-  specCanvas.classList.remove("spectrum-only");
-  document.body.classList.remove("spectrum-mode");
-  rotateWarn.style.display = "none";
-
-  btnExitFS.style.display = "none";
-  btnEnterFS.style.display = "inline-block";
-
-  resize();
-  redrawSpectrumNow();
-  document.getElementById("fsHUD").classList.remove("visible");
-};
   const playBtn  = document.getElementById("play");
   const pauseBtn = document.getElementById("pause");
   const resetBtn = document.getElementById("reset");
-  const pdfBtn = document.getElementById("exportPDF");
-pdfBtn.addEventListener("click", exportPDF);
+  
 
   
 
@@ -634,11 +277,11 @@ pdfBtn.addEventListener("click", exportPDF);
 
       return {
         ok:false,
-        html: 
+        html: `
           <div class="bad">⛔ Géométrie impossible (open belt)</div>
           <div>C-C doit être <b>&gt; |R2 − R1|</b>.</div>
           <div class="small">Minimum = ${minTxt}</div>
-        
+        `
       };
     }
     return { ok:true, html:"" };
@@ -871,36 +514,9 @@ pdfBtn.addEventListener("click", exportPDF);
     const plotRight = W;
     const plotWidth = plotRight - plotLeft;
 
-    // ===== AUTO-SCALE AMPLITUDE (OPTION 1) =====
-const peaks = buildPeaks(hzMotor, hzBelt, time, faultEl.value);
-// ===== ENREGISTREMENT AUTO (uniquement quand Play) =====
-if(running){
-  for(const p of peaks){
-    if(!Number.isFinite(p.hz)) continue;
+    const AMP_MAX  = 10;
+    const AMP_STEP = 2;
 
-    // EXACTEMENT le même facteur que l’affichage
-    const ampMMs = (Number.isFinite(p.amp) ? p.amp : 0) * 5;
-
-    // clé = label (donc "1× moteur", "Balourd (1×)", etc.)
-    const key = (p.label || "").trim();
-    if(!key) continue;
-
-    // garde le max
-    if(!peakRecord[key] || ampMMs > peakRecord[key].amp){
-      peakRecord[key] = { hz: p.hz, amp: ampMMs };
-    }
-  }
-}
-// amplitude max réelle (en mm/s pédagogiques)
-let maxAmp = 1;
-for(const p of peaks){
-  const ampMMs = p.amp * 5;   // même facteur que tes barres
-  if(ampMMs > maxAmp) maxAmp = ampMMs;
-}
-
-// marge pédagogique + arrondi propre
-const AMP_MAX  = Math.max(2, Math.ceil(maxAmp * 1.15));
-const AMP_STEP = AMP_MAX <= 6 ? 1 : 2;
     const minHz = spectrumView.minHz;
     const maxHz = minHz + spectrumView.spanHz;
     const scaleX = plotWidth / (maxHz - minHz);
@@ -912,37 +528,6 @@ const AMP_STEP = AMP_MAX <= 6 ? 1 : 2;
     // bande Hz
     specCtx.fillStyle = "rgba(0,162,255,0.15)";
     specCtx.fillRect(0, hzZoneY, W, hzZoneHeight);
-
-// ===== BANDES ISO (derrière les barres) =====
-// mapping mm/s -> Y
-const yFromAmp = (amp) => gridBottom - (amp / AMP_MAX) * gridHeight;
-
-// on dessine A, B, C, D en bandes horizontales
-let prev = 0;
-for(const z of ISO_ZONES){
-  const topAmp = Math.min(z.max, AMP_MAX);
-  const yTop = yFromAmp(topAmp);
-  const yBot = yFromAmp(prev);
-
-  // si la bande dépasse l'échelle actuelle, on coupe
-  const y1 = Math.max(gridTop, Math.min(gridBottom, yTop));
-  const y2 = Math.max(gridTop, Math.min(gridBottom, yBot));
-  const hBand = Math.abs(y2 - y1);
-
-  if(hBand > 0.5){
-    specCtx.fillStyle = z.col;
-    specCtx.fillRect(plotLeft, Math.min(y1,y2), (plotRight - plotLeft), hBand);
-
-    // petit label de zone à gauche
-    specCtx.fillStyle = "rgba(234,241,255,0.85)";
-   
-    specCtx.textAlign = "left";
-    specCtx.textBaseline = "middle";
-    specCtx.fillText(ISO ${ISO_CLASS} ${z.name} (${z.label}), plotLeft + 6, Math.min(y1,y2) + 12);
-  }
-
-  prev = z.max;
-}
 
     // règle Hz
     specCtx.strokeStyle = "rgba(255,255,255,0.35)";
@@ -995,7 +580,7 @@ for(const z of ISO_ZONES){
     }
 
     const fault = faultEl.value || "none";
-    
+    const peaks = buildPeaks(hzMotor, hzBelt, time, fault);
 
     // barres
     for(const p of peaks){
@@ -1020,33 +605,7 @@ for(const z of ISO_ZONES){
       specCtx.textBaseline = "bottom";
       specCtx.fillText(p.label, x, Math.max(yTop - 6, gridTop + 14));
     }
-// ===== VERDICT ISO basé sur le pic max (dans la fenêtre affichée) =====
-let maxShown = 0;
-for(const p of peaks){
-  if(!Number.isFinite(p.hz)) continue;
-  if(p.hz < minHz || p.hz > maxHz) continue;  // seulement ce qui est visible
-  const ampMMs = (Number.isFinite(p.amp) ? p.amp : 0) * 5;
-  if(ampMMs > maxShown) maxShown = ampMMs;
-}
 
-const z = isoVerdict(maxShown);
-
-// bande de titre (en haut à gauche)
-specCtx.fillStyle = "rgba(0,0,0,0.35)";
-specCtx.fillRect(plotLeft, 0, 270, 18);
-
-specCtx.fillStyle = "#eaf1ff";
-let fontSize = FONT_BASE;
-
-if(isMobile()) fontSize = FONT_MOB;
-if(spectrumFS) fontSize = FONT_FS;
-
-spectrumFont(fontSize);
-    
-specCtx.font = "12px Arial";
-specCtx.textAlign = "left";
-specCtx.textBaseline = "middle";
-specCtx.fillText(ISO ${ISO_CLASS} : ${z.name} — ${z.label} (max ${maxShown.toFixed(2)} mm/s), plotLeft + 6, 9);
     // axe
     specCtx.fillStyle = "#9aa5d6";
     specCtx.font = "12px Arial";
@@ -1055,61 +614,32 @@ specCtx.fillText(ISO ${ISO_CLASS} : ${z.name} — ${z.label} (max ${maxShown.toF
     specCtx.fillText("Hz →", W - 6, 6);
   }
 
-function renderPeakList(){
-  const keys = Object.keys(peakRecord);
-
-  if(keys.length === 0){
-    infoEl.innerHTML = "<div class='small'>📸 Aucun pic enregistré (appuie Play).</div>";
-    return;
-  }
-
-  // tri par amplitude décroissante
-  keys.sort((a,b) => peakRecord[b].amp - peakRecord[a].amp);
-
-  let html = "<b>📸 Photo instantanée — pics max enregistrés</b><br><br>";
-// verdict global ISO basé sur le plus gros pic enregistré
-let maxRec = 0;
-for(const k of keys){
-  if(peakRecord[k].amp > maxRec) maxRec = peakRecord[k].amp;
-}
-const z = isoVerdict(maxRec);
-html += <div style="margin-bottom:12px;"><b>ISO ${ISO_CLASS}</b> : ${z.name} — ${z.label} (max ${maxRec.toFixed(2)} mm/s)</div>;
-  for(const label of keys){
-    const p = peakRecord[label];
-    html += 
-      <div style="margin-bottom:10px;">
-        • <b>${label}</b><br>
-        &nbsp;&nbsp;${p.hz.toFixed(2)} Hz — ${p.amp.toFixed(2)} mm/s
-      </div>
-    ;
-  }
-
-  infoEl.innerHTML = html;
-}
-
 function updateSpectrumModeByOrientation(){
-  if(!spectrumFS) return;
-  if(!isMobile()) return;
+  const vv = window.visualViewport;
+  const vw = vv ? vv.width  : window.innerWidth;
+  const vh = vv ? vv.height : window.innerHeight;
 
-  const isLandscape = window.innerWidth > window.innerHeight;
+  const isLandscape = vw > vh + 40;
 
-  if(isLandscape){
-    // ✅ paysage : on enlève l'avertissement
-    rotateWarn.style.display = "none";
+  // ---- ENTRÉE AUTO FULLSCREEN ----
+  if(isLandscape && !spectrumFS){
+    spectrumFS = true;
+    specCanvas.classList.add("spectrum-only");
+    document.body.classList.add("spectrum-mode");
+    resize();
+    redrawSpectrumNow();
+  }
 
-    // ✅ on affiche le HUD pour donner accès au bouton Quitter
-    showFSHUD();
-
-    setTimeout(() => {
-      resize();
-      redrawSpectrumNow();
-    }, 150);
-
-  }else{
-    // ❌ portrait : on bloque le spectre
-    rotateWarn.style.display = "flex";
+  // ---- SORTIE AUTO ----
+  if(!isLandscape && spectrumFS){
+    spectrumFS = false;
+    specCanvas.classList.remove("spectrum-only");
+    document.body.classList.remove("spectrum-mode");
+    resize();
+    redrawSpectrumNow();
   }
 }
+
 
   /* ===================== RESIZE ===================== */
   function resize(){
@@ -1200,7 +730,7 @@ function updateSpectrumModeByOrientation(){
 
     const inp = readInputs();
     if(!inp){
-      infoEl.innerHTML = <span class="bad">⛔ Entre RPM, Ø menante, Ø menée et C-C.</span>;
+      infoEl.innerHTML = `<span class="bad">⛔ Entre RPM, Ø menante, Ø menée et C-C.</span>`;
       outLength.textContent = "—";
       outRPM1.textContent = outCPM1.textContent = outHZ1.textContent = "—";
       outRPM2.textContent = outCPM2.textContent = outHZ2.textContent = "—";
@@ -1236,9 +766,7 @@ function updateSpectrumModeByOrientation(){
       drawSpectrum(hzMotor, 0, tSpec);
       return;
     }else{
-      if(!snapshotMode){
-  infoEl.innerHTML = "";
-}
+      infoEl.innerHTML = "";
     }
 
     // calculs
@@ -1365,38 +893,26 @@ if(window.visualViewport){
   });
 }
 
-playBtn.addEventListener("click", () => {
 
-  snapshotMode = false;   // on quitte le mode photo
-  peakRecord = {};        // on repart un nouvel enregistrement
-  infoEl.innerHTML = "";  // nettoie l’affichage
+  playBtn.addEventListener("click", () => {
+    const inp = readInputs();
+    if(!inp){ running = false; draw(); return; }
+    const geo = validateGeometryOpenBelt(inp);
+    if(!geo.ok){ running = false; draw(); return; }
+    running = true;
+  });
 
-  const inp = readInputs();
-  if(!inp){ running = false; draw(); return; }
-
-  const geo = validateGeometryOpenBelt(inp);
-  if(!geo.ok){ running = false; draw(); return; }
-
-  running = true;         // 🔴 LIVE reprend
-});
-  pauseBtn.addEventListener("click", () => {
-  running = false;
-  snapshotMode = true;   // 🔒 verrou affichage
-  renderPeakList();      // 📸 affiche la fiche
-});
+  pauseBtn.addEventListener("click", () => { running = false; });
 
   resetBtn.addEventListener("click", () => {
-  running = false;
-  tMotion = 0;
-  tSpec   = 0;
-  ang1 = 0;
-  ang2 = 0;
+    running = false;
+    tMotion = 0;
+    tSpec   = 0;
+    ang1 = 0;
+    ang2 = 0;
+    draw();
+  });
 
-  peakRecord = {};      // ✅ efface la mémoire
-  infoEl.innerHTML = ""; // optionnel: efface l'affichage
-
-  draw();
-});
   
   
 
@@ -1452,83 +968,6 @@ playBtn.addEventListener("click", () => {
   resize();
 updateSpectrumModeByOrientation();
 draw();
-
-function iso10816Class(mm_s){
-  if(mm_s < 1.8) return { label:"BON", color:[0,150,0] };
-  if(mm_s < 4.5) return { label:"ACCEPTABLE", color:[255,165,0] };
-  if(mm_s < 7.1) return { label:"MAUVAIS", color:[255,100,0] };
-  return { label:"CRITIQUE", color:[200,0,0] };
-}
-
-function exportPDF(){
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
-  const keys = Object.keys(peakRecord);
-  if(keys.length === 0){
-    alert("Aucune donnée enregistrée.\n\nAppuie sur Play puis Pause.");
-    return;
-  }
-
-  let y = 14;
-
-  doc.setFont("helvetica","bold");
-  doc.setFontSize(16);
-  doc.text("Analyse vibratoire — Photo instantanée", 14, y);
-  y += 10;
-
-  doc.setFontSize(11);
-  doc.setFont("helvetica","normal");
-  doc.text(Date : ${new Date().toLocaleString()}, 14, y);
-  y += 10;
-
-  doc.setFont("helvetica","bold");
-  doc.text("Résultats mesurés :", 14, y);
-  y += 8;
-
-  const sorted = keys.sort((a,b)=>peakRecord[b].amp - peakRecord[a].amp);
-
-  for(const label of sorted){
-    const p = peakRecord[label];
-    const iso = iso10816Class(p.amp);
-
-    if(y > 270){
-      doc.addPage();
-      y = 14;
-    }
-
-    doc.setFont("helvetica","bold");
-    doc.text(label, 14, y);
-
-    doc.setFont("helvetica","normal");
-    y += 6;
-    doc.text(Fréquence : ${p.hz.toFixed(2)} Hz, 18, y);
-    y += 6;
-    doc.text(Amplitude : ${p.amp.toFixed(2)} mm/s, 18, y);
-    y += 6;
-
-    doc.setTextColor(...iso.color);
-    doc.text(Classe ISO : ${iso.label}, 18, y);
-    doc.setTextColor(0,0,0);
-
-    y += 10;
-  }
-
-  doc.save("Analyse_vibratoire_ISO.pdf");
-}
-document.addEventListener("keydown", (e) => {
-  if(e.key === "Escape" && spectrumFS){
-    btnExitFS.click();
-  }
-});
-
-if(window.visualViewport){
-  window.visualViewport.addEventListener("resize", () => {
-    updateSpectrumModeByOrientation();
-  });
-}
-
-enableLongPressFS();
 requestAnimationFrame(loop);
 })();
 </script>
