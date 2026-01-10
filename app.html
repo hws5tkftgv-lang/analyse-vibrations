@@ -859,6 +859,66 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   }
 }
 
+@media (min-width: 1024px){
+
+  .controls{
+    grid-template-columns: repeat(3, 1fr);
+    column-gap:14px;
+    row-gap:10px;
+    align-items:end;
+  }
+}
+@media (min-width: 1024px){
+
+  /* Entraxe = colonne 2 */
+  #cc{
+    grid-column:2;
+  }
+
+  /* Défauts simulés = colonne 3 */
+  #faultSelect{
+    grid-column:3;
+  }
+}
+@media (min-width: 1024px){
+
+  /* Notes et explications */
+  .small{
+    font-size:14px;
+    line-height:1.5;
+  }
+
+  /* Titres de contrôles */
+  .controls label{
+    font-size:14px;
+    font-weight:700;
+  }
+
+  /* Texte Ralenti */
+  .controls label[for="slow"],
+  .controls label:has(+ #slow){
+    font-size:14px;
+  }
+}
+
+@media (min-width: 1024px){
+
+  #slow{
+    margin-top:4px;
+  }
+}
+@media (min-width: 1024px){
+
+  .outputBox{
+    font-size:14px;
+    line-height:1.4;
+    padding:8px 10px;
+  }
+
+  .outputBox div{
+    margin-bottom:2px;
+  }
+}
 
 </style>
 
