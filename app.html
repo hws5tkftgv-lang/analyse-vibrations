@@ -697,6 +697,41 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   }
 }
 
+/* ===================== PC — BLOC RÉSULTATS COMPACT ===================== */
+@media (min-width:1024px){
+
+  .results-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:8px 16px;
+    align-items:center;
+  }
+
+  /* Ligne 1 */
+  .results-grid .motor{ grid-column:1; }
+  .results-grid .driven{ grid-column:2; }
+  .results-grid .length{ grid-column:3; }
+
+  /* Ligne 2 */
+  .results-grid .belt{
+    grid-column:1 / 3;
+  }
+
+  .results-grid .note{
+    grid-column:3;
+    font-size:13px;
+    opacity:.75;
+    margin:0;
+  }
+
+  /* Texte plus lisible */
+  .results-grid div{
+    font-size:15px;
+    line-height:1.35;
+  }
+}
+
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -723,13 +758,37 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 
 
 
-  <div class="outputBox full">
-    <div><b>Menante</b> : <span id="out-rpm1">—</span> RPM | <span id="out-cpm1">—</span> CPM | <span id="out-hz1">—</span> Hz</div>
-    <div><b>Menée</b> : <span id="out-rpm2">—</span> RPM | <span id="out-cpm2">—</span> CPM | <span id="out-hz2">—</span> Hz</div>
-    <div><b>Courroie</b> : <span id="out-hzbelt">—</span> Hz | <span id="out-fpm">—</span> ft/min | <span id="out-strobe">—</span> FPM</div>
-    <div><b>Longueur courroie</b> : <span id="out-length">—</span></div>
-    <div class="small">Note : “FPM” ici = <b>Feet/min</b> (vitesse linéaire), et “FPM (strobe)” = <b>Flash/min</b> (≈ Hz×60).</div>
+<div class="outputBox full results-grid">
+
+  <div class="res motor">
+    <b>Menante</b> : <span id="out-rpm1">—</span> RPM |
+    <span id="out-cpm1">—</span> CPM |
+    <span id="out-hz1">—</span> Hz
   </div>
+
+  <div class="res driven">
+    <b>Menée</b> : <span id="out-rpm2">—</span> RPM |
+    <span id="out-cpm2">—</span> CPM |
+    <span id="out-hz2">—</span> Hz
+  </div>
+
+  <div class="res belt">
+    <b>Courroie</b> :
+    <span id="out-hzbelt">—</span> Hz |
+    <span id="out-fpm">—</span> ft/min |
+    <span id="out-strobe">—</span> FPM
+  </div>
+
+  <div class="res length">
+    <b>Longueur courroie</b> : <span id="out-length">—</span>
+  </div>
+
+  <div class="small note">
+    Note : “FPM” ici = <b>Feet/min</b> (vitesse linéaire),
+    et “FPM (strobe)” = <b>Flash/min</b> (≈ Hz×60).
+  </div>
+
+</div>
 
 <label class="faults">
   <b>Défauts simulés</b> (choix multiples)
