@@ -770,6 +770,33 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   }
 
 }
+
+
+@media (min-width: 1024px){
+
+  /* ===== GRILLE CONTROLS PC ===== */
+  .controls{
+    grid-template-columns: repeat(3, 1fr);
+    gap:10px 16px;
+  }
+
+  /* Entraxe C-C → colonne 2 */
+  .controls label.full{
+    grid-column:2;
+  }
+
+  /* Défauts simulés → colonne 3 */
+  .controls label.full + label{
+    grid-column:3;
+  }
+
+  /* Texte défauts plus clair */
+  .controls label b{
+    font-size:14px;
+  }
+
+}
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
