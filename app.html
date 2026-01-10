@@ -646,6 +646,28 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 
 }
 
+
+/* ================================================= */
+/* ===== CONTROLS EN 3 COLONNES — PC SEULEMENT ===== */
+/* ================================================= */
+@media (min-width: 1024px){
+
+  .controls{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:14px;
+    align-items:end;
+  }
+
+  /* éléments qui doivent prendre toute la largeur */
+  .controls .full{
+    grid-column: 1 / -1;
+  }
+
+}
+
+
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
