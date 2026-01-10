@@ -35,10 +35,29 @@ body{
 }
 
 /* ===================== HEADER ===================== */
-header{
+/* ===================== HEADER ===================== */
+.app-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+
   padding:10px 14px;
   font-size:16px;
   font-weight:700;
+}
+
+.app-header .title{
+  flex:1;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* Bouton ℹ️ dans le header */
+.header-info{
+  margin-left:8px;
+  background:rgba(255,255,255,0.12);
 }
 
 /* ===================== CONTROLS ===================== */
@@ -446,7 +465,13 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   margin:10px 0;
 }/* ===================== INFO MODAL — PC CONFORT ===================== */
 @media (min-width: 1024px){
+.app-header{
+  font-size:20px;
+}
 
+.header-info{
+  font-size:20px;
+}
   .infoTitle{
     font-size:22px;
   }
@@ -531,7 +556,7 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   <button id="reset">Reset</button>
   <button id="exportPDF">PDF</button>
 
-  <!-- ✅ Nouveau bouton ℹ️ -->
+
 
 </div>
 <div class="spectrum-controls">
