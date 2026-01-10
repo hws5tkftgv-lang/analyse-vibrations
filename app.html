@@ -827,6 +827,39 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   .pc-faults b{ font-size:14px; }
   .controls label[style*="Ralenti"]{ font-size:14px; font-weight:700; color:var(--text); }
 }
+
+@media (min-width: 1024px){
+
+  /* 🔒 Grille PC STABLE (anti-chevauchement) */
+  .controls{
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-rows: auto;
+    align-items: start;
+  }
+
+  /* 🔒 Chaque label devient un bloc rigide */
+  .controls > label,
+  .controls > div{
+    min-width: 0;
+  }
+
+  /* 🔒 Défauts simulés : pas d’expansion verticale sauvage */
+  .pc-faults select{
+    max-height: 42px;
+  }
+
+  /* 🔒 OutputBox ne pousse plus les lignes au-dessus */
+  .pc-results{
+    margin-top:6px;
+  }
+
+  /* 🔒 Slider toujours sous son texte */
+  #slow{
+    margin-top:4px;
+  }
+}
+
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
