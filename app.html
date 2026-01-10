@@ -666,7 +666,36 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 
 }
 
+/* ================= PC : 3 COLONNES ALIGNÉES ================= */
+@media (min-width:1024px){
 
+  .controls{
+    grid-template-columns: repeat(3, 1fr);
+    gap:12px;
+  }
+
+  /* Ø menée / Entraxe / Défauts = même ligne */
+  .controls label{
+    font-size:15px;
+  }
+
+  .controls .entraxe,
+  .controls .faults{
+    grid-column:auto;
+  }
+
+  /* Défauts plus lisible */
+  .controls .faults b{
+    display:block;
+    font-size:15px;
+    margin-bottom:4px;
+  }
+
+  #faultSelect{
+    height:44px;
+    font-size:15px;
+  }
+}
 
 </style>
 
@@ -689,7 +718,7 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 
   <label>Ø menante <input id="d1" type="number" inputmode="decimal" value="4"></label>
   <label>Ø menée <input id="d2" type="number" inputmode="decimal" value="9"></label>
-  <label class="full">Entraxe des poulies (C-C)<input id="cc" type="number" inputmode="decimal" value="21"></label>
+  <label class="entraxe">Entraxe des poulies (C-C)<input id="cc" type="number" inputmode="decimal" value="21"></label>
 
 
 
@@ -702,7 +731,7 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
     <div class="small">Note : “FPM” ici = <b>Feet/min</b> (vitesse linéaire), et “FPM (strobe)” = <b>Flash/min</b> (≈ Hz×60).</div>
   </div>
 
-<label class="full">
+<label class="faults">
   <b>Défauts simulés</b> (choix multiples)
 <select id="faultSelect" multiple size="1">
   <option value="all">Tout</option>
