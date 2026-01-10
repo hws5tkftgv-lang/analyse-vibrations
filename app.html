@@ -570,6 +570,143 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 
       <h3>✅ Méthode de lecture</h3>
       <p>1) Trouver 1× • 2) Voir harmoniques • 3) Lire amplitude • 4) Vérifier ISO • 5) Associer un défaut</p>
+      
+      <h3>🧮 9️⃣ Calcul de la longueur de la courroie (version débutant)</h3>
+
+<p>Pour une transmission à <b>courroie ouverte</b> (comme dans ce simulateur), on utilise une formule
+qui permet <b>d’estimer</b> la longueur de la courroie.</p>
+
+<p><b>Formule utilisée :</b></p>
+
+<code>
+Longueur ≈ 2 × C<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ (π / 2) × (D1 + D2)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ ( (D2 − D1)² / (4 × C) )
+</code>
+
+<p><b>Signification des termes :</b></p>
+<ul>
+  <li><b>C</b> : distance centre-à-centre entre les deux poulies</li>
+  <li><b>D1</b> : diamètre de la poulie menante</li>
+  <li><b>D2</b> : diamètre de la poulie menée</li>
+  <li><b>π (pi)</b> ≈ 3,14</li>
+</ul>
+
+<p>Cette formule additionne :</p>
+<ul>
+  <li>les parties droites de la courroie</li>
+  <li>les parties enroulées sur les poulies</li>
+  <li>une correction si les diamètres sont différents</li>
+</ul>
+
+<p><b>Important :</b> la longueur obtenue est <b>théorique</b>.  
+En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p>
+
+<hr>
+
+<h3>📐 🔄 1️⃣0️⃣ Influence de l’angle de la courroie</h3>
+
+<p>La courroie <b>n’enveloppe pas complètement</b> les poulies.</p>
+
+<p>La portion de poulie réellement touchée s’appelle :</p>
+
+<p><b>👉 l’angle d’enroulement</b></p>
+
+<p><b>Pourquoi c’est important ?</b></p>
+<ul>
+  <li>Grand angle → meilleure adhérence</li>
+  <li>Petit angle → plus de risque de glissement</li>
+</ul>
+
+<p><b>Exemples :</b></p>
+<ul>
+  <li>Poulies très rapprochées → angle faible → glissement possible</li>
+  <li>Poulies éloignées → angle plus grand → transmission plus stable</li>
+</ul>
+
+<p>Dans ce simulateur :</p>
+<ul>
+  <li>l’angle est calculé automatiquement</li>
+  <li>il influence la trajectoire de la courroie</li>
+  <li>il peut influencer les défauts simulés</li>
+</ul>
+
+<hr>
+
+<h3>🪛 1️⃣1️⃣ Longueur réelle vs longueur calculée</h3>
+
+<p>La formule suppose que la courroie roule sur le <b>diamètre extérieur</b> des poulies.</p>
+
+<p>En réalité :</p>
+<ul>
+  <li>la courroie s’enfonce légèrement dans la gorge</li>
+  <li>le diamètre réel de contact est un peu plus petit</li>
+</ul>
+
+<p><b>Conséquences :</b></p>
+<ul>
+  <li>la longueur réelle est légèrement différente</li>
+  <li>la vitesse réelle peut varier un peu</li>
+</ul>
+
+<p>En analyse vibratoire, ces écarts sont :</p>
+<ul>
+  <li>normaux</li>
+  <li>acceptés</li>
+  <li>pris en compte avec des tolérances</li>
+</ul>
+
+<hr>
+
+<h3>⚡ 1️⃣2️⃣ Influence de la fréquence électrique (Hydro-Québec)</h3>
+
+<p>Au Québec, la fréquence électrique est :</p>
+
+<code>60 Hz</code>
+
+<p>Cette fréquence peut apparaître dans un spectre de vibration
+<b>sans être un défaut mécanique</b>.</p>
+
+<p>On peut voir :</p>
+<ul>
+  <li>60 Hz</li>
+  <li>120 Hz (2 × 60)</li>
+  <li>180 Hz (3 × 60)</li>
+</ul>
+
+<p><b>Sources possibles :</b></p>
+<ul>
+  <li>champ magnétique du moteur</li>
+  <li>effets électromagnétiques</li>
+  <li>couplage moteur / structure</li>
+</ul>
+
+<p><b>⚠️ Erreur fréquente chez les débutants :</b></p>
+
+<p>Un pic à 60 Hz n’est <b>PAS automatiquement</b> un défaut mécanique.</p>
+
+<p><b>Règle simple :</b></p>
+<p><b>👉 Si un pic est exactement à 60 Hz ou un multiple, penser d’abord à l’électricité.</b></p>
+
+<hr>
+
+<h3>✅ 1️⃣3️⃣ Ce que fait ce simulateur</h3>
+
+<p>Ce simulateur sert à :</p>
+<ul>
+  <li>comprendre les relations entre vitesses</li>
+  <li>visualiser les pics typiques</li>
+  <li>apprendre à lire un spectre vibratoire</li>
+</ul>
+
+<p>Il ne remplace pas :</p>
+<ul>
+  <li>un vrai capteur</li>
+  <li>une vraie machine</li>
+  <li>une vraie analyse terrain</li>
+</ul>
+
+<p><b>Mais il est parfait pour apprendre sans risque.</b></p>
     </div>
   </div>
     </div>
