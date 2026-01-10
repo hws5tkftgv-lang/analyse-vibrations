@@ -979,6 +979,33 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   }
 
 }
+
+@media (min-width:1024px){
+
+  /* 🔹 Met tous les boutons sur UNE seule ligne */
+  .buttons{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:nowrap;
+  }
+
+  /* 🔹 Intègre le bouton "Plein écran spectre" dans la ligne */
+  .spectrum-controls{
+    padding:0;
+    margin:0;
+  }
+
+  .spectrum-controls button{
+    height:100%;
+    font-size:16px;
+    padding:12px 16px;
+    white-space:nowrap;
+  }
+
+}
+
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
