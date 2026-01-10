@@ -567,7 +567,84 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
     margin-top:0;
   }
 }
+/* ================================================= */
+/* ===== HARMONISATION GLOBALE TEXTE — MODE PC ===== */
+/* ================================================= */
+@media (min-width: 1024px){
 
+  /* ===== BASE TEXTE ===== */
+  body{
+    font-size:16px;
+    line-height:1.55;
+  }
+
+  /* ===== HEADER ===== */
+  header{
+    font-size:20px;
+    font-weight:700;
+  }
+
+  /* ===== LABELS (RPM, Diamètres, etc.) ===== */
+  .controls label{
+    font-size:15px;
+    font-weight:600;
+  }
+
+  /* ===== TITRES DANS LES CONTROLS (ex: Défauts simulés) ===== */
+  .controls label b{
+    font-size:16px;
+    font-weight:700;
+    display:block;
+    margin-bottom:6px;
+  }
+
+  /* ===== INPUTS & SELECT ===== */
+  .controls input,
+  .controls select{
+    font-size:16px;
+    font-weight:600;
+  }
+
+  /* ===== OUTPUT BOX (résultats) ===== */
+  .outputBox{
+    font-size:16px;
+    line-height:1.55;
+  }
+
+  .outputBox b{
+    font-weight:700;
+  }
+
+  /* ===== NOTE FPM ===== */
+  .outputBox .small{
+    font-size:15px;
+    opacity:0.9;
+  }
+
+  /* ===== TEXTE RÉSULTATS / SNAPSHOT ===== */
+  .results{
+    font-size:16px;
+    line-height:1.55;
+  }
+
+  /* ===== BOUTONS ===== */
+  .buttons button{
+    font-size:16px;
+    font-weight:700;
+  }
+
+  /* ===== TEXTE RALENTI ===== */
+  .controls label[style]{
+    font-size:15px;
+    font-weight:600;
+  }
+
+  /* ===== SLIDER RALENTI ===== */
+  #slow{
+    margin-top:2px;
+  }
+
+}
 
 </style>
 
