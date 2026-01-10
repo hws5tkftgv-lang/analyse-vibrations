@@ -357,6 +357,63 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 body.spectrum-mode .rotate-warning{
   z-index:9997;
 }
+
+/* ====== MENU DÉROULANT DÉFAUTS ====== */
+
+.fault-dropdown{
+  position:relative;
+}
+
+#faultToggle{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:none;
+  background:#1c2b6a;
+  color:#fff;
+  font-size:14px;
+  cursor:pointer;
+}
+
+.fault-menu{
+  display:none;
+  position:absolute;
+  top:100%;
+  left:0;
+  right:0;
+  background:#0f1a4a;
+  border-radius:12px;
+  padding:10px;
+  margin-top:6px;
+  z-index:2000;
+}
+
+.fault-menu label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:14px;
+  padding:4px 0;
+}
+
+.fault-actions{
+  display:flex;
+  gap:8px;
+  margin-bottom:8px;
+}
+
+.fault-actions button{
+  flex:1;
+  padding:6px;
+  font-size:13px;
+  border:none;
+  border-radius:8px;
+  background:#263a8a;
+  color:#fff;
+  cursor:pointer;
+}
+
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -392,7 +449,19 @@ body.spectrum-mode .rotate-warning{
    <div class="full">
   <label><b>Défauts simulés</b> (choix multiples)</label>
 
-  <div class="fault-grid">
+<div class="fault-dropdown">
+
+  <button type="button" id="faultToggle">
+    Défauts simulés ▾
+  </button>
+
+  <div id="faultMenu" class="fault-menu">
+
+    <div class="fault-actions">
+      <button type="button" id="faultAll">Tous</button>
+      <button type="button" id="faultNone">Aucun</button>
+    </div>
+
     <label><input type="checkbox" value="unbalance"> Balourd (1×)</label>
     <label><input type="checkbox" value="misalign"> Désalignement</label>
     <label><input type="checkbox" value="looseness"> Jeu mécanique</label>
@@ -400,7 +469,9 @@ body.spectrum-mode .rotate-warning{
     <label><input type="checkbox" value="slip"> Glissement</label>
     <label><input type="checkbox" value="bearing"> Roulement</label>
     <label><input type="checkbox" value="resonance"> Résonance</label>
+
   </div>
+</div>
 </div>
     <label style="display:block;margin-bottom:4px;">Ralenti (plus grand = plus lent)</label>
     <input id="slow" type="range" min="1" max="20" value="8">
@@ -1572,6 +1643,36 @@ specCanvas.addEventListener("mousemove", () => {
   }
 });
 requestAnimationFrame(loop);
+
+// ===== MENU DÉROULANT DÉFAUTS =====
+const faultToggle = document.getElementById("faultToggle");
+const faultMenu   = document.getElementById("faultMenu");
+const faultAll    = document.getElementById("faultAll");
+const faultNone   = document.getElementById("faultNone");
+
+faultToggle.addEventListener("click", () => {
+  faultMenu.style.display =
+    faultMenu.style.display === "block" ? "none" : "block";
+});
+
+faultAll.addEventListener("click", () => {
+  faultMenu.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = true);
+  redrawSpectrumNow();
+});
+
+faultNone.addEventListener("click", () => {
+  faultMenu.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
+  redrawSpectrumNow();
+});
+
+// fermer si clic extérieur
+document.addEventListener("click", (e) => {
+  if(!faultMenu.contains(e.target) && e.target !== faultToggle){
+    faultMenu.style.display = "none";
+  }
+});
+
+
 })();
 </script>
 </body>
