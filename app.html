@@ -535,7 +535,38 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 
 }
 
+/* ================================================= */
+/* ===== AJUSTEMENTS TEXTE & LAYOUT — MODE PC ===== */
+/* ================================================= */
+@media (min-width: 1024px){
 
+  /* 🔹 NOTE FPM (dans outputBox) */
+  .outputBox .small{
+    font-size:15px;
+    line-height:1.5;
+    opacity:0.9;
+  }
+
+  /* 🔹 TITRE "Défauts simulés (choix multiples)" */
+  .controls label b{
+    font-size:16px;
+    display:block;
+    margin-bottom:6px;
+  }
+
+  /* 🔹 TEXTE "Ralenti (plus grand = plus lent)" */
+  .controls label[style]{
+    font-size:15px;
+    font-weight:600;
+    margin-bottom:4px;
+  }
+
+  /* 🔹 GROUPE RALENTI : même colonne + rapproché */
+  #slow{
+    grid-column: auto;     /* ⬅️ enlève l'effet colonne bizarre */
+    margin-top:0;
+  }
+}
 
 
 </style>
