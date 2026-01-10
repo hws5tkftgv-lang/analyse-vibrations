@@ -536,7 +536,19 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 }
 
 
+/* ===================== APP = PAGE PLEIN ÉCRAN (PC) ===================== */
+.app{
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
 
+/* zone animation + spectre extensible */
+.pc-layout{
+  flex:1;
+  min-height:0; /* CRITIQUE : empêche le scroll */
+}
 
 </style>
 
