@@ -919,7 +919,23 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
     margin-bottom:2px;
   }
 }
+@media (min-width:1024px){
 
+  /* ⚠️ Annule le full UNIQUEMENT pour ces 2 champs */
+  .controls .pc-cc,
+  .controls .pc-faults{
+    grid-column:auto !important;
+  }
+
+  /* Placement exact */
+  .controls .pc-cc{
+    grid-column:2;
+  }
+
+  .controls .pc-faults{
+    grid-column:3;
+  }
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
