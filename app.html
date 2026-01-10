@@ -447,6 +447,22 @@ body.spectrum-mode .rotate-warning{
   <label>Ø menée <input id="d2" type="number" inputmode="decimal" value="9"></label>
   <label class="full">C-C <input id="cc" type="number" inputmode="decimal" value="21"></label>
 
+<label class="full">Défauts simulés
+  <select id="faultMode">
+    <option value="none">Aucun (normal)</option>
+    <option value="unbalance">Balourd</option>
+    <option value="misalign">Désalignement</option>
+    <option value="looseness">Jeu mécanique</option>
+    <option value="belt">Défaut de courroie</option>
+    <option value="bearing">Roulement</option>
+    <option value="resonance">Résonance</option>
+    <option value="combo1">Balourd + Désalignement</option>
+    <option value="combo2">Balourd + Jeu</option>
+    <option value="all">Tous les défauts</option>
+  </select>
+</label>
+
+
   <div class="outputBox full">
     <div><b>Menante</b> : <span id="out-rpm1">—</span> RPM | <span id="out-cpm1">—</span> CPM | <span id="out-hz1">—</span> Hz</div>
     <div><b>Menée</b> : <span id="out-rpm2">—</span> RPM | <span id="out-cpm2">—</span> CPM | <span id="out-hz2">—</span> Hz</div>
@@ -459,29 +475,7 @@ body.spectrum-mode .rotate-warning{
    <div class="full">
   <label><b>Défauts simulés</b> (choix multiples)</label>
 
-<div class="fault-dropdown">
 
-  <button type="button" id="faultToggle">
-    Défauts simulés ▾
-  </button>
-
-  <div id="faultMenu" class="fault-menu">
-
-    <div class="fault-actions">
-      <button type="button" id="faultAll">Tous</button>
-      <button type="button" id="faultNone">Aucun</button>
-    </div>
-
-    <label><input type="checkbox" value="unbalance"> Balourd (1×)</label>
-    <label><input type="checkbox" value="misalign"> Désalignement</label>
-    <label><input type="checkbox" value="looseness"> Jeu mécanique</label>
-    <label><input type="checkbox" value="belt"> Défaut de courroie</label>
-    <label><input type="checkbox" value="slip"> Glissement</label>
-    <label><input type="checkbox" value="bearing"> Roulement</label>
-    <label><input type="checkbox" value="resonance"> Résonance</label>
-
-  </div>
-</div>
 </div>
     <label style="display:block;margin-bottom:4px;">Ralenti (plus grand = plus lent)</label>
     <input id="slow" type="range" min="1" max="20" value="8">
@@ -1147,11 +1141,23 @@ specCtx.fillText(
   }
 
 function getSelectedFaults(){
-  return Array.from(
-    document.querySelectorAll("#faultMenu input[type=checkbox]:checked")
-  ).map(cb => cb.value);
-}
+  const mode = document.getElementById("faultMode").value;
 
+  const map = {
+    none: [],
+    unbalance: ["unbalance"],
+    misalign: ["misalign"],
+    looseness: ["looseness"],
+    belt: ["belt"],
+    bearing: ["bearing"],
+    resonance: ["resonance"],
+    combo1: ["unbalance","misalign"],
+    combo2: ["unbalance","looseness"],
+    all: ["unbalance","misalign","looseness","belt","slip","bearing","resonance"]
+  };
+
+  return map[mode] || [];
+}
 function renderPeakList(){
   const keys = Object.keys(peakRecord);
 
@@ -1654,33 +1660,8 @@ specCanvas.addEventListener("mousemove", () => {
 });
 requestAnimationFrame(loop);
 
-// ===== MENU DÉROULANT DÉFAUTS =====
-const faultToggle = document.getElementById("faultToggle");
-const faultMenu   = document.getElementById("faultMenu");
-const faultAll    = document.getElementById("faultAll");
-const faultNone   = document.getElementById("faultNone");
-
-faultToggle.addEventListener("click", () => {
-  faultMenu.style.display =
-    faultMenu.style.display === "block" ? "none" : "block";
-});
-
-faultAll.addEventListener("click", () => {
-  faultMenu.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = true);
-  redrawSpectrumNow();
-});
-
-faultNone.addEventListener("click", () => {
-  faultMenu.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
-  redrawSpectrumNow();
-});
-
-// fermer si clic extérieur
-document.addEventListener("click", (e) => {
-  if(!faultMenu.contains(e.target) && e.target !== faultToggle){
-    faultMenu.style.display = "none";
-  }
-});
+document.getElementById("faultMode")
+  .addEventListener("change", redrawSpectrumNow);
 
 
 })();
