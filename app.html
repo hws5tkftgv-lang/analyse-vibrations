@@ -830,13 +830,13 @@ En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p
   const clamp = (v,a,b)=>Math.max(a, Math.min(b, v));
   const isNum = (x)=>Number.isFinite(x);
   // ===== ISO 20816 (ex ISO 10816) - Classe II (machines industrielles standard) =====
-const ISO_CLASS = "II"; // affichage seulement
+const ISO_CLASS = "I"; // petites machines, moteurs pédagogiques
 
 const ISO_ZONES = [
-  { name:"A", label:"Bon",         max:1.12, col:"rgba(  0,200,  0,0.12)" },
-  { name:"B", label:"Acceptable",  max:2.80, col:"rgba(  0,162,255,0.12)" },
-  { name:"C", label:"Mauvais",     max:7.10, col:"rgba(255,165,  0,0.12)" },
-  { name:"D", label:"Critique",    max:Infinity, col:"rgba(255, 77, 77,0.12)" }
+  { name:"A", label:"Bon",        max:0.71, col:"rgba(  0,200,  0,0.12)" },
+  { name:"B", label:"Acceptable", max:1.80, col:"rgba(  0,162,255,0.12)" },
+  { name:"C", label:"Mauvais",    max:4.50, col:"rgba(255,165,  0,0.12)" },
+  { name:"D", label:"Critique",   max:Infinity, col:"rgba(255, 77, 77,0.12)" }
 ];
 
 function isoVerdict(mm_s_rms){
