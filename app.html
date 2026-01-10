@@ -383,15 +383,16 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 
 <label class="full">
   <b>Défauts simulés</b> (choix multiples)
-  <select id="faultSelect" multiple size="1">
-    <option value="unbalance">Balourd (1×)</option>
-    <option value="misalign">Désalignement</option>
-    <option value="looseness">Jeu mécanique</option>
-    <option value="belt">Défaut de courroie</option>
-    <option value="slip">Glissement</option>
-    <option value="bearing">Roulement</option>
-    <option value="resonance">Résonance</option>
-  </select>
+<select id="faultSelect" multiple size="1">
+  <option value="all">Tout</option>
+  <option value="unbalance">Balourd (1×)</option>
+  <option value="misalign">Désalignement</option>
+  <option value="looseness">Jeu mécanique</option>
+  <option value="belt">Défaut de courroie</option>
+  <option value="slip">Glissement</option>
+  <option value="bearing">Roulement</option>
+  <option value="resonance">Résonance</option>
+</select>
 </label>
 
 </div>
@@ -1060,13 +1061,15 @@ specCtx.fillText(
 
 function getSelectedFaults(){
   const sel = document.getElementById("faultSelect");
+  const values = Array.from(sel.selectedOptions).map(o => o.value);
 
-  return Array.from(sel.selectedOptions)
-              .map(opt => opt.value);
+  // 🟢 Si "Tout" est sélectionné → moteur en mode ALL
+  if(values.includes("all")){
+    return ["all"];
+  }
+
+  return values;
 }
-document
-  .getElementById("faultSelect")
-  .addEventListener("change", redrawSpectrumNow);
 function renderPeakList(){
   const keys = Object.keys(peakRecord);
 
@@ -1485,7 +1488,24 @@ playBtn.addEventListener("click", () => {
   resize();
 updateSpectrumModeByOrientation();
 draw();
+// ===== GESTION DU MENU DÉFAUTS (choix multiples + "Tout") =====
+const faultSelect = document.getElementById("faultSelect");
 
+if(faultSelect){
+  faultSelect.addEventListener("change", () => {
+    const values = Array.from(faultSelect.selectedOptions).map(o => o.value);
+
+    // 🟢 Si "Tout" est sélectionné → il écrase les autres
+    if(values.includes("all")){
+      Array.from(faultSelect.options).forEach(opt => {
+        opt.selected = (opt.value === "all");
+      });
+    }
+
+    // 🔄 Mise à jour immédiate du spectre
+    redrawSpectrumNow();
+  });
+}
 function iso10816Class(mm_s){
   if(mm_s < 1.8) return { label:"BON", color:[0,150,0] };
   if(mm_s < 4.5) return { label:"ACCEPTABLE", color:[255,165,0] };
