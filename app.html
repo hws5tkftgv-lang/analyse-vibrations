@@ -381,13 +381,18 @@ body.spectrum-mode .rotate-warning{
   top:100%;
   left:0;
   right:0;
+
   background:#0f1a4a;
   border-radius:12px;
   padding:10px;
   margin-top:6px;
   z-index:2000;
-}
 
+  /* 🔒 FIX MOBILE */
+  max-height:60vh;          /* ⬅️ limite à l’écran */
+  overflow-y:auto;          /* ⬅️ scroll interne */
+  overscroll-behavior:contain;
+}
 .fault-menu label{
   display:flex;
   align-items:center;
@@ -413,7 +418,12 @@ body.spectrum-mode .rotate-warning{
   cursor:pointer;
 }
 
-
+/* ====== AJUSTEMENT MOBILE MENU DÉFAUTS ====== */
+@media (max-width: 480px){
+  .fault-menu{
+    max-height:50vh;
+  }
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -1138,7 +1148,7 @@ specCtx.fillText(
 
 function getSelectedFaults(){
   return Array.from(
-    document.querySelectorAll(".fault-grid input:checked")
+    document.querySelectorAll("#faultMenu input[type=checkbox]:checked")
   ).map(cb => cb.value);
 }
 
