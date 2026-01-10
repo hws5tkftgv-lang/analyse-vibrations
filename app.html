@@ -796,7 +796,37 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   }
 
 }
+@media (min-width: 1024px){
 
+  /* 3 colonnes PC */
+  .controls{
+    grid-template-columns: repeat(3, 1fr);
+    gap:10px 16px;
+    align-items:end;
+  }
+
+  /* Row 1: RPM | Unités | Ø menante */
+  .controls label:has(#rpm){ grid-column:1; grid-row:1; }
+  .controls label:has(#unit){ grid-column:2; grid-row:1; }
+  .controls .pc-d1{ grid-column:3; grid-row:1; }
+
+  /* Row 2: Ø menée | Entraxe | Défauts */
+  .controls .pc-d2{ grid-column:1; grid-row:2; }
+  .controls .pc-cc{ grid-column:2; grid-row:2; }
+  .controls .pc-faults{ grid-column:3; grid-row:2; }
+
+  /* Row 3: Résultats (sur 3 colonnes) */
+  .controls .pc-results{ grid-column:1 / -1; grid-row:3; }
+
+  /* Row 4: Ralenti (titre + slider ensemble sur 3 colonnes) */
+  .controls label[style*="Ralenti"]{ grid-column:1 / -1; grid-row:4; margin:0; }
+  #slow{ grid-column:1 / -1; grid-row:5; }
+
+  /* Textes PC plus lisibles */
+  .outputBox .small{ font-size:14px; opacity:.85; }
+  .pc-faults b{ font-size:14px; }
+  .controls label[style*="Ralenti"]{ font-size:14px; font-weight:700; color:var(--text); }
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -816,14 +846,14 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
     </select>
   </label>
 
-  <label>Ø menante <input id="d1" type="number" inputmode="decimal" value="4"></label>
-  <label>Ø menée <input id="d2" type="number" inputmode="decimal" value="9"></label>
-  <label class="entraxe">Entraxe des poulies (C-C)<input id="cc" type="number" inputmode="decimal" value="21"></label>
+<label class="pc-d1">Ø menante <input id="d1" type="number" inputmode="decimal" value="4"></label>
+<label class="pc-d2">Ø menée <input id="d2" type="number" inputmode="decimal" value="9"></label>
+<label class="full pc-cc">Entraxe des poulies (C-C)<input id="cc" type="number" inputmode="decimal" value="21"></label>
 
 
 
 
-<div class="outputBox full results-grid">
+<div class="outputBox full pc-results">
 
   <div class="res motor">
     <b>Menante</b> : <span id="out-rpm1">—</span> RPM |
@@ -855,7 +885,7 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 
 </div>
 
-<label class="faults">
+<label class="full pc-faults">
   <b>Défauts simulés</b> (choix multiples)
 <select id="faultSelect" multiple size="1">
   <option value="all">Tout</option>
