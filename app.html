@@ -731,7 +731,45 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   }
 }
 
+@media (min-width: 1024px){
 
+  /* ===== RÉSULTATS – GRILLE PC ===== */
+  .results-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:8px 16px;
+    align-items:center;
+  }
+
+  .results-grid .motor{
+    grid-column:1;
+    grid-row:1;
+  }
+
+  .results-grid .driven{
+    grid-column:2;
+    grid-row:1;
+  }
+
+  .results-grid .belt{
+    grid-column:3;
+    grid-row:1;
+  }
+
+  /* ✅ CORRECTION ICI */
+  .results-grid .length{
+    grid-column:2;   /* ⬅️ FORCÉ colonne 2 */
+    grid-row:2;
+  }
+
+  .results-grid .note{
+    grid-column:3;
+    grid-row:2;
+    font-size:14px;
+    opacity:0.8;
+  }
+
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
