@@ -353,6 +353,10 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   align-items:center;
   gap:6px;
 }
+
+body.spectrum-mode .rotate-warning{
+  z-index:9997;
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -508,7 +512,7 @@ let snapshotMode = false;
   const ccEl    = document.getElementById("cc");
   const unitEl  = document.getElementById("unit");
   const slowEl  = document.getElementById("slow");
-  const faultEl = document.getElementById("fault");
+  const 
 
   const infoEl     = document.getElementById("info");
   const rotateWarn = document.getElementById("rotateWarn");
@@ -1434,7 +1438,7 @@ playBtn.addEventListener("click", () => {
   
 
   // Inputs : redraw (spectre figé si pause)
-  [rpmEl,d1El,d2El,ccEl,unitEl,slowEl,faultEl].forEach(el=>{
+  [rpmEl,d1El,d2El,ccEl,unitEl,slowEl].forEach(el=>{
     el.addEventListener("input", () => {
       // si la géométrie devient invalide en Play, draw() stoppera running
       draw();
