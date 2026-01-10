@@ -1136,13 +1136,18 @@ function updateSpectrumModeByOrientation(){
 
     showFSHUD();
 }else{
-  // 📱 Portrait + fullscreen → message + HUD OBLIGATOIRE
+  // 📱 PORTRAIT + FULLSCREEN → MODE SÉCURISÉ
   rotateWarn.style.display = "flex";
 
   const hud = document.getElementById("fsHUD");
-  hud.classList.add("visible");
 
-  clearTimeout(fsHideTimer); // ⛔ empêche disparition
+  // 🔒 HUD FORCÉ VISIBLE
+  hud.classList.add("visible");
+  hud.style.pointerEvents = "auto";
+
+  // ⛔ INTERDIT DE LE CACHER
+  clearTimeout(fsHideTimer);
+  fsHideTimer = null;
 }
 }
   /* ===================== RESIZE ===================== */
