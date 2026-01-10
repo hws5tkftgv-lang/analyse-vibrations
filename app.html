@@ -424,6 +424,12 @@ body.spectrum-mode .rotate-warning{
     max-height:50vh;
   }
 }
+
+#faultSelect{
+  height:40px;              /* même hauteur que Unités */
+  appearance:auto;
+  -webkit-appearance:auto;
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -447,20 +453,7 @@ body.spectrum-mode .rotate-warning{
   <label>Ø menée <input id="d2" type="number" inputmode="decimal" value="9"></label>
   <label class="full">C-C <input id="cc" type="number" inputmode="decimal" value="21"></label>
 
-<label class="full">Défauts simulés
-  <select id="faultMode">
-    <option value="none">Aucun (normal)</option>
-    <option value="unbalance">Balourd</option>
-    <option value="misalign">Désalignement</option>
-    <option value="looseness">Jeu mécanique</option>
-    <option value="belt">Défaut de courroie</option>
-    <option value="bearing">Roulement</option>
-    <option value="resonance">Résonance</option>
-    <option value="combo1">Balourd + Désalignement</option>
-    <option value="combo2">Balourd + Jeu</option>
-    <option value="all">Tous les défauts</option>
-  </select>
-</label>
+
 
 
   <div class="outputBox full">
@@ -1141,23 +1134,14 @@ specCtx.fillText(
   }
 
 function getSelectedFaults(){
-  const mode = document.getElementById("faultMode").value;
+  const sel = document.getElementById("faultSelect");
 
-  const map = {
-    none: [],
-    unbalance: ["unbalance"],
-    misalign: ["misalign"],
-    looseness: ["looseness"],
-    belt: ["belt"],
-    bearing: ["bearing"],
-    resonance: ["resonance"],
-    combo1: ["unbalance","misalign"],
-    combo2: ["unbalance","looseness"],
-    all: ["unbalance","misalign","looseness","belt","slip","bearing","resonance"]
-  };
-
-  return map[mode] || [];
+  return Array.from(sel.selectedOptions)
+              .map(opt => opt.value);
 }
+document
+  .getElementById("faultSelect")
+  .addEventListener("change", redrawSpectrumNow);
 function renderPeakList(){
   const keys = Object.keys(peakRecord);
 
