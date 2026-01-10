@@ -936,6 +936,49 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
     grid-column:3;
   }
 }
+
+@media (min-width:1024px){
+
+  /* 🔹 Bloc résultats compact (PC seulement) */
+  .outputBox{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:6px 14px;
+    align-items:center;
+  }
+
+  /* Ligne 1 */
+  .outputBox .motor{
+    grid-column:1;
+  }
+
+  .outputBox .driven{
+    grid-column:2;
+  }
+
+  .outputBox .belt{
+    grid-column:3;
+  }
+
+  /* Ligne 2 */
+  .outputBox .length{
+    grid-column:1 / 3;   /* prend 2 colonnes */
+  }
+
+  .outputBox .note{
+    grid-column:3;
+    font-size:14px;
+    line-height:1.4;
+    margin:0;
+    opacity:0.85;
+  }
+
+  /* Compactage vertical */
+  .outputBox div{
+    margin:0;
+  }
+
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
