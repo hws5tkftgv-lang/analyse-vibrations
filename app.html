@@ -347,6 +347,91 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   appearance:auto;
   -webkit-appearance:auto;
 }
+
+/* ===================== INFO MODAL (ℹ️) ===================== */
+.info-btn{
+  width:44px;
+  min-width:44px;
+  flex:0 0 44px;
+  padding:10px 0;
+  border-radius:12px;
+  background:rgba(255,255,255,0.10);
+  color:#eaf1ff;
+  font-size:18px;
+  line-height:1;
+}
+
+.infoModal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.65);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  z-index:20000;
+}
+
+.infoModal.open{ display:flex; }
+
+.infoCard{
+  width:min(720px, 100%);
+  max-height:85dvh;
+  background:#0f1a4a;
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 10px 30px rgba(0,0,0,0.45);
+  border:1px solid rgba(255,255,255,0.10);
+}
+
+.infoHead{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 14px;
+  background:rgba(255,255,255,0.06);
+  border-bottom:1px solid rgba(255,255,255,0.10);
+}
+
+.infoTitle{
+  font-weight:700;
+  font-size:14px;
+}
+
+.infoClose{
+  background:#b71c1c;
+  border:none;
+  border-radius:10px;
+  color:#fff;
+  padding:8px 12px;
+  font-size:14px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+
+.infoBody{
+  padding:14px;
+  overflow:auto;
+  max-height:calc(85dvh - 52px);
+  color:#eaf1ff;
+  font-size:14px;
+  line-height:1.45;
+}
+
+.infoBody h3{
+  margin:14px 0 8px;
+  font-size:14px;
+}
+.infoBody p{ margin:8px 0; }
+.infoBody code{
+  display:block;
+  background:rgba(255,255,255,0.08);
+  padding:8px 10px;
+  border-radius:10px;
+  overflow:auto;
+}
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -406,6 +491,9 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   <button id="pause">Pause</button>
   <button id="reset">Reset</button>
   <button id="exportPDF">PDF</button>
+
+  <!-- ✅ Nouveau bouton ℹ️ -->
+  <button type="button" id="openInfo" class="info-btn" aria-label="Info">ℹ️</button>
 </div>
 <div class="spectrum-controls">
   <button id="enterSpectrumFS">🔍 Plein écran spectre</button>
@@ -1594,9 +1682,85 @@ specCanvas.addEventListener("mousemove", () => {
 });
 requestAnimationFrame(loop);
 
+/* ===================== INFO POPUP (ℹ️) ===================== */
+const infoModal = document.getElementById("infoModal");
+const openInfo  = document.getElementById("openInfo");
+const closeInfo = document.getElementById("closeInfo");
 
+function openInfoModal(){
+  infoModal.classList.add("open");
+  infoModal.setAttribute("aria-hidden","false");
+}
+
+function closeInfoModal(){
+  infoModal.classList.remove("open");
+  infoModal.setAttribute("aria-hidden","true");
+}
+
+openInfo.addEventListener("click", openInfoModal);
+closeInfo.addEventListener("click", closeInfoModal);
+
+// fermer si clic en dehors de la carte
+infoModal.addEventListener("click", (e)=>{
+  if(e.target === infoModal) closeInfoModal();
+});
+
+// ESC ferme
+document.addEventListener("keydown", (e)=>{
+  if(e.key === "Escape" && infoModal.classList.contains("open")){
+    closeInfoModal();
+  }
+});
 
 })();
 </script>
+
+<!-- ===================== INFO POPUP (MODAL) ===================== -->
+<div id="infoModal" class="infoModal" aria-hidden="true">
+  <div class="infoCard" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+    <div class="infoHead">
+      <div id="infoTitle" class="infoTitle">ℹ️ Comprendre l’analyse vibratoire (débutant)</div>
+      <button type="button" id="closeInfo" class="infoClose">Fermer</button>
+    </div>
+
+    <div class="infoBody" id="infoBody">
+      <h3>🎯 Objectif</h3>
+      <p>Cette application sert à comprendre <b>comment</b> une machine vibre et <b>pourquoi</b> certaines vibrations indiquent un défaut.</p>
+
+      <h3>2️⃣ Unités</h3>
+      <p><b>RPM</b> = tours/minute. <b>Hz</b> = tours/seconde.</p>
+      <code>Hz = RPM ÷ 60</code>
+
+      <h3>3️⃣ Le 1× (le plus important)</h3>
+      <p><b>1×</b> correspond à la vitesse de rotation.</p>
+      <p>Exemple : 1500 RPM → 1500 ÷ 60 = <b>25 Hz</b> → donc <b>1× = 25 Hz</b>.</p>
+
+      <h3>4️⃣ Amplitude (combien ça vibre)</h3>
+      <p>On regarde la hauteur des lignes dans le spectre. L’unité ici est <b>mm/s</b>.</p>
+      <p>Plus le chiffre est grand → plus c’est sérieux.</p>
+
+      <h3>5️⃣ Zones ISO (gravité)</h3>
+      <p>Les zones ISO servent à savoir si la vibration est acceptable :</p>
+      <p>A = très bon • B = acceptable • C = problème • D = critique</p>
+
+      <h3>6️⃣ Courroie</h3>
+      <p>La courroie a sa propre fréquence. Elle peut créer des pics différents du moteur.</p>
+
+      <h3>7️⃣ Formules utilisées (simplifiées)</h3>
+      <p><b>Vitesse de courroie</b> :</p>
+      <code>Vitesse = π × diamètre × RPM</code>
+      <p><b>Fréquence courroie</b> :</p>
+      <code>Hz courroie = vitesse ÷ longueur</code>
+
+      <h3>8️⃣ Défauts (exemples)</h3>
+      <p><b>Balourd</b> : pic fort à 1×</p>
+      <p><b>Désalignement</b> : pic fort à 2×</p>
+      <p><b>Jeu mécanique</b> : plusieurs harmoniques</p>
+
+      <h3>✅ Méthode de lecture</h3>
+      <p>1) Trouver 1× • 2) Voir harmoniques • 3) Lire amplitude • 4) Vérifier ISO • 5) Associer un défaut</p>
+    </div>
+  </div>
+</div>
 </body>
 </html>
