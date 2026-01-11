@@ -347,6 +347,61 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   appearance:auto;
   -webkit-appearance:auto;
 }
+
+
+
+/* ================= INFO BULLE ================= */
+
+.infoModal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  z-index:10050;
+  display:none;
+}
+
+.infoModal.show{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.infoContent{
+  background:#0b1436;
+  color:#eaf1ff;
+  width:92%;
+  max-width:860px;
+  max-height:88vh;
+  border-radius:16px;
+  padding:22px;
+  position:relative;
+}
+
+.infoScroll{
+  overflow-y:auto;
+  max-height:72vh;
+  font-size:16px;
+  line-height:1.6;
+}
+
+.closeInfo{
+  position:absolute;
+  top:12px;
+  right:12px;
+  background:#b71c1c;
+  color:white;
+  border:none;
+  padding:6px 10px;
+  border-radius:8px;
+  font-size:15px;
+  cursor:pointer;
+}
+
+
+
+
+
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -354,7 +409,10 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 </head>
 
 <body>
-<header>🔄 Simulateur analyse vibratoire </header>
+<header>
+  🔄 Simulateur analyse vibratoire
+  <button onclick="openInfo()" style="margin-left:8px;">ℹ️</button>
+</header>
 
 <div class="controls">
   <label>RPM moteur <input id="rpm" type="number" inputmode="decimal" value="1500"></label>
@@ -1595,8 +1653,100 @@ specCanvas.addEventListener("mousemove", () => {
 requestAnimationFrame(loop);
 
 
+/* ================= INFO BULLE ================= */
 
+const infoModal = document.getElementById("infoModal");
+const closeInfo = document.getElementById("closeInfo");
+
+function openInfo(){
+  infoModal.classList.add("show");
+  infoModal.setAttribute("aria-hidden","false");
+}
+
+closeInfo.addEventListener("click", () => {
+  infoModal.classList.remove("show");
+  infoModal.setAttribute("aria-hidden","true");
+});
 })();
 </script>
+
+
+<!-- ================= INFO BULLE ================= -->
+<div id="infoModal" class="infoModal" aria-hidden="true">
+  <div class="infoContent">
+    <button id="closeInfo" class="closeInfo">✖</button>
+
+    <div class="infoScroll">
+
+<h2>📘 Aide — Comprendre les calculs et le spectre</h2>
+
+<h3>1️⃣ Fréquences de rotation</h3>
+<p>Une machine qui tourne produit des vibrations à la même fréquence que sa vitesse de rotation.</p>
+<ul>
+  <li><b>RPM</b> : tours par minute</li>
+  <li><b>CPM</b> : cycles par minute</li>
+  <li><b>Hz</b> : cycles par seconde (RPM ÷ 60)</li>
+</ul>
+<p>Exemple : 1500 RPM = 25 Hz</p>
+
+<hr>
+
+<h3>2️⃣ Fréquence de la courroie</h3>
+<p>La courroie a sa propre fréquence selon sa vitesse et sa longueur.</p>
+<p><b>Principe :</b></p>
+<p style="font-family:monospace">Fréquence = vitesse linéaire ÷ longueur</p>
+
+<hr>
+
+<h3>3️⃣ Longueur de la courroie</h3>
+<p>La longueur dépend :</p>
+<ul>
+  <li>de l’entraxe (C-C)</li>
+  <li>des deux diamètres</li>
+  <li>de l’enroulement sur les poulies</li>
+</ul>
+
+<p><b>Formule utilisée :</b></p>
+<p style="font-family:monospace">
+L = 2C + (π/2)(D1 + D2) + (D2 − D1)² / (4C)
+</p>
+
+<hr>
+
+<h3>4️⃣ Influence de l’enroulement</h3>
+<p>La courroie pénètre dans les poulies. Cela :</p>
+<ul>
+  <li>augmente légèrement la longueur réelle</li>
+  <li>modifie la fréquence mesurée</li>
+</ul>
+
+<hr>
+
+<h3>5️⃣ Attention au 60 Hz (Hydro-Québec)</h3>
+<p>Le réseau électrique est à <b>60 Hz</b>.</p>
+<ul>
+  <li>60 Hz → électrique</li>
+  <li>120 Hz → harmonique</li>
+</ul>
+<p>⚠️ Peut être confondu avec un défaut mécanique.</p>
+
+<hr>
+
+<h3>6️⃣ Zones ISO</h3>
+<ul>
+  <li>A : Bon</li>
+  <li>B : Acceptable</li>
+  <li>C : Mauvais</li>
+  <li>D : Critique</li>
+</ul>
+
+<p class="small">But pédagogique : comprendre pourquoi un pic apparaît.</p>
+
+    </div>
+  </div>
+</div>
+
+
+
 </body>
 </html>
