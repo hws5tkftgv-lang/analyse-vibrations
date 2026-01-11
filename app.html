@@ -276,11 +276,7 @@ body.spectrum-mode #specStage{
 }
 
 /* ===================== SPECTRUM CONTROLS ===================== */
-.spectrum-controls{
-  display:flex;
-  gap:8px;
-  padding:0 14px 10px;
-}
+
 
 .spectrum-controls button{
   padding:8px 12px;
@@ -1486,6 +1482,10 @@ btnEnterFS.onclick = () => {
   redrawSpectrumNow();
 
   if(!isMobile()) showFSHUD(); // PC seulement
+setTimeout(() => {
+  resize();
+  redrawSpectrumNow();
+}, 50);
 };
 
 btnExitFS.onclick = () => {
@@ -1501,6 +1501,11 @@ btnExitFS.onclick = () => {
   resize();
   redrawSpectrumNow();
   document.getElementById("fsHUD").classList.remove("visible");
+  setTimeout(() => {
+  resize();
+  redrawSpectrumNow();
+}, 50);
+  
 };
   const playBtn  = document.getElementById("play");
   const pauseBtn = document.getElementById("pause");
@@ -2069,11 +2074,18 @@ function updateSpectrumModeByOrientation(){
   const dpr = dprNow();
 
   /* ========= ANIMATION ========= */
-  const maxW = Math.min(window.innerWidth - 24, 720);
-  if(!lockedWidth) lockedWidth = maxW;
-  lockedWidth = Math.min(lockedWidth, maxW);
+    let w;
 
-  const w = lockedWidth;
+  if(window.innerWidth >= 1024){
+    // PC : largeur fluide
+    w = Math.min(window.innerWidth * 0.46, 720);
+  }else{
+    // Mobile : largeur verrouillée (anti-saut)
+    const maxW = Math.min(window.innerWidth - 24, 720);
+    if(!lockedWidth) lockedWidth = maxW;
+    lockedWidth = Math.min(lockedWidth, maxW);
+    w = lockedWidth;
+  }
   const h = w * 0.55;
 
   canvas.style.width  = w + "px";
@@ -2086,16 +2098,12 @@ function updateSpectrumModeByOrientation(){
   let specW, specH;
 
   if(spectrumFS){
-    // 🔴 FULLSCREEN
-    specW = window.innerWidth;
-    specH = window.innerHeight;
+  specW = window.innerWidth;
+  specH = window.innerHeight;
 
-    specCanvas.style.position = "fixed";
-    specCanvas.style.left = "0";
-    specCanvas.style.top  = "0";
-    specCanvas.style.margin = "0";
-    specCanvas.style.borderRadius = "0";
-    specCanvas.style.zIndex = "9999";
+  // 🔒 le CSS gère la position
+  specCanvas.style.margin = "0";
+}
   }else{
     // 🟢 MODE NORMAL
     specW = w;
