@@ -1071,102 +1071,33 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 <body>
 <header>🔄 Simulateur analyse vibratoire  <button type="button" id="openInfo" class="info-btn" aria-label="Info">ℹ️</button></header>
 
-<div class="controls">
-  <label>RPM moteur <input id="rpm" type="number" inputmode="decimal" value="1500"></label>
-
-  <label>Unités(po/mm)
-    <select id="unit">
-      <option value="imperial" selected>po</option>
-      <option value="metric">mm</option>
-    </select>
-  </label>
-
-<label class="pc-d1">Ø menante <input id="d1" type="number" inputmode="decimal" value="4"></label>
-<label class="pc-d2">Ø menée <input id="d2" type="number" inputmode="decimal" value="9"></label>
-<label class="full pc-cc">Entraxe des poulies (C-C)<input id="cc" type="number" inputmode="decimal" value="21"></label>
-
-
-
-
-<div class="outputBox full pc-results">
-
-  <div class="res motor">
-    <b>Menante</b> : <span id="out-rpm1">—</span> RPM |
-    <span id="out-cpm1">—</span> CPM |
-    <span id="out-hz1">—</span> Hz
-  </div>
-
-  <div class="res driven">
-    <b>Menée</b> : <span id="out-rpm2">—</span> RPM |
-    <span id="out-cpm2">—</span> CPM |
-    <span id="out-hz2">—</span> Hz
-  </div>
-
-  <div class="res belt">
-    <b>Courroie</b> :
-    <span id="out-hzbelt">—</span> Hz |
-    <span id="out-fpm">—</span> ft/min |
-    <span id="out-strobe">—</span> FPM
-  </div>
-
-  <div class="res length">
-    <b>Longueur courroie</b> : <span id="out-length">—</span>
-  </div>
-
-  <div class="small note">
-    Note : “FPM” ici = <b>Feet/min</b> (vitesse linéaire),
-    et “FPM (strobe)” = <b>Flash/min</b> (≈ Hz×60).
-  </div>
-
-</div>
-
-<label class="full pc-faults">
-  <b>Défauts simulés</b> (choix multiples)
-<select id="faultSelect" multiple size="1">
-  <option value="all">Tout</option>
-  <option value="unbalance">Balourd (1×)</option>
-  <option value="misalign">Désalignement</option>
-  <option value="looseness">Jeu mécanique</option>
-  <option value="belt">Défaut de courroie</option>
-  <option value="slip">Glissement</option>
-  <option value="bearing">Roulement</option>
-  <option value="resonance">Résonance</option>
-</select>
-</label>
-
-
-    <label style="display:block;margin-bottom:4px;">Ralenti (plus grand = plus lent)</label>
-    <input id="slow" type="range" min="1" max="20" value="8">
-  </div>
-</div>
 <div class="pc-main">
-<div class="buttons">
-  <button id="play">Play</button>
-  <button id="pause">Pause</button>
-  <button id="reset">Reset</button>
-  <button id="exportPDF">PDF</button>
-<!-- ✅ AJOUT ICI -->
-  <button id="enterSpectrumFS" class="btnFS">🔍 Plein écran spectre</button>
 
-
-
-
-<div id="fsHUD">
-  <div class="fs-info">
-    Pan: glisser ↔ (Hz)<br>
-    Play = spectre live
-  </div>
-  <button id="exitSpectrumFS">❌ Quitter</button>
-</div>
-<div class="pc-layout">
-  <div class="stage" id="sceneStage">
-    <canvas id="scene"></canvas>
-  </div>
+  <!-- CONTROLS -->
+  <div class="controls">
+    <!-- ⚠️ RECOLLE ICI TON CONTENU ACTUEL DES CONTROLS SANS LE MODIFIER -->
   </div>
 
-  <div class="stage" id="specStage">
-    <canvas id="spectrum"></canvas>
+  <!-- BOUTONS -->
+  <div class="buttons">
+    <button id="play">Play</button>
+    <button id="pause">Pause</button>
+    <button id="reset">Reset</button>
+    <button id="exportPDF">PDF</button>
+    <button id="enterSpectrumFS" class="btnFS">🔍 Plein écran spectre</button>
   </div>
+
+  <!-- ANIMATION + SPECTRE -->
+  <div class="pc-layout">
+    <div class="stage" id="sceneStage">
+      <canvas id="scene"></canvas>
+    </div>
+
+    <div class="stage" id="specStage">
+      <canvas id="spectrum"></canvas>
+    </div>
+  </div>
+
 </div>
 
 <div class="results" id="info"></div>
