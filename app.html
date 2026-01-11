@@ -1044,6 +1044,24 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   }
 
 }
+
+@media (min-width:1024px){
+
+  .pc-main{
+    max-width:1200px;          /* largeur cohérente */
+    margin:0 auto;             /* CENTRAGE GLOBAL */
+    padding:0 14px;
+  }
+
+  .buttons{
+    margin:0 auto 18px;
+  }
+
+  .pc-layout{
+    margin:0 auto;
+  }
+
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -1121,7 +1139,7 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
     <input id="slow" type="range" min="1" max="20" value="8">
   </div>
 </div>
-
+<div class="pc-main">
 <div class="buttons">
   <button id="play">Play</button>
   <button id="pause">Pause</button>
@@ -1143,6 +1161,7 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 <div class="pc-layout">
   <div class="stage" id="sceneStage">
     <canvas id="scene"></canvas>
+  </div>
   </div>
 
   <div class="stage" id="specStage">
