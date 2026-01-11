@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<mets charset="utf-8" />
+<meta charset="utf-8" />
 
 
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
@@ -496,7 +496,80 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 </div>
 
 <!-- Boutons overlay fullscreen -->
+<!-- ================= INFO BULLE ================= -->
+<div id="infoModal" class="infoModal" aria-hidden="true">
+  <div class="infoContent">
+    <button id="closeInfo" class="closeInfo">✖</button>
 
+    <div class="infoScroll">
+
+<h2>📘 Aide — Comprendre les calculs et le spectre</h2>
+
+<h3>1️⃣ Fréquences de rotation</h3>
+<p>Une machine qui tourne produit des vibrations à la même fréquence que sa vitesse de rotation.</p>
+<ul>
+  <li><b>RPM</b> : tours par minute</li>
+  <li><b>CPM</b> : cycles par minute</li>
+  <li><b>Hz</b> : cycles par seconde (RPM ÷ 60)</li>
+</ul>
+<p>Exemple : 1500 RPM = 25 Hz</p>
+
+<hr>
+
+<h3>2️⃣ Fréquence de la courroie</h3>
+<p>La courroie a sa propre fréquence selon sa vitesse et sa longueur.</p>
+<p><b>Principe :</b></p>
+<p style="font-family:monospace">Fréquence = vitesse linéaire ÷ longueur</p>
+
+<hr>
+
+<h3>3️⃣ Longueur de la courroie</h3>
+<p>La longueur dépend :</p>
+<ul>
+  <li>de l’entraxe (C-C)</li>
+  <li>des deux diamètres</li>
+  <li>de l’enroulement sur les poulies</li>
+</ul>
+
+<p><b>Formule utilisée :</b></p>
+<p style="font-family:monospace">
+L = 2C + (π/2)(D1 + D2) + (D2 − D1)² / (4C)
+</p>
+
+<hr>
+
+<h3>4️⃣ Influence de l’enroulement</h3>
+<p>La courroie pénètre dans les poulies. Cela :</p>
+<ul>
+  <li>augmente légèrement la longueur réelle</li>
+  <li>modifie la fréquence mesurée</li>
+</ul>
+
+<hr>
+
+<h3>5️⃣ Attention au 60 Hz (Hydro-Québec)</h3>
+<p>Le réseau électrique est à <b>60 Hz</b>.</p>
+<ul>
+  <li>60 Hz → électrique</li>
+  <li>120 Hz → harmonique</li>
+</ul>
+<p>⚠️ Peut être confondu avec un défaut mécanique.</p>
+
+<hr>
+
+<h3>6️⃣ Zones ISO</h3>
+<ul>
+  <li>A : Bon</li>
+  <li>B : Acceptable</li>
+  <li>C : Mauvais</li>
+  <li>D : Critique</li>
+</ul>
+
+<p class="small">But pédagogique : comprendre pourquoi un pic apparaît.</p>
+
+    </div>
+  </div>
+</div>
 <script>
 (() => {
   "use strict";
@@ -1675,80 +1748,7 @@ const infoBtn = document.getElementById("infoBtn");
 if(infoBtn){
   infoBtn.addEventListener("click", openInfo);
 }
-<!-- ================= INFO BULLE ================= -->
-<div id="infoModal" class="infoModal" aria-hidden="true">
-  <div class="infoContent">
-    <button id="closeInfo" class="closeInfo">✖</button>
 
-    <div class="infoScroll">
-
-<h2>📘 Aide — Comprendre les calculs et le spectre</h2>
-
-<h3>1️⃣ Fréquences de rotation</h3>
-<p>Une machine qui tourne produit des vibrations à la même fréquence que sa vitesse de rotation.</p>
-<ul>
-  <li><b>RPM</b> : tours par minute</li>
-  <li><b>CPM</b> : cycles par minute</li>
-  <li><b>Hz</b> : cycles par seconde (RPM ÷ 60)</li>
-</ul>
-<p>Exemple : 1500 RPM = 25 Hz</p>
-
-<hr>
-
-<h3>2️⃣ Fréquence de la courroie</h3>
-<p>La courroie a sa propre fréquence selon sa vitesse et sa longueur.</p>
-<p><b>Principe :</b></p>
-<p style="font-family:monospace">Fréquence = vitesse linéaire ÷ longueur</p>
-
-<hr>
-
-<h3>3️⃣ Longueur de la courroie</h3>
-<p>La longueur dépend :</p>
-<ul>
-  <li>de l’entraxe (C-C)</li>
-  <li>des deux diamètres</li>
-  <li>de l’enroulement sur les poulies</li>
-</ul>
-
-<p><b>Formule utilisée :</b></p>
-<p style="font-family:monospace">
-L = 2C + (π/2)(D1 + D2) + (D2 − D1)² / (4C)
-</p>
-
-<hr>
-
-<h3>4️⃣ Influence de l’enroulement</h3>
-<p>La courroie pénètre dans les poulies. Cela :</p>
-<ul>
-  <li>augmente légèrement la longueur réelle</li>
-  <li>modifie la fréquence mesurée</li>
-</ul>
-
-<hr>
-
-<h3>5️⃣ Attention au 60 Hz (Hydro-Québec)</h3>
-<p>Le réseau électrique est à <b>60 Hz</b>.</p>
-<ul>
-  <li>60 Hz → électrique</li>
-  <li>120 Hz → harmonique</li>
-</ul>
-<p>⚠️ Peut être confondu avec un défaut mécanique.</p>
-
-<hr>
-
-<h3>6️⃣ Zones ISO</h3>
-<ul>
-  <li>A : Bon</li>
-  <li>B : Acceptable</li>
-  <li>C : Mauvais</li>
-  <li>D : Critique</li>
-</ul>
-
-<p class="small">But pédagogique : comprendre pourquoi un pic apparaît.</p>
-
-    </div>
-  </div>
-</div>
 })();
 </script>
 
