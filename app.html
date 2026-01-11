@@ -1667,6 +1667,13 @@ closeInfo.addEventListener("click", () => {
   infoModal.classList.remove("show");
   infoModal.setAttribute("aria-hidden","true");
 });
+
+const infoBtn = document.getElementById("infoBtn");
+
+if(infoBtn){
+  infoBtn.addEventListener("click", openInfo);
+}
+
 })();
 </script>
 
