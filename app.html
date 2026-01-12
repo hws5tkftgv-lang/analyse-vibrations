@@ -583,7 +583,17 @@ body{
   }
 
 }
+/* ================= PC : lignes logiques ================= */
+@media (min-width:1024px){
 
+  .controls-row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:14px;
+    grid-column: 1 / -1; /* occupe toute la largeur du grid parent */
+  }
+
+}
 
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -609,7 +619,7 @@ body{
 
   <label>Ø menante <input id="d1" type="number" inputmode="decimal" value="4"></label>
   <label>Ø menée <input id="d2" type="number" inputmode="decimal" value="9"></label>
-  <label class="full">Entraxe des poulies (C-C)<input id="cc" type="number" inputmode="decimal" value="21"></label>
+ 
 
 
 
@@ -622,20 +632,25 @@ body{
     <div class="small">Note : “FPM” ici = <b>Feet/min</b> (vitesse linéaire), et “FPM (strobe)” = <b>Flash/min</b> (≈ Hz×60).</div>
   </div>
 
-<label class="full half-pc">
-  <b>Défauts simulés</b> (choix multiples)
-<select id="faultSelect" multiple size="1">
-  <option value="all">Tout</option>
-  <option value="unbalance">Balourd (1×)</option>
-  <option value="misalign">Désalignement</option>
-  <option value="looseness">Jeu mécanique</option>
-  <option value="belt">Défaut de courroie</option>
-  <option value="slip">Glissement</option>
-  <option value="bearing">Roulement</option>
-  <option value="resonance">Résonance</option>
-</select>
-</label>
+<div class="controls-row">
+  <label>
+    Entraxe des poulies (C-C)
+    <input id="cc" type="number" inputmode="decimal" value="21">
+  </label>
 
+  <label>
+    <b>Défauts simulés</b> (choix multiples)
+    <select id="faultSelect" multiple size="1">
+      <option value="all">Tout</option>
+      <option value="unbalance">Balourd (1×)</option>
+      <option value="misalign">Désalignement</option>
+      <option value="looseness">Jeu mécanique</option>
+      <option value="belt">Défaut de courroie</option>
+      <option value="slip">Glissement</option>
+      <option value="bearing">Roulement</option>
+      <option value="resonance">Résonance</option>
+    </select>
+  </label>
 </div>
     <label style="display:block;margin-bottom:4px;">Ralenti (plus grand = plus lent)</label>
     <input id="slow" type="range" min="1" max="20" value="8">
