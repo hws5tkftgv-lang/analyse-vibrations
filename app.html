@@ -547,6 +547,26 @@ body{
   }
 }
 
+
+
+/* ================================================= */
+/* === PC : Résultats + Défauts simulés sur 1 ligne == */
+/* ================================================= */
+@media (min-width:1024px){
+
+  /* on annule le full-row pour ces deux blocs */
+  .controls .outputBox.full,
+  .controls label:has(#faultSelect){
+    grid-column:auto;
+  }
+
+  /* on s’assure de 2 colonnes égales */
+  .controls{
+    grid-template-columns: 1fr 1fr;
+    align-items:start;
+  }
+}
+
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
