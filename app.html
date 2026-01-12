@@ -661,6 +661,21 @@ body{
 }
     
     
+    /* ================================================= */
+/* ===== PLEIN ÉCRAN PC : CACHER BOUTONS HUD ======= */
+/* ================================================= */
+
+@media (min-width:1024px){
+
+  body.app-fullscreen .info-btn,
+  body.app-fullscreen #btnEnterFS,
+  body.app-fullscreen #btnExitFS{
+    display:none !important;
+  }
+
+}
+    
+    
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
