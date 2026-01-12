@@ -584,6 +584,46 @@ max-height: 100dvh;
   }
 
 }
+
+/* ================================================= */
+/* ========== INFO BULLE — PLEIN ÉCRAN PC ========== */
+/* ================================================= */
+@media (min-width:1024px){
+
+  .infoModal{
+    padding:0;                 /* aucun espace perdu */
+  }
+
+  .infoCard{
+    width:100vw;               /* pleine largeur écran */
+    height:100vh;              /* pleine hauteur écran */
+    max-width:none;            /* ⛔ enlève la limite */
+    max-height:none;           /* ⛔ enlève la limite */
+    border-radius:0;           /* effet app desktop */
+  }
+
+  .infoHead{
+    padding:18px 28px;
+    font-size:22px;
+  }
+
+  .infoTitle{
+    font-size:22px;
+  }
+
+  .infoBody{
+    padding:28px 36px;         /* confort lecture PC */
+    font-size:18px;
+    line-height:1.75;
+  }
+
+  .infoActions select,
+  .infoActions button{
+    font-size:15px;
+  }
+}
+
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
