@@ -368,36 +368,7 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   justify-content:center;
 }
 
-.infoContent{
-  background:#0b1436;
-  color:#eaf1ff;
-  width:92%;
-  max-width:860px;
-  max-height:88vh;
-  border-radius:16px;
-  padding:22px;
-  position:relative;
-}
 
-.infoScroll{
-  overflow-y:auto;
-  max-height:72vh;
-  font-size:16px;
-  line-height:1.6;
-}
-
-.closeInfo{
-  position:absolute;
-  top:12px;
-  right:12px;
-  background:#b71c1c;
-  color:white;
-  border:none;
-  padding:6px 10px;
-  border-radius:8px;
-  font-size:15px;
-  cursor:pointer;
-}
 
 
 /* ===== HEADER + INFO ===== */
@@ -431,7 +402,72 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   }
 }
 
+/* ================= INFO BULLE (CORRIGÉE) ================= */
 
+.infoModal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  z-index:10050;
+  display:none;
+}
+
+.infoModal.show{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.infoCard{
+  background:#0b1436;
+  color:#eaf1ff;
+  width:92%;
+  max-width:900px;
+  max-height:90vh;
+  border-radius:16px;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+}
+
+.infoHead{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 18px;
+  border-bottom:1px solid rgba(255,255,255,0.15);
+  font-size:18px;
+  font-weight:700;
+}
+
+.infoTitle{
+  font-size:18px;
+}
+
+.infoClose{
+  background:#b71c1c;
+  color:white;
+  border:none;
+  padding:6px 12px;
+  border-radius:8px;
+  font-size:14px;
+  cursor:pointer;
+}
+
+.infoBody{
+  padding:18px;
+  overflow-y:auto;
+  font-size:16px;
+  line-height:1.6;
+}
+
+/* PC : texte encore plus lisible */
+@media (min-width:1024px){
+  .infoBody{
+    font-size:18px;
+    line-height:1.7;
+  }
+}
 
 </style>
 
@@ -720,16 +756,13 @@ En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p
 
   const clamp = (v,a,b)=>Math.max(a, Math.min(b, v));
   const isNum = (x)=>Number.isFinite(x);
-  // ===== ISO 20816 (ex ISO 10816) - Classe II (machines industrielles standard) =====
-const ISO_CLASS = "II"; // affichage seulement
-
+  const ISO_CLASS = "I"; // petites machines / moteurs < 15 kW
 const ISO_ZONES = [
-  { name:"A", label:"Bon",         max:1.12, col:"rgba(  0,200,  0,0.12)" },
-  { name:"B", label:"Acceptable",  max:2.80, col:"rgba(  0,162,255,0.12)" },
-  { name:"C", label:"Mauvais",     max:7.10, col:"rgba(255,165,  0,0.12)" },
-  { name:"D", label:"Critique",    max:Infinity, col:"rgba(255, 77, 77,0.12)" }
+  { name:"A", label:"Très bon", max:0.71, col:"rgba(0,200,0,0.12)" },
+  { name:"B", label:"Acceptable", max:1.8, col:"rgba(0,162,255,0.12)" },
+  { name:"C", label:"Mauvais", max:4.5, col:"rgba(255,165,0,0.12)" },
+  { name:"D", label:"Critique", max:Infinity, col:"rgba(255,77,77,0.12)" }
 ];
-
 function isoVerdict(mm_s_rms){
   for(const z of ISO_ZONES){
     if(mm_s_rms <= z.max) return z;
@@ -1784,12 +1817,6 @@ if(faultSelect){
     redrawSpectrumNow();
   });
 }
-function iso10816Class(mm_s){
-  if(mm_s < 1.8) return { label:"BON", color:[0,150,0] };
-  if(mm_s < 4.5) return { label:"ACCEPTABLE", color:[255,165,0] };
-  if(mm_s < 7.1) return { label:"MAUVAIS", color:[255,100,0] };
-  return { label:"CRITIQUE", color:[200,0,0] };
-}
 
 function exportPDF(){
   const { jsPDF } = window.jspdf;
@@ -1821,7 +1848,7 @@ function exportPDF(){
 
   for(const label of sorted){
     const p = peakRecord[label];
-    const iso = iso10816Class(p.amp);
+    const iso = isoVerdict(p.amp);
 
     if(y > 270){
       doc.addPage();
