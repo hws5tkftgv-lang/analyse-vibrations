@@ -527,76 +527,186 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 
 <!-- Boutons overlay fullscreen -->
 <!-- ================= INFO BULLE ================= -->
+<!-- ===================== INFO POPUP (MODAL) ===================== -->
 <div id="infoModal" class="infoModal" aria-hidden="true">
-  <div class="infoContent">
-    <button id="closeInfo" class="closeInfo">✖</button>
+  <div class="infoCard" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+    <div class="infoHead">
+      <div id="infoTitle" class="infoTitle">ℹ️ Comprendre l’analyse vibratoire (débutant)</div>
+      <button type="button" id="closeInfo" class="infoClose">Fermer</button>
+    </div>
 
-    <div class="infoScroll">
+    <div class="infoBody" id="infoBody">
+      <h3>🎯 Objectif</h3>
+      <p>Cette application sert à comprendre <b>comment</b> une machine vibre et <b>pourquoi</b> certaines vibrations indiquent un défaut.</p>
 
-<h2>📘 Aide — Comprendre les calculs et le spectre</h2>
+      <h3>2️⃣ Unités</h3>
+      <p><b>RPM</b> = tours/minute. <b>Hz</b> = tours/seconde.</p>
+      <code>Hz = RPM ÷ 60</code>
 
-<h3>1️⃣ Fréquences de rotation</h3>
-<p>Une machine qui tourne produit des vibrations à la même fréquence que sa vitesse de rotation.</p>
-<ul>
-  <li><b>RPM</b> : tours par minute</li>
-  <li><b>CPM</b> : cycles par minute</li>
-  <li><b>Hz</b> : cycles par seconde (RPM ÷ 60)</li>
-</ul>
-<p>Exemple : 1500 RPM = 25 Hz</p>
+      <h3>3️⃣ Le 1× (le plus important)</h3>
+      <p><b>1×</b> correspond à la vitesse de rotation.</p>
+      <p>Exemple : 1500 RPM → 1500 ÷ 60 = <b>25 Hz</b> → donc <b>1× = 25 Hz</b>.</p>
 
-<hr>
+      <h3>4️⃣ Amplitude (combien ça vibre)</h3>
+      <p>On regarde la hauteur des lignes dans le spectre. L’unité ici est <b>mm/s</b>.</p>
+      <p>Plus le chiffre est grand → plus c’est sérieux.</p>
 
-<h3>2️⃣ Fréquence de la courroie</h3>
-<p>La courroie a sa propre fréquence selon sa vitesse et sa longueur.</p>
-<p><b>Principe :</b></p>
-<p style="font-family:monospace">Fréquence = vitesse linéaire ÷ longueur</p>
+      <h3>5️⃣ Zones ISO (gravité)</h3>
+      <p>Les zones ISO servent à savoir si la vibration est acceptable :</p>
+      <p>A = très bon • B = acceptable • C = problème • D = critique</p>
 
-<hr>
+      <h3>6️⃣ Courroie</h3>
+      <p>La courroie a sa propre fréquence. Elle peut créer des pics différents du moteur.</p>
 
-<h3>3️⃣ Longueur de la courroie</h3>
-<p>La longueur dépend :</p>
-<ul>
-  <li>de l’entraxe (C-C)</li>
-  <li>des deux diamètres</li>
-  <li>de l’enroulement sur les poulies</li>
-</ul>
+      <h3>7️⃣ Formules utilisées (simplifiées)</h3>
+      <p><b>Vitesse de courroie</b> :</p>
+      <code>Vitesse = π × diamètre × RPM</code>
+      <p><b>Fréquence courroie</b> :</p>
+      <code>Hz courroie = vitesse ÷ longueur</code>
+
+      <h3>8️⃣ Défauts (exemples)</h3>
+      <p><b>Balourd</b> : pic fort à 1×</p>
+      <p><b>Désalignement</b> : pic fort à 2×</p>
+      <p><b>Jeu mécanique</b> : plusieurs harmoniques</p>
+
+      <h3>✅ Méthode de lecture</h3>
+      <p>1) Trouver 1× • 2) Voir harmoniques • 3) Lire amplitude • 4) Vérifier ISO • 5) Associer un défaut</p>
+      <h3>🧮 9️⃣ Calcul de la longueur de la courroie (version débutant)</h3>
+
+<p>Pour une transmission à <b>courroie ouverte</b> (comme dans ce simulateur), on utilise une formule
+qui permet <b>d’estimer</b> la longueur de la courroie.</p>
 
 <p><b>Formule utilisée :</b></p>
-<p style="font-family:monospace">
-L = 2C + (π/2)(D1 + D2) + (D2 − D1)² / (4C)
-</p>
+
+<code>
+Longueur ≈ 2 × C<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ (π / 2) × (D1 + D2)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ ( (D2 − D1)² / (4 × C) )
+</code>
+
+<p><b>Signification des termes :</b></p>
+<ul>
+  <li><b>C</b> : distance centre-à-centre entre les deux poulies</li>
+  <li><b>D1</b> : diamètre de la poulie menante</li>
+  <li><b>D2</b> : diamètre de la poulie menée</li>
+  <li><b>π (pi)</b> ≈ 3,14</li>
+</ul>
+
+<p>Cette formule additionne :</p>
+<ul>
+  <li>les parties droites de la courroie</li>
+  <li>les parties enroulées sur les poulies</li>
+  <li>une correction si les diamètres sont différents</li>
+</ul>
+
+<p><b>Important :</b> la longueur obtenue est <b>théorique</b>.  
+En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p>
 
 <hr>
 
-<h3>4️⃣ Influence de l’enroulement</h3>
-<p>La courroie pénètre dans les poulies. Cela :</p>
+<h3>📐 🔄 1️⃣0️⃣ Influence de l’angle de la courroie</h3>
+
+<p>La courroie <b>n’enveloppe pas complètement</b> les poulies.</p>
+
+<p>La portion de poulie réellement touchée s’appelle :</p>
+
+<p><b>👉 l’angle d’enroulement</b></p>
+
+<p><b>Pourquoi c’est important ?</b></p>
 <ul>
-  <li>augmente légèrement la longueur réelle</li>
-  <li>modifie la fréquence mesurée</li>
+  <li>Grand angle → meilleure adhérence</li>
+  <li>Petit angle → plus de risque de glissement</li>
+</ul>
+
+<p><b>Exemples :</b></p>
+<ul>
+  <li>Poulies très rapprochées → angle faible → glissement possible</li>
+  <li>Poulies éloignées → angle plus grand → transmission plus stable</li>
+</ul>
+
+<p>Dans ce simulateur :</p>
+<ul>
+  <li>l’angle est calculé automatiquement</li>
+  <li>il influence la trajectoire de la courroie</li>
+  <li>il peut influencer les défauts simulés</li>
 </ul>
 
 <hr>
 
-<h3>5️⃣ Attention au 60 Hz (Hydro-Québec)</h3>
-<p>Le réseau électrique est à <b>60 Hz</b>.</p>
+<h3>🪛 1️⃣1️⃣ Longueur réelle vs longueur calculée</h3>
+
+<p>La formule suppose que la courroie roule sur le <b>diamètre extérieur</b> des poulies.</p>
+
+<p>En réalité :</p>
 <ul>
-  <li>60 Hz → électrique</li>
-  <li>120 Hz → harmonique</li>
+  <li>la courroie s’enfonce légèrement dans la gorge</li>
+  <li>le diamètre réel de contact est un peu plus petit</li>
 </ul>
-<p>⚠️ Peut être confondu avec un défaut mécanique.</p>
+
+<p><b>Conséquences :</b></p>
+<ul>
+  <li>la longueur réelle est légèrement différente</li>
+  <li>la vitesse réelle peut varier un peu</li>
+</ul>
+
+<p>En analyse vibratoire, ces écarts sont :</p>
+<ul>
+  <li>normaux</li>
+  <li>acceptés</li>
+  <li>pris en compte avec des tolérances</li>
+</ul>
 
 <hr>
 
-<h3>6️⃣ Zones ISO</h3>
+<h3>⚡ 1️⃣2️⃣ Influence de la fréquence électrique (Hydro-Québec)</h3>
+
+<p>Au Québec, la fréquence électrique est :</p>
+
+<code>60 Hz</code>
+
+<p>Cette fréquence peut apparaître dans un spectre de vibration
+<b>sans être un défaut mécanique</b>.</p>
+
+<p>On peut voir :</p>
 <ul>
-  <li>A : Bon</li>
-  <li>B : Acceptable</li>
-  <li>C : Mauvais</li>
-  <li>D : Critique</li>
+  <li>60 Hz</li>
+  <li>120 Hz (2 × 60)</li>
+  <li>180 Hz (3 × 60)</li>
 </ul>
 
-<p class="small">But pédagogique : comprendre pourquoi un pic apparaît.</p>
+<p><b>Sources possibles :</b></p>
+<ul>
+  <li>champ magnétique du moteur</li>
+  <li>effets électromagnétiques</li>
+  <li>couplage moteur / structure</li>
+</ul>
 
+<p><b>⚠️ Erreur fréquente chez les débutants :</b></p>
+
+<p>Un pic à 60 Hz n’est <b>PAS automatiquement</b> un défaut mécanique.</p>
+
+<p><b>Règle simple :</b></p>
+<p><b>👉 Si un pic est exactement à 60 Hz ou un multiple, penser d’abord à l’électricité.</b></p>
+
+<hr>
+
+<h3>✅ 1️⃣3️⃣ Ce que fait ce simulateur</h3>
+
+<p>Ce simulateur sert à :</p>
+<ul>
+  <li>comprendre les relations entre vitesses</li>
+  <li>visualiser les pics typiques</li>
+  <li>apprendre à lire un spectre vibratoire</li>
+</ul>
+
+<p>Il ne remplace pas :</p>
+<ul>
+  <li>un vrai capteur</li>
+  <li>une vraie machine</li>
+  <li>une vraie analyse terrain</li>
+</ul>
+
+<p><b>Mais il est parfait pour apprendre sans risque.</b></p>
     </div>
   </div>
 </div>
