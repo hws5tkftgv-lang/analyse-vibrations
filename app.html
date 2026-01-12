@@ -1382,14 +1382,7 @@ pdfBtn.addEventListener("click", exportPDF);
     // sweeps (sens visuel cohérent)
     const sweepRight = -(TAU - 2*phi); // arc long
     const sweepLeft  = -(2*phi);       // arc court
-function peaks_powerline(_fMotor, _fBelt, t){
-  const base = 60; // Hydro-Québec
-  return [
-    { hz: base,     amp: 0.90 + 0.10*Math.sin(t),     col:"#00e5ff", label:"Élec 60 Hz" },
-    { hz: base*2,   amp: 0.60 + 0.08*Math.sin(t*1.4), col:"#00bcd4", label:"Élec 120 Hz" },
-    { hz: base*3,   amp: 0.45 + 0.06*Math.sin(t*1.9), col:"#26c6da", label:"Élec 180 Hz" }
-  ];
-}
+
     function arcPoints(cx,cy,rad, aStart, sweep){
       const absSweep = Math.abs(sweep);
       const steps = Math.max(22, Math.floor((absSweep * rad) / 9));
@@ -1451,6 +1444,14 @@ function peaks_powerline(_fMotor, _fBelt, t){
     ctx.arc(cx + (r-6)*Math.cos(angle), cy + (r-6)*Math.sin(angle), 3, 0, TAU);
     ctx.fill();
   }
+  function peaks_powerline(_fMotor, _fBelt, t){
+  const base = 60; // Hydro-Québec
+  return [
+    { hz: base,     amp: 0.90 + 0.10*Math.sin(t),     col:"#00e5ff", label:"Élec 60 Hz" },
+    { hz: base*2,   amp: 0.60 + 0.08*Math.sin(t*1.4), col:"#00bcd4", label:"Élec 120 Hz" },
+    { hz: base*3,   amp: 0.45 + 0.06*Math.sin(t*1.9), col:"#26c6da", label:"Élec 180 Hz" }
+  ];
+}
 
   /* ===================== SPECTRE (PICS) ===================== */
   // Table des défauts: chaque entrée renvoie un tableau de pics
