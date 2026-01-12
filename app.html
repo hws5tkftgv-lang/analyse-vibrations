@@ -595,6 +595,34 @@ body{
 
 }
 
+
+/* ================= RALENTI — TEXTE SUPERPOSÉ ================= */
+
+.slow-wrap{
+  position:relative;
+  padding-top:16px; /* espace pour le texte */
+}
+
+/* texte */
+.slow-label{
+  position:absolute;
+  top:0;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:12px;
+  opacity:0.8;
+  pointer-events:none; /* le slider reste cliquable */
+  white-space:nowrap;
+}
+
+/* PC : légèrement plus visible */
+@media (min-width:1024px){
+  .slow-label{
+    font-size:13px;
+  }
+}
+
+
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
@@ -644,10 +672,12 @@ body{
     <div><b>Menée</b> : <span id="out-rpm2">—</span> RPM | <span id="out-cpm2">—</span> CPM | <span id="out-hz2">—</span> Hz</div>
     <div><b>Courroie</b> : <span id="out-hzbelt">—</span> Hz | <span id="out-fpm">—</span> ft/min | <span id="out-strobe">—</span> FPM</div>
     <div><b>Longueur courroie</b> : <span id="out-length">—</span></div>
-    <div class="small">Note : “FPM” ici = <b>Feet/min</b> (vitesse linéaire), et “FPM (strobe)” = <b>Flash/min</b> (≈ Hz×60).</div>
+   
   </div>
-    <label style="display:block;margin-bottom:4px;">Ralenti (plus grand = plus lent)</label>
-    <input id="slow" type="range" min="1" max="20" value="8">
+    <div class="slow-wrap">
+  <span class="slow-label">Ralenti (plus grand = plus lent)</span>
+  <input id="slow" type="range" min="1" max="20" value="8">
+</div>
   </div>
 </div>
 
