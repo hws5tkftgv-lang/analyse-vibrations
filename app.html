@@ -693,6 +693,61 @@ body{
 
 }
     
+    /* ================= NUMPAD PC ================= */
+
+.numpad{
+  position:fixed;
+  right:24px;
+  bottom:24px;
+  z-index:20000;
+  background:#0b1436;
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.6);
+}
+
+.numpad.hidden{
+  display:none;
+}
+
+.numpad-grid{
+  display:grid;
+  grid-template-columns:repeat(3,64px);
+  gap:10px;
+}
+
+.numpad button{
+  height:54px;
+  font-size:20px;
+  border:none;
+  border-radius:10px;
+  background:#1c2b6a;
+  color:#eaf1ff;
+  cursor:pointer;
+}
+
+.numpad button:active{
+  transform:scale(0.95);
+}
+
+.numpad .wide{
+  grid-column:span 2;
+}
+
+.numpad .ok{
+  background:#2e7d32;
+}
+
+.numpad .warn{
+  background:#b71c1c;
+}
+
+/* PC seulement */
+@media (max-width:1023px){
+  .numpad{ display:none !important; }
+}
+    
+    
     
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -2500,7 +2555,63 @@ if(infoMenu){
 }
 
 
+/* ================= NUMPAD PC ================= */
 
+let activeInput = null;
+const numPad = document.getElementById("numPad");
+
+// détecte focus sur input numérique (PC seulement)
+document.addEventListener("focusin", (e) => {
+  if(window.innerWidth < 1024) return;
+
+  const el = e.target;
+  if(el.tagName === "INPUT" && el.type === "number"){
+    activeInput = el;
+    numPad.classList.remove("hidden");
+  }
+});
+
+document.addEventListener("focusout", (e) => {
+  if(e.target === activeInput){
+    setTimeout(()=>{ 
+      if(!numPad.contains(document.activeElement)){
+        numPad.classList.add("hidden");
+        activeInput = null;
+      }
+    }, 150);
+  }
+});
+
+// gestion des touches
+numPad.addEventListener("click", (e) => {
+  if(!activeInput) return;
+  const btn = e.target.closest("button");
+  if(!btn) return;
+
+  const key = btn.dataset.key;
+  const action = btn.dataset.action;
+
+  if(key){
+    activeInput.value += key;
+    activeInput.dispatchEvent(new Event("input"));
+  }
+
+  if(action === "back"){
+    activeInput.value = activeInput.value.slice(0,-1);
+    activeInput.dispatchEvent(new Event("input"));
+  }
+
+  if(action === "clear"){
+    activeInput.value = "";
+    activeInput.dispatchEvent(new Event("input"));
+  }
+
+  if(action === "ok"){
+    activeInput.blur();
+    numPad.classList.add("hidden");
+    activeInput = null;
+  }
+});
 
 
 })();
@@ -2508,7 +2619,35 @@ if(infoMenu){
 
 
 
+...
+</script>
 
+<!-- ICI : ÉTAPE 1 -->
+<div id="numPad" class="numpad hidden">
+  <div class="numpad-grid">
+    <button data-key="7">7</button>
+    <button data-key="8">8</button>
+    <button data-key="9">9</button>
+
+    <button data-key="4">4</button>
+    <button data-key="5">5</button>
+    <button data-key="6">6</button>
+
+    <button data-key="1">1</button>
+    <button data-key="2">2</button>
+    <button data-key="3">3</button>
+
+    <button data-key="0" class="wide">0</button>
+    <button data-key=".">.</button>
+    <button data-action="back">←</button>
+
+    <button data-action="clear" class="warn">C</button>
+    <button data-action="ok" class="ok wide">OK</button>
+  </div>
+</div>
+
+</body>
+</html>
 
 
 </body>
