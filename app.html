@@ -513,6 +513,26 @@ body{
   }
 }
 
+
+@media (min-width:1024px){
+
+  /* ===== CONTROLS : grille PC ===== */
+  .controls{
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* ❌ enlève le full par défaut sur PC */
+  .controls .full{
+    grid-column:auto;
+  }
+
+  /* ✅ MAIS on force le bloc résultats à pleine largeur */
+  .controls .outputBox{
+    grid-column:1 / -1;
+  }
+}
+
+
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
