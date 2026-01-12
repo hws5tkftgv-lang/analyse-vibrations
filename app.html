@@ -1546,7 +1546,7 @@ function peaks_powerline(_fMotor, _fBelt, t){
       ...peaks_resonance(fM,fB,t),
       { hz:fM*4, amp:0.35 + 0.10*Math.sin(t*1.7), col:"#90caf9", label:"4× moteur" },
       { hz:fM*6, amp:0.25 + 0.10*Math.sin(t*2.3), col:"#90caf9", label:"6× moteur" }
-    ]
+    ],
     powerline : (fM,fB,t)=>[
   ...peaks_normal(fM,fB,t).slice(0,1),
   ...peaks_powerline(fM,fB,t)
