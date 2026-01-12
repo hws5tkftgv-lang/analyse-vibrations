@@ -36,6 +36,10 @@ body{
   overflow-x:hidden;
 }
 
+body.modal-open{
+  overflow:hidden;
+}
+
 /* ===================== HEADER ===================== */
 header{
   padding:10px 14px;
@@ -487,11 +491,14 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
     font-size:20px;
   }
 
-  .infoBody{
-    font-size:19px;     /* ⬅️ texte plus gros */
-    line-height:1.75;
-    padding:22px 26px;
-  }
+.infoBody{
+  flex:1;                      /* 🔴 clé : prend l’espace restant */
+  padding:18px;
+  overflow-y:auto;             /* 🔴 scroll vertical */
+  -webkit-overflow-scrolling: touch; /* 🔴 iOS FIX */
+  font-size:16px;
+  line-height:1.6;
+}
 
   .infoClose{
     font-size:15px;
@@ -2208,11 +2215,13 @@ const closeInfo = document.getElementById("closeInfo");
 function openInfo(){
   infoModal.classList.add("show");
   infoModal.setAttribute("aria-hidden","false");
+  document.body.classList.remove("modal-open");
 }
 
 closeInfo.addEventListener("click", () => {
   infoModal.classList.remove("show");
   infoModal.setAttribute("aria-hidden","true");
+  document.body.classList.remove("modal-open");
 });
 
 const infoBtn = document.getElementById("infoBtn");
