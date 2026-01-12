@@ -562,22 +562,30 @@ body.spectrum-mode #specStage{
     <div class="infoBody" id="infoBody">
       <div class="infoPage" id="page-simu">
         <!-- contenu simulateur -->
-        
+        <section class="infoSection">
         <h3>🎯 Objectif</h3>
       <p>Cette application sert à comprendre <b>comment</b> une machine vibre et <b>pourquoi</b> certaines vibrations indiquent un défaut.</p>
-
+        </section>
+  
+   <section class="infoSection">
       <h3>2️⃣ Unités</h3>
       <p><b>RPM</b> = tours/minute. <b>Hz</b> = tours/seconde.</p>
       <code>Hz = RPM ÷ 60</code>
-
+</section>
+  
+  <section class="infoSection">
       <h3>3️⃣ Le 1× (le plus important)</h3>
       <p><b>1×</b> correspond à la vitesse de rotation.</p>
       <p>Exemple : 1500 RPM → 1500 ÷ 60 = <b>25 Hz</b> → donc <b>1× = 25 Hz</b>.</p>
-
+</section>
+  
+  <section class="infoSection">
       <h3>4️⃣ Amplitude (combien ça vibre)</h3>
       <p>On regarde la hauteur des lignes dans le spectre. L’unité ici est <b>mm/s</b>.</p>
       <p>Plus le chiffre est grand → plus c’est sérieux.</p>
+</section>
 
+   <section class="infoSection">
       <h3>5️⃣ Zones ISO (gravité)</h3>
       <div style="
   margin:16px 0;
@@ -605,8 +613,11 @@ body.spectrum-mode #specStage{
     <li>Seuils ISO plus permissifs</li>
   </ul>
 
-  <b>👉 Pour l’apprentissage en DEP, la Classe I est la plus réaliste et la plus sécuritaire.</b>
+  <b>👉 Pour l’apprentissage, la Classe I est la plus réaliste et la plus sécuritaire.</b>
 </div>
+  </section>
+
+   <section class="infoSection">
       <p>Les zones ISO servent à savoir si la vibration est acceptable :</p>
       <p>A = très bon • B = acceptable • C = problème • D = critique</p>
       <table class="isoTable">
@@ -645,7 +656,10 @@ body.spectrum-mode #specStage{
     </tr>
   </tbody>
 </table>
+  </section>
 
+
+  <section class="infoSection">
       <h3>6️⃣ Courroie</h3>
       <p>La courroie a sa propre fréquence. Elle peut créer des pics différents du moteur.</p>
 
@@ -662,6 +676,10 @@ body.spectrum-mode #specStage{
 
       <h3>✅ Méthode de lecture</h3>
       <p>1) Trouver 1× • 2) Voir harmoniques • 3) Lire amplitude • 4) Vérifier ISO • 5) Associer un défaut</p>
+
+   </section>
+
+    <section class="infoSection">
       <h3>🧮 9️⃣ Calcul de la longueur de la courroie</h3>
 
 <p>Pour une transmission à <b>courroie ouverte</b> (comme dans ce simulateur), on utilise une formule
@@ -692,7 +710,9 @@ Longueur ≈ 2 × C + (π / 2) × (D1 + D2) + ((D2 − D1)² / (4 × C))
 En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p>
 
 <hr>
+</section>
 
+    <section class="infoSection">
 <h3>📐 🔄 1️⃣0️⃣ Influence de l’angle de la courroie</h3>
 
 <p>La courroie <b>n’enveloppe pas complètement</b> les poulies.</p>
@@ -721,7 +741,9 @@ En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p
 </ul>
 
 <hr>
+</section>
 
+   <section class="infoSection">
 <h3>🪛 1️⃣1️⃣ Longueur réelle vs longueur calculée</h3>
 
 <p>La formule suppose que la courroie roule sur le <b>diamètre extérieur</b> des poulies.</p>
@@ -747,6 +769,9 @@ En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p
 
 <hr>
 
+</section>
+
+ <section class="infoSection"> 
 <h3>⚡ 1️⃣2️⃣ Influence de la fréquence électrique (Hydro-Québec)</h3>
 
 <p>Au Québec, la fréquence électrique est :</p>
@@ -778,7 +803,10 @@ En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p
 <p><b>👉 Si un pic est exactement à 60 Hz ou un multiple, penser d’abord à l’électricité.</b></p>
 
 <hr>
+</section>
 
+<section class="infoSection"> 
+  
 <h3>✅ 1️⃣3️⃣ Ce que fait ce simulateur</h3>
 
 <p>Ce simulateur sert à :</p>
@@ -797,7 +825,7 @@ En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p
 
 <p><b>Mais il est parfait pour apprendre sans risque.</b></p>
         
-        
+  </section>      
         
       </div>
 
