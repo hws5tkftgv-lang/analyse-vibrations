@@ -637,12 +637,16 @@ body{
     background:#0b1436;
   }
 
+ /* ✅ décale TOUT le contenu sous le header */
+  body.app-fullscreen .controls,
+  body.app-fullscreen .buttons,
+  body.app-fullscreen .spectrum-controls,
   body.app-fullscreen .pc-layout{
-    margin-top:64px; /* hauteur header */
-  }
+    margin-top:64px; /* hauteur réelle du header */
+      }
 
 }
-
+    
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
