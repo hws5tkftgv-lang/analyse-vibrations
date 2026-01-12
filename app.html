@@ -402,7 +402,12 @@ body.spectrum-mode #specStage{
 /* ============ PC — PLEIN ÉCRAN =================== */
 /* ================================================= */
 @media (min-width:1024px){
-
+body{
+  font-size:16px;
+}
+.controls label{ font-size:13px; }
+.controls input,
+.controls select{ font-size:16px; }
   .infoModal{
     padding:0;                    /* aucun cadre */
   }
@@ -449,6 +454,25 @@ body.spectrum-mode #specStage{
     flex:1 1 100%;
   }
 }
+@media (max-width:1023px){
+  .infoHead{
+    flex-direction:column;
+    align-items:stretch;
+    gap:10px;
+  }
+
+  .infoActions{
+    width:100%;
+  }
+
+  .infoActions select,
+  .infoActions button{
+    width:100%;
+  }
+}
+
+
+
 
 @media print{
   .infoSection{
@@ -456,6 +480,20 @@ body.spectrum-mode #specStage{
     page-break-inside: avoid;
   }
 }
+
+@media (min-width:1024px){
+  .pc-layout{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:14px;
+    align-items:start;
+  }
+
+  .pc-layout .stage{
+    padding:0;
+  }
+}
+
 
 
   </style>
@@ -497,7 +535,7 @@ body.spectrum-mode #specStage{
 
 <label class="full">
   <b>Défauts simulés</b> (choix multiples)
-<select id="faultSelect" multiple>
+<select id="faultSelect" multiple size="1">
   <option value="all">Tout</option>
   <option value="unbalance">Balourd (1×)</option>
   <option value="misalign">Désalignement</option>
@@ -2185,7 +2223,7 @@ if(printBtn){
           }
           ul,ol{ margin-left:20px; }
           hr{ margin:30px 0; }
-      
+         </style>
       </head>
       <body>
         <h1>Guide pédagogique – Analyse vibratoire</h1>
@@ -2196,7 +2234,9 @@ if(printBtn){
 
     printWindow.document.close();
     printWindow.focus();
-    printWindow.print();
+    printWindow.onload = () => {
+  printWindow.print();
+};
   });
 }
 const infoMenu = document.getElementById("infoMenu");
