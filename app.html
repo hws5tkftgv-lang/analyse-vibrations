@@ -553,15 +553,7 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   font-size:14px;
 }
 
-.infoPrint{
-  background:#2e7d32;
-  color:white;
-  border:none;
-  padding:6px 12px;
-  border-radius:8px;
-  font-size:14px;
-  cursor:pointer;
-}
+
 
 .infoPrint{
   background:#1c2b6a;
@@ -617,7 +609,7 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 
 <label class="full">
   <b>Défauts simulés</b> (choix multiples)
-<select id="faultSelect" multiple size="1">
+<select id="faultSelect" multiple>
   <option value="all">Tout</option>
   <option value="unbalance">Balourd (1×)</option>
   <option value="misalign">Désalignement</option>
@@ -2178,7 +2170,7 @@ function exportPDF(){
     doc.text(`Amplitude : ${p.amp.toFixed(2)} mm/s`, 18, y);
     y += 6;
 
-    doc.setTextColor(...iso.color);
+    doc.setTextColor(0,0,0);
     doc.text(`Classe ISO : ${iso.label}`, 18, y);
     doc.setTextColor(0,0,0);
 
@@ -2235,7 +2227,10 @@ const printBtn = document.getElementById("printInfo");
 if(printBtn){
   printBtn.addEventListener("click", () => {
 
-    const content = document.getElementById("infoBody").innerHTML;
+    const content =
+  (infoMenu.value === "simu")
+    ? pageSimu.innerHTML
+    : pagePruf.innerHTML;
 
     const printWindow = window.open("", "_blank");
 
