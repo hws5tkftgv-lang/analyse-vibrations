@@ -677,27 +677,30 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   <span>Pour une meilleure lecture du spectre</span>
 </div>
 
-<!-- Boutons overlay fullscreen -->
-<!-- ================= INFO BULLE ================= -->
-<!-- ===================== INFO POPUP (MODAL) ===================== -->
+
 <div id="infoModal" class="infoModal" aria-hidden="true">
-<div class="infoTitle" id="infoTitle">ℹ️ Informations</div>
-  <div class="infoHead">
-  <div class="infoTitle">ℹ️ Informations</div>
 
-  <div class="infoActions">
-    <select id="infoMenu">
-      <option value="simu">Info simulateur</option>
-      <option value="pruf">Info Pruftechnik</option>
-    </select>
+  <div class="infoCard" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
 
-    <button type="button" id="printInfo" class="infoPrint">Imprimer</button>
-    <button type="button" id="closeInfo" class="infoClose">Fermer</button>
-  </div>
-</div>
-<div class="infoBody" id="infoBody">
-  <div class="infoPage" id="page-simu">
-      <h3>🎯 Objectif</h3>
+    <div class="infoHead">
+      <div class="infoTitle" id="infoTitle">ℹ️ Informations</div>
+
+      <div class="infoActions">
+        <select id="infoMenu">
+          <option value="simu">Info simulateur</option>
+          <option value="pruf">Info Pruftechnik</option>
+        </select>
+
+        <button type="button" id="printInfo" class="infoPrint">Imprimer</button>
+        <button type="button" id="closeInfo" class="infoClose">Fermer</button>
+      </div>
+    </div>
+
+    <div class="infoBody" id="infoBody">
+      <div class="infoPage" id="page-simu">
+        <!-- contenu simulateur -->
+        
+        <h3>🎯 Objectif</h3>
       <p>Cette application sert à comprendre <b>comment</b> une machine vibre et <b>pourquoi</b> certaines vibrations indiquent un défaut.</p>
 
       <h3>2️⃣ Unités</h3>
@@ -930,14 +933,15 @@ En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p
 </ul>
 
 <p><b>Mais il est parfait pour apprendre sans risque.</b></p>
-    </div>
-    
-      
-    <div class="infoPage" id="page-pruf" style="display:none;">
-  <!-- CONTENU Pruftechnik que je t’ai fourni -->
-  <hr>
+        
+        
+        
+      </div>
 
-<h3>📘 Pruftechnik — Terminologie utilisée</h3>
+      <div class="infoPage" id="page-pruf" style="display:none;">
+        <!-- contenu Pruftechnik -->
+        
+        <h3>📘 Pruftechnik — Terminologie utilisée</h3>
 
 <p>Le simulateur utilise volontairement les <b>mêmes termes</b> que les analyseurs vibratoires
 <b>Pruftechnik</b> afin de préparer l’élève au terrain.</p>
@@ -1062,11 +1066,18 @@ En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p
 </ul>
 
 <p><b>👉 Non simulé ici</b>, mais concept clé à comprendre</p>
+        
+        
+      </div>
+    </div>
+
+  </div>
 </div>
-  </div>
-    
-  </div>
-</div> 
+
+
+
+
+
 <script>
 (() => {
   "use strict";
