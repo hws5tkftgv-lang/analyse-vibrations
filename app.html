@@ -563,7 +563,19 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   cursor:pointer;
 }
 
+.infoPrint{
+  background:#1c2b6a;
+  color:white;
+  border:none;
+  padding:8px 14px;
+  border-radius:8px;
+  font-size:14px;
+  cursor:pointer;
+}
 
+.infoPrint:active{
+  transform:scale(0.95);
+}
 
 </style>
 
@@ -675,7 +687,8 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
     <button type="button" id="closeInfo" class="infoClose">Fermer</button>
   </div>
 </div>
-   <div class="infoPage" id="page-simu">
+<div class="infoBody" id="infoBody">
+  <div class="infoPage" id="page-simu">
       <h3>🎯 Objectif</h3>
       <p>Cette application sert à comprendre <b>comment</b> une machine vibre et <b>pourquoi</b> certaines vibrations indiquent un défaut.</p>
 
@@ -910,6 +923,8 @@ En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p
 
 <p><b>Mais il est parfait pour apprendre sans risque.</b></p>
     </div>
+      </div>
+      <div class="infoBody" id="infoBody">
     <div class="infoPage" id="page-pruf" style="display:none;">
   <!-- CONTENU Pruftechnik que je t’ai fourni -->
   <hr>
@@ -1041,6 +1056,7 @@ En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p
 <p><b>👉 Non simulé ici</b>, mais concept clé à comprendre</p>
 </div>
   </div>
+    </div>
   </div>
 </div> 
 <script>
@@ -2272,11 +2288,10 @@ if(infoMenu){
   });
 }
 
-if(printBtn){
-  printBtn.addEventListener("click", () => {
-    window.print();
-  });
-}
+
+
+
+
 })();
 </script>
 
