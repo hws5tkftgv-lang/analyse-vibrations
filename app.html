@@ -537,6 +537,34 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 .isoC{ background:rgba(255,165,0,0.18); }
 .isoD{ background:rgba(255,77,77,0.20); }
 
+/* ===== MENU INFO BULLE ===== */
+.infoActions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.infoActions select{
+  background:#1c2b6a;
+  color:#eaf1ff;
+  border:none;
+  padding:6px 10px;
+  border-radius:8px;
+  font-size:14px;
+}
+
+.infoPrint{
+  background:#2e7d32;
+  color:white;
+  border:none;
+  padding:6px 12px;
+  border-radius:8px;
+  font-size:14px;
+  cursor:pointer;
+}
+
+
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -634,15 +662,20 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 <!-- ===================== INFO POPUP (MODAL) ===================== -->
 <div id="infoModal" class="infoModal" aria-hidden="true">
   <div class="infoCard" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
-    <div class="infoHead">
-      <div id="infoTitle" class="infoTitle">ℹ️ Comprendre l’analyse vibratoire</div>
-      <button type="button" id="closeInfo" class="infoClose">Fermer</button>
-      <button type="button" id="printInfo" class="infoClose">
-  🖨️ Imprimer
-</button>
-    </div>
+  <div class="infoHead">
+  <div class="infoTitle">ℹ️ Informations</div>
 
-    <div class="infoBody" id="infoBody">
+  <div class="infoActions">
+    <select id="infoMenu">
+      <option value="simu">Info simulateur</option>
+      <option value="pruf">Info Pruftechnik</option>
+    </select>
+
+    <button type="button" id="printInfo" class="infoPrint">Imprimer</button>
+    <button type="button" id="closeInfo" class="infoClose">Fermer</button>
+  </div>
+</div>
+   <div class="infoPage" id="page-simu">
       <h3>🎯 Objectif</h3>
       <p>Cette application sert à comprendre <b>comment</b> une machine vibre et <b>pourquoi</b> certaines vibrations indiquent un défaut.</p>
 
@@ -877,8 +910,139 @@ En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p
 
 <p><b>Mais il est parfait pour apprendre sans risque.</b></p>
     </div>
-  </div>
+    <div class="infoPage" id="page-pruf" style="display:none;">
+  <!-- CONTENU Pruftechnik que je t’ai fourni -->
+  <hr>
+
+<h3>📘 Pruftechnik — Terminologie utilisée</h3>
+
+<p>Le simulateur utilise volontairement les <b>mêmes termes</b> que les analyseurs vibratoires
+<b>Pruftechnik</b> afin de préparer l’élève au terrain.</p>
+
+<h4>1️⃣ RMS (Root Mean Square)</h4>
+<p>Valeur efficace de la vibration.</p>
+<ul>
+  <li>Représente l’<b>énergie réelle</b> de vibration</li>
+  <li>C’est la valeur utilisée pour la <b>norme ISO</b></li>
+</ul>
+
+<p><b>👉 Dans Pruftechnik :</b> affiché comme <b>Velocity RMS (mm/s)</b></p>
+
+<hr>
+
+<h4>2️⃣ Velocity (Vitesse vibratoire)</h4>
+<p>Indique la vitesse de déplacement de la machine pendant la vibration.</p>
+
+<ul>
+  <li>Unité : <b>mm/s</b></li>
+  <li>Très sensible aux défauts mécaniques globaux</li>
+</ul>
+
+<p><b>👉 Dans Pruftechnik :</b> mode <b>Velocity</b></p>
+
+<hr>
+
+<h4>3️⃣ Peak (Pic)</h4>
+<p>Valeur maximale instantanée d’un signal.</p>
+
+<ul>
+  <li>Plus sensible aux chocs</li>
+  <li>Moins stable pour l’évaluation ISO</li>
+</ul>
+
+<p><b>👉 Différence importante :</b></p>
+<ul>
+  <li>ISO = RMS</li>
+  <li>Chocs / impacts = Peak</li>
+</ul>
+
+<hr>
+
+<h4>4️⃣ 1×, 2×, 3× (Ordres)</h4>
+<p>Les <b>ordres</b> correspondent à des multiples de la vitesse de rotation.</p>
+
+<ul>
+  <li>1× = vitesse de rotation</li>
+  <li>2× = deux fois la vitesse</li>
+  <li>3× = trois fois la vitesse</li>
+</ul>
+
+<p><b>👉 Dans Pruftechnik :</b> affiché sous forme de pics ordonnés</p>
+
+<hr>
+
+<h4>5️⃣ Spectrum (Spectre)</h4>
+<p>Graphique qui montre les vibrations <b>par fréquence</b>.</p>
+
+<ul>
+  <li>Axe horizontal = Hz</li>
+  <li>Axe vertical = amplitude (mm/s)</li>
+</ul>
+
+<p><b>👉 Dans Pruftechnik :</b> écran principal d’analyse</p>
+
+<hr>
+
+<h4>6️⃣ Time Waveform (Signal temporel)</h4>
+<p>Représentation de la vibration dans le temps.</p>
+
+<ul>
+  <li>Permet de voir les chocs</li>
+  <li>Très utile pour les roulements</li>
+</ul>
+
+<p><b>👉 Non simulé ici</b>, mais important à connaître</p>
+
+<hr>
+
+<h4>7️⃣ FFT (Fast Fourier Transform)</h4>
+<p>Transformation mathématique qui convertit :</p>
+
+<p><b>Temps → Fréquence</b></p>
+
+<p>Sans FFT, il serait impossible d’identifier les défauts.</p>
+
+<p><b>👉 Pruftechnik :</b> FFT automatique en arrière-plan</p>
+
+<hr>
+
+<h4>8️⃣ ISO 10816 / 20816</h4>
+<p>Norme internationale pour juger la gravité vibratoire.</p>
+
+<ul>
+  <li>Basée sur la vitesse RMS</li>
+  <li>Classes A à D</li>
+</ul>
+
+<p><b>👉 Utilisée directement dans Pruftechnik</b></p>
+
+<hr>
+
+<h4>9️⃣ Alarmes (Alert / Danger)</h4>
+<p>Seuils configurables pour avertir l’utilisateur.</p>
+
+<ul>
+  <li>Alert = intervention à planifier</li>
+  <li>Danger = arrêt recommandé</li>
+</ul>
+
+<p><b>👉 Simulé ici via les zones ISO</b></p>
+
+<hr>
+
+<h4>🔟 Trending (Suivi dans le temps)</h4>
+<p>Comparaison des mesures sur plusieurs jours ou semaines.</p>
+
+<ul>
+  <li>Permet de voir une dégradation</li>
+  <li>Fondamental en maintenance prédictive</li>
+</ul>
+
+<p><b>👉 Non simulé ici</b>, mais concept clé à comprendre</p>
 </div>
+  </div>
+  </div>
+</div> 
 <script>
 (() => {
   "use strict";
@@ -2096,7 +2260,23 @@ if(printBtn){
     printWindow.print();
   });
 }
+const infoMenu = document.getElementById("infoMenu");
+const pageSimu = document.getElementById("page-simu");
+const pagePruf = document.getElementById("page-pruf");
+const printBtn = document.getElementById("printInfo");
 
+if(infoMenu){
+  infoMenu.addEventListener("change", () => {
+    pageSimu.style.display = infoMenu.value === "simu" ? "block" : "none";
+    pagePruf.style.display = infoMenu.value === "pruf" ? "block" : "none";
+  });
+}
+
+if(printBtn){
+  printBtn.addEventListener("click", () => {
+    window.print();
+  });
+}
 })();
 </script>
 
