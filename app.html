@@ -531,7 +531,21 @@ body{
     grid-column:1 / -1;
   }
 }
+/* ================================================= */
+/* ===== PC : Entraxe + Défauts sur UNE SEULE LIGNE == */
+/* ================================================= */
+@media (min-width:1024px){
 
+  /* on annule le full-row POUR CES DEUX CHAMPS */
+  .controls label.full{
+    grid-column:auto;
+  }
+
+  /* on force 2 colonnes égales */
+  .controls{
+    grid-template-columns: 1fr 1fr;
+  }
+}
 
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
