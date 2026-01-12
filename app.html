@@ -621,7 +621,27 @@ body{
     font-size:13px;
   }
 }
+/* ===================== PLEIN ÉCRAN APP (PC) ===================== */
+@media (min-width:1024px){
 
+  body.app-fullscreen{
+    overflow:hidden;
+  }
+
+  body.app-fullscreen header{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    z-index:10000;
+    background:#0b1436;
+  }
+
+  body.app-fullscreen .pc-layout{
+    margin-top:64px; /* hauteur header */
+  }
+
+}
 
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -632,7 +652,11 @@ body{
 
 <header class="app-header">
   <span class="title">🔄 Simulateur analyse vibratoire</span>
-  <button id="infoBtn" class="info-btn" aria-label="Informations">ℹ️</button>
+
+  <div style="display:flex; gap:8px;">
+    <button id="enterAppFS" class="info-btn" aria-label="Plein écran">⛶</button>
+    <button id="infoBtn" class="info-btn" aria-label="Informations">ℹ️</button>
+  </div>
 </header>
 
 <div class="controls">
@@ -2298,7 +2322,36 @@ if(window.visualViewport){
     updateSpectrumModeByOrientation();
   });
 }
+/* ===================== FULLSCREEN APP (PC) ===================== */
 
+const btnAppFS = document.getElementById("enterAppFS");
+
+if(btnAppFS){
+  btnAppFS.addEventListener("click", async () => {
+
+    // PC seulement
+    if(window.innerWidth < 1024) return;
+
+    try{
+      if(!document.fullscreenElement){
+        await document.documentElement.requestFullscreen();
+        document.body.classList.add("app-fullscreen");
+      }else{
+        await document.exitFullscreen();
+        document.body.classList.remove("app-fullscreen");
+      }
+    }catch(err){
+      console.warn("Fullscreen refusé :", err);
+    }
+  });
+}
+
+// sécurité : si l’utilisateur sort avec ESC
+document.addEventListener("fullscreenchange", () => {
+  if(!document.fullscreenElement){
+    document.body.classList.remove("app-fullscreen");
+  }
+});
 enableLongPressFS();
 specCanvas.addEventListener("mousemove", () => {
   if(spectrumFS && !isMobile()){
