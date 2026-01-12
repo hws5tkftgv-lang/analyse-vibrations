@@ -567,6 +567,24 @@ body{
   }
 }
 
+
+/* ================================================= */
+/* === PC : demi-largeur pour certains blocs ======= */
+/* ================================================= */
+@media (min-width:1024px){
+
+  .controls{
+    grid-template-columns: 1fr 1fr;
+    gap:14px;
+  }
+
+  .controls .half-pc{
+    grid-column: span 1;
+  }
+
+}
+
+
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
@@ -596,7 +614,7 @@ body{
 
 
 
-  <div class="outputBox full">
+  <div class="outputBox full half-pc">
     <div><b>Menante</b> : <span id="out-rpm1">—</span> RPM | <span id="out-cpm1">—</span> CPM | <span id="out-hz1">—</span> Hz</div>
     <div><b>Menée</b> : <span id="out-rpm2">—</span> RPM | <span id="out-cpm2">—</span> CPM | <span id="out-hz2">—</span> Hz</div>
     <div><b>Courroie</b> : <span id="out-hzbelt">—</span> Hz | <span id="out-fpm">—</span> ft/min | <span id="out-strobe">—</span> FPM</div>
@@ -604,7 +622,7 @@ body{
     <div class="small">Note : “FPM” ici = <b>Feet/min</b> (vitesse linéaire), et “FPM (strobe)” = <b>Flash/min</b> (≈ Hz×60).</div>
   </div>
 
-<label class="full">
+<label class="full half-pc">
   <b>Défauts simulés</b> (choix multiples)
 <select id="faultSelect" multiple size="1">
   <option value="all">Tout</option>
