@@ -511,6 +511,32 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   font-family: Consolas, "Courier New", monospace;
 }
 
+/* ================= TABLE ISO ================= */
+
+.isoTable{
+  width:100%;
+  border-collapse:collapse;
+  margin:16px 0;
+  font-size:15px;
+}
+
+.isoTable th,
+.isoTable td{
+  border:1px solid rgba(255,255,255,0.2);
+  padding:8px 10px;
+  text-align:center;
+}
+
+.isoTable th{
+  background:rgba(255,255,255,0.12);
+  font-weight:700;
+}
+
+.isoA{ background:rgba(0,200,0,0.15); }
+.isoB{ background:rgba(0,162,255,0.15); }
+.isoC{ background:rgba(255,165,0,0.18); }
+.isoD{ background:rgba(255,77,77,0.20); }
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -663,6 +689,42 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 </div>
       <p>Les zones ISO servent à savoir si la vibration est acceptable :</p>
       <p>A = très bon • B = acceptable • C = problème • D = critique</p>
+      <table class="isoTable">
+  <thead>
+    <tr>
+      <th>Zone ISO</th>
+      <th>Couleur</th>
+      <th>Amplitude RMS (mm/s)</th>
+      <th>Interprétation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="isoA">
+      <td>A</td>
+      <td>Vert</td>
+      <td>≤ 0,71</td>
+      <td>État excellent (machine neuve ou équilibrée)</td>
+    </tr>
+    <tr class="isoB">
+      <td>B</td>
+      <td>Bleu</td>
+      <td>0,71 – 1,8</td>
+      <td>Acceptable en service continu</td>
+    </tr>
+    <tr class="isoC">
+      <td>C</td>
+      <td>Orange</td>
+      <td>1,8 – 4,5</td>
+      <td>Défaut présent – intervention à planifier</td>
+    </tr>
+    <tr class="isoD">
+      <td>D</td>
+      <td>Rouge</td>
+      <td>> 4,5</td>
+      <td>Critique – arrêt recommandé</td>
+    </tr>
+  </tbody>
+</table>
 
       <h3>6️⃣ Courroie</h3>
       <p>La courroie a sa propre fréquence. Elle peut créer des pics différents du moteur.</p>
