@@ -611,6 +611,9 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
     <div class="infoHead">
       <div id="infoTitle" class="infoTitle">ℹ️ Comprendre l’analyse vibratoire</div>
       <button type="button" id="closeInfo" class="infoClose">Fermer</button>
+      <button type="button" id="printInfo" class="infoClose">
+  🖨️ Imprimer
+</button>
     </div>
 
     <div class="infoBody" id="infoBody">
@@ -630,6 +633,34 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
       <p>Plus le chiffre est grand → plus c’est sérieux.</p>
 
       <h3>5️⃣ Zones ISO (gravité)</h3>
+      <div style="
+  margin:16px 0;
+  padding:14px 18px;
+  background:rgba(255,255,255,0.08);
+  border-left:4px solid #00a2ff;
+  border-radius:8px;
+">
+  <b>📌 Classe ISO utilisée dans ce simulateur</b><br><br>
+
+  Ce simulateur utilise la norme <b>ISO 10816 – Classe I</b>.<br><br>
+
+  <b>Classe I</b> :
+  <ul>
+    <li>Petites machines</li>
+    <li>Moteurs électriques</li>
+    <li>Puissance typiquement &lt; 15 kW</li>
+    <li>Machines rigides, montées sur socle</li>
+  </ul>
+
+  <b>Classe II</b> (non utilisée ici) :
+  <ul>
+    <li>Machines plus grosses</li>
+    <li>Structures plus flexibles</li>
+    <li>Seuils ISO plus permissifs</li>
+  </ul>
+
+  <b>👉 Pour l’apprentissage en DEP, la Classe I est la plus réaliste et la plus sécuritaire.</b>
+</div>
       <p>Les zones ISO servent à savoir si la vibration est acceptable :</p>
       <p>A = très bon • B = acceptable • C = problème • D = critique</p>
 
@@ -657,9 +688,7 @@ qui permet <b>d’estimer</b> la longueur de la courroie.</p>
 <p><b>Formule utilisée :</b></p>
 
 <code>
-Longueur ≈ 2 × C<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ (π / 2) × (D1 + D2)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ ( (D2 − D1)² / (4 × C) )
+Longueur ≈ 2 × C + (π / 2) × (D1 + D2) + ((D2 − D1)² / (4 × C))
 </code>
 
 <p><b>Signification des termes :</b></p>
@@ -1956,6 +1985,54 @@ const infoBtn = document.getElementById("infoBtn");
 
 if(infoBtn){
   infoBtn.addEventListener("click", openInfo);
+}
+
+
+const printBtn = document.getElementById("printInfo");
+
+if(printBtn){
+  printBtn.addEventListener("click", () => {
+
+    const content = document.getElementById("infoBody").innerHTML;
+
+    const printWindow = window.open("", "_blank");
+
+    printWindow.document.write(`
+      <!doctype html>
+      <html lang="fr">
+      <head>
+        <meta charset="utf-8">
+        <title>Guide pédagogique – Analyse vibratoire</title>
+        <style>
+          body{
+            font-family: Arial, system-ui, sans-serif;
+            margin:30mm;
+            line-height:1.6;
+            color:#000;
+          }
+          h3{ margin-top:24px; }
+          code{
+            display:block;
+            background:#f2f2f2;
+            padding:8px 12px;
+            border-radius:6px;
+            white-space:nowrap;
+          }
+          ul,ol{ margin-left:20px; }
+          hr{ margin:30px 0; }
+        </style>
+      </head>
+      <body>
+        <h1>Guide pédagogique – Analyse vibratoire</h1>
+        ${content}
+      </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+  });
 }
 
 })();
