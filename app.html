@@ -1310,7 +1310,7 @@ btnEnterFS.onclick = () => {
   spectrumFS = true;
   specCanvas.classList.add("spectrum-only");
   document.body.classList.add("spectrum-mode");
-
+  document.body.classList.add("app-fullscreen");
   btnEnterFS.style.display = "none";
   btnExitFS.style.display = "inline-block";
 
@@ -1327,6 +1327,7 @@ btnExitFS.onclick = () => {
 
   specCanvas.classList.remove("spectrum-only");
   document.body.classList.remove("spectrum-mode");
+    document.body.classList.remove("app-fullscreen");
   rotateWarn.style.display = "none";
 
   btnExitFS.style.display = "none";
