@@ -422,7 +422,7 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   color:#eaf1ff;
   width:92%;
   max-width:900px;
-  max-height:90vh;
+  height:90vh;               /* ✅ OBLIGATOIRE */
   border-radius:16px;
   display:flex;
   flex-direction:column;
@@ -459,15 +459,14 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 /* ================= INFO BULLE — BODY UNIQUE ================= */
 
 .infoBody{
-  flex:1;                            /* prend tout l’espace */
+  flex:1;
   padding:18px;
-  overflow-y:auto;                   /* scroll interne */
-  -webkit-overflow-scrolling: touch; /* iOS FIX */
-  overscroll-behavior: contain;      /* empêche scroll arrière */
-  font-size:16px;
-  line-height:1.6;
+  overflow-y:auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   touch-action: pan-y;
-  
+
+  height:calc(90vh - 64px);  /* ✅ LA CLÉ */
 }
 
 /* PC : texte plus gros */
@@ -573,7 +572,19 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 .infoPrint:active{
   transform:scale(0.95);
 }
+/* ================= INFO BULLE — PC ================= */
+@media (min-width:1024px){
 
+  .infoCard{
+    height:92vh;              /* un peu plus grand sur PC */
+    max-width:1200px;
+  }
+
+  .infoBody{
+    height:calc(92vh - 72px); /* header PC plus haut */
+  }
+
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
