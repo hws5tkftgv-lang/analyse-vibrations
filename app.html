@@ -406,6 +406,7 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   background:rgba(0,0,0,0.7);
   z-index:10050;
   display:none;
+  padding: 12px;
 
   overscroll-behavior: contain; /* empêche scroll arrière */
   
@@ -422,7 +423,8 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   color:#eaf1ff;
   width:92%;
   max-width:900px;
-  height:90vh;               /* ✅ OBLIGATOIRE */
+  height: min(90vh, 100dvh - 24px);   /* ✅ iOS toolbar safe */
+max-height: 100dvh;
   border-radius:16px;
   display:flex;
   flex-direction:column;
@@ -459,16 +461,13 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 /* ================= INFO BULLE — BODY UNIQUE ================= */
 
 .infoBody{
-  flex:1;
-  padding:18px;
-  overflow-y:auto;
+  flex: 1;
+  min-height: 0;                 /* ✅ OBLIGATOIRE pour scroll dans un flex sur iOS */
+  padding: 18px;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  touch-action: pan-y;
-
-  height:calc(90vh - 64px);  /* ✅ LA CLÉ */
 }
-
 /* PC : texte plus gros */
 @media (min-width:1024px){
   .infoBody{
