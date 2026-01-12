@@ -11,9 +11,6 @@
 <title>Simulateur analyse de vibration</title>
 <style>
 /* ===================== BASE ===================== */
-html, body{
-  height:100%;
-}
 
 :root{
   --bg:#0b1436;
@@ -358,13 +355,6 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 
 /* ================= INFO BULLE ================= */
 
-.infoModal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.7);
-  z-index:10050;
-  display:none;
-}
 
 .infoModal.show{
   display:flex;
@@ -408,12 +398,17 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
 
 /* ================= INFO BULLE (CORRIGÉE) ================= */
 
+/* ================= INFO BULLE (UNIQUE) ================= */
+
 .infoModal{
   position:fixed;
   inset:0;
   background:rgba(0,0,0,0.7);
   z-index:10050;
   display:none;
+
+  overscroll-behavior: contain; /* empêche scroll arrière */
+  touch-action: pan-y;          /* autorise scroll vertical iOS */
 }
 
 .infoModal.show{
@@ -458,14 +453,22 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
   cursor:pointer;
 }
 
+
+
+/* PC : texte encore plus lisible */
+/* ================= INFO BULLE — BODY UNIQUE ================= */
+
 .infoBody{
+  flex:1;                            /* prend tout l’espace */
   padding:18px;
-  overflow-y:auto;
+  overflow-y:auto;                   /* scroll interne */
+  -webkit-overflow-scrolling: touch; /* iOS FIX */
+  overscroll-behavior: contain;      /* empêche scroll arrière */
   font-size:16px;
   line-height:1.6;
 }
 
-/* PC : texte encore plus lisible */
+/* PC : texte plus gros */
 @media (min-width:1024px){
   .infoBody{
     font-size:18px;
@@ -491,14 +494,7 @@ body.spectrum-mode #rotateWarn ~ #fsHUD{
     font-size:20px;
   }
 
-.infoBody{
-  flex:1;                      /* 🔴 clé : prend l’espace restant */
-  padding:18px;
-  overflow-y:auto;             /* 🔴 scroll vertical */
-  -webkit-overflow-scrolling: touch; /* 🔴 iOS FIX */
-  font-size:16px;
-  line-height:1.6;
-}
+
 
   .infoClose{
     font-size:15px;
@@ -2215,9 +2211,8 @@ const closeInfo = document.getElementById("closeInfo");
 function openInfo(){
   infoModal.classList.add("show");
   infoModal.setAttribute("aria-hidden","false");
-  document.body.classList.remove("modal-open");
+  document.body.classList.add("modal-open"); // ✅ BLOQUE LE BODY
 }
-
 closeInfo.addEventListener("click", () => {
   infoModal.classList.remove("show");
   infoModal.setAttribute("aria-hidden","true");
