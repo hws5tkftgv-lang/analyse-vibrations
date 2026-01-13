@@ -672,17 +672,19 @@ body{
     
     /* ================= NUMPAD PC ================= */
 
+/* ================= NUMPAD — DESIGN 2026 ================= */
+
 .numpad{
   position:fixed;
-  left:50%;
-  top:50%;
-  transform:translate(-50%, -50%);
+  inset:0;
   z-index:20000;
 
-  background:#0b1436;
-  border-radius:16px;
-  padding:16px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:rgba(5,8,20,0.55);
+  backdrop-filter: blur(14px);
 }
 
 .numpad.hidden{
@@ -690,60 +692,68 @@ body{
 }
 
 .numpad-grid{
-  background:#0b1436;
-  padding:26px;
-  border-radius:20px;
-  box-shadow:0 20px 60px rgba(0,0,0,0.7);
+  background:linear-gradient(180deg,#101a4a,#0b1436);
+  padding:28px;
+  border-radius:28px;
 
   display:grid;
-  grid-template-columns:repeat(3,90px);
+  grid-template-columns:repeat(3,84px);
   gap:14px;
+
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.6),
+    inset 0 1px 0 rgba(255,255,255,.08);
 }
-/* ===== NUMPAD — BOUTONS PRO (PC / SMART SCREEN) ===== */
 
+/* ===== Boutons ===== */
 .numpad button{
-  height:72px;                 /* ⬅️ GROS boutons */
-  font-size:26px;              /* ⬅️ lisible à 3–4 m */
-  font-weight:700;
-
+  height:64px;
+  border-radius:18px;
   border:none;
-  border-radius:14px;
-  background:linear-gradient(180deg,#243a8a,#1c2b6a);
+
+  background:rgba(255,255,255,0.08);
   color:#eaf1ff;
 
+  font-size:22px;
+  font-weight:600;
+
   cursor:pointer;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.15),
-    0 6px 14px rgba(0,0,0,0.5);
+
+  transition:
+    transform .12s ease,
+    background .15s ease,
+    box-shadow .15s ease;
+}
+
+.numpad button:hover{
+  background:rgba(255,255,255,0.14);
 }
 
 .numpad button:active{
-  transform:translateY(2px);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.1),
-    0 3px 8px rgba(0,0,0,0.6);
+  transform:scale(0.94);
+  box-shadow:inset 0 0 0 2px rgba(0,162,255,.4);
 }
 
-/* Boutons spéciaux */
-.numpad .ok{
-  background:linear-gradient(180deg,#3fa34d,#2e7d32);
-}
-
-.numpad .warn{
-  background:linear-gradient(180deg,#d32f2f,#b71c1c);
-}
+/* ===== Boutons spéciaux ===== */
 .numpad .wide{
   grid-column:span 2;
 }
 
 .numpad .ok{
-  background:#2e7d32;
+  background:linear-gradient(180deg,#2e7dff,#1556d6);
+}
+
+.numpad .ok:hover{
+  background:linear-gradient(180deg,#3a8cff,#1a66ff);
 }
 
 .numpad .warn{
-  background:#b71c1c;
+  background:linear-gradient(180deg,#c62828,#8e0000);
 }
 
+.numpad .warn:hover{
+  background:linear-gradient(180deg,#e53935,#b71c1c);
+}
 /* PC seulement */
 @media (max-width:1023px){
   .numpad{ display:none !important; }
