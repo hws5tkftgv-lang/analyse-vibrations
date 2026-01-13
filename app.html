@@ -658,6 +658,10 @@ body.app-fullscreen .stage canvas{
   width:100% !important;
   height:100% !important;
 }
+
+
+
+
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
@@ -2342,24 +2346,17 @@ if(window.visualViewport){
 
 const btnAppFS = document.getElementById("enterAppFS");
 
-if(btnAppFS){
-  btnAppFS.addEventListener("click", async () => {
-
-    // PC seulement
-    if(window.innerWidth < 1024) return;
-
-    try{
-      if(!document.fullscreenElement){
-        await document.documentElement.requestFullscreen();
-        document.body.classList.add("app-fullscreen");
-      }else{
-        await document.exitFullscreen();
-        document.body.classList.remove("app-fullscreen");
-      }
-    }catch(err){
-      console.warn("Fullscreen refusé :", err);
+btnAppFS.addEventListener("click", async () => {
+  try{
+    if(!document.fullscreenElement){
+      await document.documentElement.requestFullscreen();
+    }else{
+      await document.exitFullscreen();
     }
-  });
+  }catch(err){
+    console.warn("Fullscreen refusé :", err);
+  }
+});
 }
 
 // sécurité : si l’utilisateur sort avec ESC
@@ -2373,6 +2370,11 @@ specCanvas.addEventListener("mousemove", () => {
   if(spectrumFS && !isMobile()){
     showFSHUD();
   }
+});
+
+document.addEventListener("fullscreenchange", () => {
+  // AUCUN changement visuel
+  // On s'assure juste que rien ne se déclenche
 });
 requestAnimationFrame(loop);
 
