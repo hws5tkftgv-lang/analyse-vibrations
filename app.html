@@ -247,6 +247,8 @@ body.app-fullscreen .controls{
 }
 /* ================= INFO BULLE ================= */
 
+/* ================= INFO BULLE – VERSION CORRIGÉE ================= */
+
 .info-bubble{
   position: fixed;
   bottom: 16px;
@@ -259,10 +261,20 @@ body.app-fullscreen .controls{
   box-shadow: 0 10px 30px rgba(0,0,0,.45);
   z-index: 9999;
   font-size: 13px;
+
+  /* animation */
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity .25s ease, transform .25s ease;
+
+  pointer-events: auto;
 }
 
+/* état caché */
 .info-bubble.hidden{
-  display: none;
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
 }
 
 .info-content{
@@ -2144,20 +2156,30 @@ window.addEventListener("DOMContentLoaded", () => {
 
 });
 // ===== INFO BULLE =====
-const infoBtn = document.getElementById("infoBtn");
+
 const infoBubble = document.getElementById("infoBubble");
 const infoContent = document.getElementById("infoContent");
 
 infoBtn.addEventListener("click", () => {
+  const inp = readInputs();
+  if(!inp) return;
+
+  const rpm = inp.rpm;
+  const rpmDriven = rpm * (inp.d1mm / inp.d2mm);
+
+  const Lmm = beltLengthOpenBeltMM(inp.d1mm, inp.d2mm, inp.ccmm);
+  const vmm = beltLinearSpeed_mm_s(inp.d1mm, rpm);
+  const beltFreq = vmm / Lmm;
+
   infoContent.innerHTML = `
-    <b>Menante :</b> ${rpm} RPM (${(rpm/60).toFixed(2)} Hz)<br>
-    <b>Menée :</b> ${rpmDriven} RPM (${(rpmDriven/60).toFixed(2)} Hz)<br>
-    <b>Courroie :</b> ${beltFreq.toFixed(2)} Hz<br>
-    <b>Longueur :</b> ${beltLength.toFixed(2)} po
+    <b>Menante :</b> ${rpm.toFixed(0)} RPM (${(rpm/60).toFixed(2)} Hz)<br>
+    <b>Menée :</b> ${rpmDriven.toFixed(0)} RPM (${(rpmDriven/60).toFixed(2)} Hz)<br>
+    <b>Courroie :</b> ${beltFreq.toFixed(3)} Hz<br>
+    <b>Longueur :</b> ${(unitEl.value === "imperial" ? (Lmm/25.4).toFixed(2)+" po" : Lmm.toFixed(1)+" mm")}
   `;
+
   infoBubble.classList.toggle("hidden");
 });
-
 })();
 </script>
 
