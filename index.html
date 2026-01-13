@@ -2272,7 +2272,7 @@ const isFS = document.body.classList.contains("app-fullscreen");
 // 🔒 largeur pédagogique commune en fullscreen PC
 const FS_WIDTH = 520;   // ← valeur volontairement modérée
 
-  /* /* ========= ANIMATION ========= */
+
 const w = isFS ? FS_WIDTH : Math.min(window.innerWidth - 24, 720);
 const h = w * 0.55;
 
@@ -2281,7 +2281,7 @@ canvas.style.height = h + "px";
 canvas.width  = Math.round(w * dpr);
 canvas.height = Math.round(h * dpr);
 ctx.setTransform(dpr,0,0,dpr,0,0);
-========= ANIMATION ========= */
+
 
 
 
