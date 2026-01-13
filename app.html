@@ -598,19 +598,18 @@ body.spectrum-mode #specStage{
 
   /* ================= ZONE GRAPHIQUE ================= */
   body.app-fullscreen .pc-layout{
-    display:grid;
-    grid-template-columns:1fr 1fr;
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  top: var(--app-top);
 
-    /* 🔼 remonte animation + spectre */
-    margin-top:8px;
-
-    /* 🔽 prend presque tout l’écran */
-    height: calc(100vh - 180px);
-
-    gap:32px;
-    padding:24px;
-    align-items:center;
-  }
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:32px;
+  padding:24px;
+  align-items:center;
+}
 
   /* ================= STAGES ================= */
   body.app-fullscreen .stage{
