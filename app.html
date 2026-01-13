@@ -13,7 +13,6 @@
 /* ===================== BASE ===================== */
 
 :root{
-  --app-top: 500px; /* hauteur header + contrôles */
   --bg:#0b1436;
   --text:#eaf1ff;
   --muted:rgba(234,241,255,.7);
@@ -67,11 +66,10 @@ header{
   border:none;
 }
 
-
-/* Mobile : les blocs "full" prennent toute la largeur */
-@media (max-width:1023px){
-  
+.controls .full{
+  grid-column:1 / -1;
 }
+
 /* ===================== BUTTONS ===================== */
 .buttons{
   display:flex;
@@ -401,101 +399,25 @@ body.spectrum-mode #specStage{
 .isoD{ background:rgba(255,77,77,0.20); }
 
 /* ================================================= */
-/* ================================================= */
-/* ============ PC — BASE =========================== */
-/* ================================================= */
-@media (min-width:1024px){
-
-  body{
-    font-size:16px;
-  }
-
-  .controls{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:14px;
-    align-items:start;
-  }
-
-  .controls label{
-    font-size:13px;
-  }
-
-  .controls input,
-  .controls select{
-    font-size:16px;
-  }
-
-  /* Résultats toujours pleine largeur */
-  .controls .outputBox{
-    grid-column:1 / -1;
-  }
-
-  /* Entraxe + Défauts sur une seule ligne */
-  .controls-row.cc-faults{
-    grid-column:1 / -1;
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:12px;
-    align-items:end;
-  }
-
-  /* Zone graphique */
-  .pc-layout{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:16px;
-    align-items:center;
-  }
-
-  .stage{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
-
-  .stage canvas{
-    width:100%;
-    height:100%;
-  }
-}
-
-/* ================= RALENTI ================= */
-.slow-wrap{
-  position:relative;
-  padding-top:16px;
-}
-
-.slow-label{
-  position:absolute;
-  top:0;
-  left:50%;
-  transform:translateX(-50%);
-  font-size:12px;
-  opacity:.8;
-  pointer-events:none;
-}
-
-@media (min-width:1024px){
-  .slow-label{
-    font-size:13px;
-  }
-}
-/* ================================================= */
-/* ============ INFO — PC =========================== */
+/* ============ PC — PLEIN ÉCRAN =================== */
 /* ================================================= */
 @media (min-width:1024px){
-
+body{
+  font-size:16px;
+}
+.controls label{ font-size:13px; }
+.controls input,
+.controls select{ font-size:16px; }
   .infoModal{
-    padding:0;
+    padding:0;                    /* aucun cadre */
   }
 
   .infoCard{
     width:100vw;
     height:100vh;
-    border-radius:0;
     max-width:none;
     max-height:none;
+    border-radius:0;              /* look app desktop */
   }
 
   .infoHead{
@@ -512,17 +434,247 @@ body.spectrum-mode #specStage{
     font-size:18px;
     line-height:1.75;
   }
-}
-@media print{
-  .infoSection{
-    break-inside:avoid;
-    page-break-inside:avoid;
+
+  .infoActions select,
+  .infoActions button{
+    font-size:15px;
   }
 }
 
 /* ================================================= */
-/* ================= NUMPAD PC ====================== */
+/* ============ MOBILE — ALIGNEMENT ACTIONS ======== */
 /* ================================================= */
+@media (max-width:1023px){
+  .infoActions{
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+
+  .infoActions select{
+    flex:1 1 100%;
+  }
+}
+@media (max-width:1023px){
+  .infoHead{
+    flex-direction:column;
+    align-items:stretch;
+    gap:10px;
+  }
+
+  .infoActions{
+    width:100%;
+  }
+
+  .infoActions select,
+  .infoActions button{
+    width:100%;
+  }
+}
+
+
+
+
+@media print{
+  .infoSection{
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+
+@media (min-width:1024px){
+  .pc-layout{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:14px;
+    align-items:start;
+  }
+
+  .pc-layout .stage{
+    padding:0;
+  }
+}
+
+@media (min-width:1024px){
+
+  /* ===== CONTROLS : grille PC ===== */
+  .controls{
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* ❌ enlève le comportement "ligne complète" sur PC */
+  .controls .full{
+    grid-column:auto;
+  }
+
+  /* 🎯 cible ENTRAXE + DÉFAUTS */
+  #cc,
+  #faultSelect{
+    width:100%;
+  }
+}
+
+
+@media (min-width:1024px){
+
+  /* ===== CONTROLS : grille PC ===== */
+  .controls{
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* ❌ enlève le full par défaut sur PC */
+  .controls .full{
+    grid-column:auto;
+  }
+
+  /* ✅ MAIS on force le bloc résultats à pleine largeur */
+  .controls .outputBox{
+    grid-column:1 / -1;
+  }
+}
+/* ================================================= */
+/* ===== PC : Entraxe + Défauts sur UNE SEULE LIGNE == */
+/* ================================================= */
+@media (min-width:1024px){
+
+  /* on annule le full-row POUR CES DEUX CHAMPS */
+  .controls label.full{
+    grid-column:auto;
+  }
+
+  /* on force 2 colonnes égales */
+  .controls{
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+
+
+/* ================================================= */
+/* === PC : Résultats + Défauts simulés sur 1 ligne == */
+/* ================================================= */
+@media (min-width:1024px){
+
+  /* on annule le full-row pour ces deux blocs */
+  .controls .outputBox.full,
+  .controls label:has(#faultSelect){
+    grid-column:auto;
+  }
+
+  /* on s’assure de 2 colonnes égales */
+  .controls{
+    grid-template-columns: 1fr 1fr;
+    align-items:start;
+  }
+}
+
+
+/* ================================================= */
+/* === PC : demi-largeur pour certains blocs ======= */
+/* ================================================= */
+@media (min-width:1024px){
+
+  .controls{
+    grid-template-columns: 1fr 1fr;
+    gap:14px;
+  }
+
+  .controls .half-pc{
+    grid-column: span 1;
+  }
+
+}
+/* ================= PC : lignes logiques ================= */
+@media (min-width:1024px){
+
+  .controls-row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:14px;
+    grid-column: 1 / -1; /* occupe toute la largeur du grid parent */
+  }
+
+}
+
+
+/* ================= RALENTI — TEXTE SUPERPOSÉ ================= */
+
+.slow-wrap{
+  position:relative;
+  padding-top:16px; /* espace pour le texte */
+}
+
+/* texte */
+.slow-label{
+  position:absolute;
+  top:0;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:12px;
+  opacity:0.8;
+  pointer-events:none; /* le slider reste cliquable */
+  white-space:nowrap;
+}
+
+/* PC : légèrement plus visible */
+@media (min-width:1024px){
+  .slow-label{
+    font-size:13px;
+  }
+}
+/* ===================== PLEIN ÉCRAN APP (PC) ===================== */
+
+    
+    
+    /* ================================================= */
+/* === PC PLEIN ÉCRAN : DÉCALAGE DES BOUTONS ======= */
+/* ================================================= */
+@media (min-width:1024px){
+
+  body.app-fullscreen #infoBtn,
+  body.app-fullscreen #enterSpectrumFS{
+    margin-top:64px;   /* même hauteur que le header */
+  }
+
+}
+    
+    
+    /* ================================================= */
+/* ===== PLEIN ÉCRAN PC : CACHER BOUTONS HUD ======= */
+/* ================================================= */
+
+@media (min-width:1024px){
+
+  body.app-fullscreen .info-btn,
+  body.app-fullscreen #btnEnterFS,
+  body.app-fullscreen #btnExitFS{
+    display:none !important;
+  }
+
+}
+    
+    /* ================================================= */
+/* === FULLSCREEN PC : ANNULER ESPACES HAUT ======== */
+/* ================================================= */
+
+@media (min-width:1024px){
+
+  body.app-fullscreen{
+    padding-top:0 !important;
+    margin-top:0 !important;
+  }
+
+  body.app-fullscreen header,
+  body.app-fullscreen .app-header{
+    margin-bottom:0 !important;
+  }
+
+}
+    
+    /* ================= NUMPAD PC ================= */
+
+/* ================= NUMPAD — DESIGN 2026 ================= */
+
+/* ================= NUMPAD — MODERNE 2026 (SANS FLOU) ================= */
 
 .numpad{
   position:fixed;
@@ -533,6 +685,7 @@ body.spectrum-mode #specStage{
   align-items:center;
   justify-content:center;
 
+  /* fond sombre net, NON flou */
   background:rgba(5,8,20,0.75);
 }
 
@@ -540,6 +693,7 @@ body.spectrum-mode #specStage{
   display:none;
 }
 
+/* ===== Carte ===== */
 .numpad-grid{
   background:#0b1436;
   padding:26px;
@@ -549,119 +703,67 @@ body.spectrum-mode #specStage{
   grid-template-columns:repeat(3,88px);
   gap:14px;
 
-  box-shadow:0 24px 60px rgba(0,0,0,.65);
+  box-shadow:
+    0 24px 60px rgba(0,0,0,0.65),
+    inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
+/* ===== Boutons ===== */
 .numpad button{
   height:62px;
   border-radius:14px;
   border:none;
+
   background:#1c2b6a;
   color:#eaf1ff;
+
   font-size:22px;
   font-weight:600;
+
   cursor:pointer;
+
+  transition:
+    transform .12s ease,
+    background .12s ease,
+    box-shadow .12s ease;
+}
+
+.numpad button:hover{
+  background:#25378c;
 }
 
 .numpad button:active{
-  transform:scale(.94);
+  transform:scale(0.94);
   box-shadow:inset 0 0 0 2px #00a2ff;
 }
 
-.numpad .wide{ grid-column:span 2; }
-.numpad .ok{ background:#2e7d32; }
-.numpad .warn{ background:#b71c1c; }
+/* ===== Boutons spéciaux ===== */
+.numpad .wide{
+  grid-column:span 2;
+}
 
+.numpad .ok{
+  background:#2e7d32;
+}
+
+.numpad .ok:hover{
+  background:#388e3c;
+}
+
+.numpad .warn{
+  background:#b71c1c;
+}
+
+.numpad .warn:hover{
+  background:#d32f2f;
+}
+/* PC seulement */
 @media (max-width:1023px){
   .numpad{ display:none !important; }
 }
-/* ================================================= */
-/* ============ APP FULLSCREEN — PC ================= */
-/* ================================================= */
-
-/* ================================================= */
-/* ========= PC — FULLSCREEN PRO (FINAL) ============ */
-/* ================================================= */
-@media (min-width:1024px){
-
-  body.app-fullscreen{
-    height:100vh;
-    overflow:hidden;
-    font-size:18px; /* 🔍 police globale plus grande */
-  }
-
-  /* cacher boutons inutiles */
-  body.app-fullscreen .info-btn,
-  body.app-fullscreen #enterSpectrumFS{
-    display:none !important;
-  }
-
-  /* ================= ZONE GRAPHIQUE ================= */
-  body.app-fullscreen .pc-layout{
-  position:absolute;
-  left:0;
-  right:0;
-  bottom:0;
-  top: var(--app-top);
-
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:32px;
-  padding:24px;
-  align-items:center;
-}
-
-  /* ================= STAGES ================= */
-  body.app-fullscreen .stage{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
-
-  body.app-fullscreen .stage canvas{
-    width:100% !important;
-    height:100% !important;
-    max-width:100%;
-    max-height:100%;
-  }
-
-  /* ================= POLICES ================= */
-  body.app-fullscreen .controls label{
-    font-size:15px;
-  }
-
-  body.app-fullscreen .controls input,
-  body.app-fullscreen .controls select{
-    font-size:18px;
-    height:42px;
-  }
-
-  body.app-fullscreen .buttons button{
-    font-size:18px;
-    padding:14px;
-  }
-
-  body.app-fullscreen .outputBox{
-    font-size:16px;
-    line-height:1.5;
-  }
-}
-
-/* canvas bien centré */
-body.app-fullscreen .stage{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-body.app-fullscreen .stage canvas{
-  width:100% !important;
-  height:100% !important;
-}
-
-
-
-
+    
+    
+    
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
@@ -691,7 +793,7 @@ body.app-fullscreen .stage canvas{
   <label>Ø menante <input id="d1" type="number" inputmode="decimal" value="4"></label>
   <label>Ø menée <input id="d2" type="number" inputmode="decimal" value="9"></label>
 
-<div class="controls-row cc-faults">
+<div class="controls-row">
   <label>
     Entraxe des poulies (C-C)
     <input id="cc" type="number" inputmode="decimal" value="21">
@@ -2346,31 +2448,38 @@ if(window.visualViewport){
 
 const btnAppFS = document.getElementById("enterAppFS");
 
-btnAppFS.addEventListener("click", async () => {
-  try{
-    if(!document.fullscreenElement){
-      await document.documentElement.requestFullscreen();
-    }else{
-      await document.exitFullscreen();
+if(btnAppFS){
+  btnAppFS.addEventListener("click", async () => {
+
+    // PC seulement
+    if(window.innerWidth < 1024) return;
+
+    try{
+      if(!document.fullscreenElement){
+        await document.documentElement.requestFullscreen();
+        document.body.classList.add("app-fullscreen");
+      }else{
+        await document.exitFullscreen();
+        document.body.classList.remove("app-fullscreen");
+      }
+    }catch(err){
+      console.warn("Fullscreen refusé :", err);
     }
-  }catch(err){
-    console.warn("Fullscreen refusé :", err);
+  });
+}
+
+// sécurité : si l’utilisateur sort avec ESC
+document.addEventListener("fullscreenchange", () => {
+  if(!document.fullscreenElement){
+    document.body.classList.remove("app-fullscreen");
   }
 });
-
-
-
-
 enableLongPressFS();
 specCanvas.addEventListener("mousemove", () => {
   if(spectrumFS && !isMobile()){
     showFSHUD();
   }
 });
-
-
-  // AUCUN changement visuel
-  // On s'assure juste que rien ne se déclenche
 requestAnimationFrame(loop);
 
 
@@ -2521,9 +2630,9 @@ window.addEventListener("DOMContentLoaded", () => {
       numPad.classList.add("hidden");
       activeInput = null;
     }
-  
+  });
 
-
+});
 
 })();
 </script>
@@ -2557,4 +2666,3 @@ window.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
-
