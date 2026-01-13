@@ -807,7 +807,52 @@ body{
 
 }
   
-    
+  /* ================================================= */
+/* === ÉTAPE 2 — CONTAINER FULLSCREEN PC ============ */
+/* ================================================= */
+
+#fullscreenStage{
+  width:100vw;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  background:#0b1436;
+}
+
+/* conteneur interne centré */
+#fsInner{
+  width:100%;
+  max-width:1400px;        /* ajuste si tu veux */
+  min-height:100vh;
+
+  display:flex;
+  align-items:center;      /* CENTRAGE VERTICAL */
+  justify-content:center;
+
+  padding:24px;
+  box-sizing:border-box;
+}
+
+/* zone scène + spectre */
+#mainStage{
+  width:100%;
+}
+
+/* PC : grille propre */
+@media (min-width:1024px){
+  #mainStage{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:24px;
+    align-items:center;
+  }
+
+  #sceneStage,
+  #specStage{
+    padding:0;
+  }
+}
+  
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
