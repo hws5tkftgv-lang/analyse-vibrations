@@ -245,6 +245,30 @@ body.app-fullscreen .controls{
 
   box-sizing:border-box;
 }
+/* ================= INFO BULLE ================= */
+
+.info-bubble{
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  max-width: 380px;
+  background: rgba(18,28,74,.95);
+  color: #eaf1ff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.45);
+  z-index: 9999;
+  font-size: 13px;
+}
+
+.info-bubble.hidden{
+  display: none;
+}
+
+.info-content{
+  line-height: 1.45;
+  white-space: normal;
+}
 
 </style>
 
@@ -2148,6 +2172,10 @@ window.addEventListener("DOMContentLoaded", () => {
     <button data-action="clear" class="warn">C</button>
     <button data-action="ok" class="ok wide">OK</button>
   </div>
+</div>
+<!-- INFO BULLE FLOAT -->
+<div id="infoBubble" class="info-bubble hidden">
+  <div class="info-content" id="infoContent"></div>
 </div>
 
 </body>
