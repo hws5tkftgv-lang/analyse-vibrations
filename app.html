@@ -48,7 +48,8 @@ header{
 .controls{
   padding:10px 14px;
   display:grid;
-  grid-template-columns:repeat(2,1fr);
+ grid-template-columns: minmax(280px, 1fr) minmax(280px, 1fr);
+
   gap:8px;
 }
 
@@ -935,7 +936,23 @@ body > .controls .outputBox,
 body > .controls .slow-wrap{
   grid-column: 1 / -1;
 }
+.controls{
+  margin: 0 auto;
+  max-width: 1200px;
+}
 
+.controls label{
+  display:flex;
+  flex-direction:column;
+  width:100%;
+}
+.controls input,
+.controls select{
+  min-height:38px;
+}
+
+
+  
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
@@ -992,7 +1009,7 @@ body > .controls .slow-wrap{
     <div><b>Longueur courroie</b> : <span id="out-length">—</span></div>
    
   </div>
-    <div class="slow-wrap">
+   <div class="slow-wrap full">
   <span class="slow-label">Ralenti (plus grand = plus lent)</span>
   <input id="slow" type="range" min="1" max="20" value="8">
 </div>
