@@ -2557,62 +2557,67 @@ if(infoMenu){
 
 /* ================= NUMPAD PC ================= */
 
+/* ================= NUMPAD PC ================= */
+
 let activeInput = null;
-const numPad = document.getElementById("numPad");
 
-// détecte focus sur input numérique (PC seulement)
-document.addEventListener("focusin", (e) => {
-  if(window.innerWidth < 1024) return;
+window.addEventListener("DOMContentLoaded", () => {
 
-  const el = e.target;
-  if(el.tagName === "INPUT" && el.type === "number"){
-    activeInput = el;
-    numPad.classList.remove("hidden");
-  }
+  const numPad = document.getElementById("numPad");
+  if(!numPad) return; // sécurité absolue
+
+  document.addEventListener("focusin", (e) => {
+    if(window.innerWidth < 1024) return;
+
+    const el = e.target;
+    if(el.tagName === "INPUT" && el.type === "number"){
+      activeInput = el;
+      numPad.classList.remove("hidden");
+    }
+  });
+
+  document.addEventListener("focusout", (e) => {
+    if(e.target === activeInput){
+      setTimeout(()=>{ 
+        if(!numPad.contains(document.activeElement)){
+          numPad.classList.add("hidden");
+          activeInput = null;
+        }
+      }, 150);
+    }
+  });
+
+  numPad.addEventListener("click", (e) => {
+    if(!activeInput) return;
+    const btn = e.target.closest("button");
+    if(!btn) return;
+
+    const key = btn.dataset.key;
+    const action = btn.dataset.action;
+
+    if(key){
+      activeInput.value += key;
+      activeInput.dispatchEvent(new Event("input"));
+    }
+
+    if(action === "back"){
+      activeInput.value = activeInput.value.slice(0,-1);
+      activeInput.dispatchEvent(new Event("input"));
+    }
+
+    if(action === "clear"){
+      activeInput.value = "";
+      activeInput.dispatchEvent(new Event("input"));
+    }
+
+    if(action === "ok"){
+      activeInput.blur();
+      numPad.classList.add("hidden");
+      activeInput = null;
+    }
+  });
+
 });
-
-document.addEventListener("focusout", (e) => {
-  if(e.target === activeInput){
-    setTimeout(()=>{ 
-      if(!numPad.contains(document.activeElement)){
-        numPad.classList.add("hidden");
-        activeInput = null;
-      }
-    }, 150);
-  }
-});
-
-// gestion des touches
-numPad.addEventListener("click", (e) => {
-  if(!activeInput) return;
-  const btn = e.target.closest("button");
-  if(!btn) return;
-
-  const key = btn.dataset.key;
-  const action = btn.dataset.action;
-
-  if(key){
-    activeInput.value += key;
-    activeInput.dispatchEvent(new Event("input"));
-  }
-
-  if(action === "back"){
-    activeInput.value = activeInput.value.slice(0,-1);
-    activeInput.dispatchEvent(new Event("input"));
-  }
-
-  if(action === "clear"){
-    activeInput.value = "";
-    activeInput.dispatchEvent(new Event("input"));
-  }
-
-  if(action === "ok"){
-    activeInput.blur();
-    numPad.classList.add("hidden");
-    activeInput = null;
-  }
-});
-
 
 })();
 </script>
