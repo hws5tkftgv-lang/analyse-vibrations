@@ -674,6 +674,8 @@ body{
 
 /* ================= NUMPAD — DESIGN 2026 ================= */
 
+/* ================= NUMPAD — MODERNE 2026 (SANS FLOU) ================= */
+
 .numpad{
   position:fixed;
   inset:0;
@@ -683,35 +685,36 @@ body{
   align-items:center;
   justify-content:center;
 
-  background:rgba(5,8,20,0.55);
-  backdrop-filter: blur(14px);
+  /* fond sombre net, NON flou */
+  background:rgba(5,8,20,0.75);
 }
 
 .numpad.hidden{
   display:none;
 }
 
+/* ===== Carte ===== */
 .numpad-grid{
-  background:linear-gradient(180deg,#101a4a,#0b1436);
-  padding:28px;
-  border-radius:28px;
+  background:#0b1436;
+  padding:26px;
+  border-radius:20px;
 
   display:grid;
-  grid-template-columns:repeat(3,84px);
+  grid-template-columns:repeat(3,88px);
   gap:14px;
 
   box-shadow:
-    0 30px 80px rgba(0,0,0,.6),
-    inset 0 1px 0 rgba(255,255,255,.08);
+    0 24px 60px rgba(0,0,0,0.65),
+    inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
 /* ===== Boutons ===== */
 .numpad button{
-  height:64px;
-  border-radius:18px;
+  height:62px;
+  border-radius:14px;
   border:none;
 
-  background:rgba(255,255,255,0.08);
+  background:#1c2b6a;
   color:#eaf1ff;
 
   font-size:22px;
@@ -721,17 +724,17 @@ body{
 
   transition:
     transform .12s ease,
-    background .15s ease,
-    box-shadow .15s ease;
+    background .12s ease,
+    box-shadow .12s ease;
 }
 
 .numpad button:hover{
-  background:rgba(255,255,255,0.14);
+  background:#25378c;
 }
 
 .numpad button:active{
   transform:scale(0.94);
-  box-shadow:inset 0 0 0 2px rgba(0,162,255,.4);
+  box-shadow:inset 0 0 0 2px #00a2ff;
 }
 
 /* ===== Boutons spéciaux ===== */
@@ -740,19 +743,19 @@ body{
 }
 
 .numpad .ok{
-  background:linear-gradient(180deg,#2e7dff,#1556d6);
+  background:#2e7d32;
 }
 
 .numpad .ok:hover{
-  background:linear-gradient(180deg,#3a8cff,#1a66ff);
+  background:#388e3c;
 }
 
 .numpad .warn{
-  background:linear-gradient(180deg,#c62828,#8e0000);
+  background:#b71c1c;
 }
 
 .numpad .warn:hover{
-  background:linear-gradient(180deg,#e53935,#b71c1c);
+  background:#d32f2f;
 }
 /* PC seulement */
 @media (max-width:1023px){
