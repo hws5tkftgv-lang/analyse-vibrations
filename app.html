@@ -911,6 +911,30 @@ body{
     grid-column:1 / -1;
   }
 }
+/* ===== FIX FINAL CONTROLS LAYOUT ===== */
+body > .controls{
+  display: grid !important;
+
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+
+  grid-template-columns: 1fr 1fr !important;
+  column-gap: 32px;
+  row-gap: 14px;
+}
+
+/* Forcer toutes les boîtes à largeur identique */
+body > .controls > *{
+  width: 100%;
+}
+
+/* Lignes pleine largeur */
+body > .controls .controls-row,
+body > .controls .outputBox,
+body > .controls .slow-wrap{
+  grid-column: 1 / -1;
+}
 
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
