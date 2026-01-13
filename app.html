@@ -2359,11 +2359,7 @@ btnAppFS.addEventListener("click", async () => {
 });
 }
 
-// sécurité : si l’utilisateur sort avec ESC
-document.addEventListener("fullscreenchange", () => {
-  if(!document.fullscreenElement){
-    document.body.classList.remove("app-fullscreen");
-  }
+
 });
 enableLongPressFS();
 specCanvas.addEventListener("mousemove", () => {
