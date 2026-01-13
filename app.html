@@ -622,30 +622,7 @@ body{
   }
 }
 /* ===================== PLEIN ÉCRAN APP (PC) ===================== */
-@media (min-width:1024px){
 
-  body.app-fullscreen{
-    overflow:hidden;
-  }
-
-  body.app-fullscreen header{
-    position:fixed;
-    top:0;
-    left:0;
-    right:0;
-    z-index:10000;
-    background:#0b1436;
-  }
-
- /* ✅ décale TOUT le contenu sous le header */
-  body.app-fullscreen .controls,
-  body.app-fullscreen .buttons,
-  body.app-fullscreen .spectrum-controls,
-  body.app-fullscreen .pc-layout{
-    margin-top:64px; /* hauteur réelle du header */
-      }
-
-}
     
     
     /* ================================================= */
@@ -697,12 +674,14 @@ body{
 
 .numpad{
   position:fixed;
-  right:24px;
-  bottom:24px;
+  left:50%;
+  top:50%;
+  transform:translate(-50%, -50%);
   z-index:20000;
+
   background:#0b1436;
-  border-radius:14px;
-  padding:14px;
+  border-radius:16px;
+  padding:16px;
   box-shadow:0 10px 30px rgba(0,0,0,0.6);
 }
 
