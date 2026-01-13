@@ -888,6 +888,29 @@ body{
     width:100%;
   }
 }
+@media (min-width:1024px){
+  .controls{
+    display:grid;
+
+    max-width:1400px;
+    margin-left:auto;
+    margin-right:auto;
+
+    grid-template-columns: 1fr 1fr;
+    column-gap:32px;
+    row-gap:12px;
+  }
+
+  .controls > *{
+    width:100%;
+  }
+
+  .controls-row,
+  .outputBox,
+  .slow-wrap{
+    grid-column:1 / -1;
+  }
+}
 
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
