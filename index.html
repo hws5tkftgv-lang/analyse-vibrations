@@ -2249,15 +2249,17 @@ function updateSpectrumModeByOrientation(){
   const dpr = dprNow();
 
   /* ========= ANIMATION ========= */
- const maxW = document.body.classList.contains("app-fullscreen")
-  ? (window.innerWidth / 2) - 48
+const maxW = document.body.classList.contains("app-fullscreen")
+  ? Math.min((window.innerWidth - 120) / 2, 680)
   : Math.min(window.innerWidth - 24, 720);
+
 
   if(!lockedWidth) lockedWidth = maxW;
   lockedWidth = Math.min(lockedWidth, maxW);
 
   const w = lockedWidth;
   const h = w * 0.55;
+lockedWidth = null;
 
   canvas.style.width  = w + "px";
   canvas.style.height = h + "px";
