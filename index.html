@@ -872,6 +872,14 @@ body{
   gap:24px;
   align-items:center;
 }
+#fullscreenStage{
+  display:flex;
+  align-items:center;      /* 🔴 CENTRAGE VERTICAL */
+  justify-content:center;  /* centrage horizontal */
+  min-height: calc(100vh - 360px); /* 🔑 zone restante sous les contrôles */
+  width:100%;
+  box-sizing:border-box;
+}
 
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
