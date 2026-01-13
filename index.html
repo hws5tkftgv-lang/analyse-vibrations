@@ -2269,8 +2269,10 @@ function updateSpectrumModeByOrientation(){
   const dpr = dprNow();
 
   /* ========= ANIMATION ========= */
-const maxW = document.body.classList.contains("app-fullscreen")
-  ? Math.min((window.innerWidth - 120) / 2, 680)
+const isFS = document.body.classList.contains("app-fullscreen");
+
+const maxW = isFS
+  ? 640              // ✅ LIMITE PÉDAGOGIQUE EN FULLSCREEN
   : Math.min(window.innerWidth - 24, 720);
 
 
