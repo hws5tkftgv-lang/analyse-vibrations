@@ -96,8 +96,9 @@ button:active{
 
 /* ===================== STAGES ===================== */
 .stage{
-  padding:10px 14px;
+  padding:0;
 }
+
 
 canvas{
   width:100%;
@@ -486,8 +487,12 @@ body{
     display:grid;
     grid-template-columns: 1fr 1fr;
     gap:14px;
-    align-items:start;
+
+    width:calc(720px * 2 + 14px); /* EXACT */
+    margin:0 auto;               /* CENTRAGE */
   }
+}
+
 
   .pc-layout .stage{
     padding:0;
@@ -832,7 +837,20 @@ body{
 
 }
 
-    
+    /* ================= PC — ZONE GRAPHIQUE CENTRÉE ================= */
+@media (min-width:1024px){
+
+  .visual-zone{
+    max-width:1400px;
+    margin:0 auto;            /* centrage horizontal */
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    gap:40px;                 /* espace régulier entre animation et spectre */
+  }
+
+}
+
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
@@ -913,15 +931,18 @@ body{
   </div>
   <button id="exitSpectrumFS">❌ Quitter</button>
 </div>
-<div class="pc-layout">
-  <div class="stage" id="sceneStage">
-    <canvas id="scene"></canvas>
-  </div>
+<div class="visual-zone">
+  <div class="pc-layout">
+    <div class="stage" id="sceneStage">
+      <canvas id="scene"></canvas>
+    </div>
 
-  <div class="stage" id="specStage">
-    <canvas id="spectrum"></canvas>
+    <div class="stage" id="specStage">
+      <canvas id="spectrum"></canvas>
+    </div>
   </div>
 </div>
+
 
 <div class="results" id="info"></div>
 
@@ -2122,7 +2143,7 @@ specH = h;
 
 
     specCanvas.style.position = "relative";
-    specCanvas.style.marginTop = "18px";
+    specCanvas.style.marginTop = "0";
     specCanvas.style.borderRadius = "12px";
     specCanvas.style.zIndex = "auto";
   }
