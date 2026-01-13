@@ -877,6 +877,17 @@ body{
     margin-right:auto;
   }
 }
+@media (min-width:1024px){
+  .controls{
+    display:grid;
+    justify-content:center;   /* 🔑 centre le grid */
+  }
+
+  .controls > *{
+    max-width:1400px;
+    width:100%;
+  }
+}
 
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
