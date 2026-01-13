@@ -2357,10 +2357,10 @@ btnAppFS.addEventListener("click", async () => {
     console.warn("Fullscreen refusé :", err);
   }
 });
-}
 
 
-);
+
+
 enableLongPressFS();
 specCanvas.addEventListener("mousemove", () => {
   if(spectrumFS && !isMobile()){
@@ -2368,10 +2368,9 @@ specCanvas.addEventListener("mousemove", () => {
   }
 });
 
-document.addEventListener("fullscreenchange", () => {
+
   // AUCUN changement visuel
   // On s'assure juste que rien ne se déclenche
-});
 requestAnimationFrame(loop);
 
 
@@ -2522,11 +2521,11 @@ window.addEventListener("DOMContentLoaded", () => {
       numPad.classList.add("hidden");
       activeInput = null;
     }
-  });
-
-});
+  
 
 
+
+})();
 </script>
 
 
