@@ -2143,6 +2143,20 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
 });
+// ===== INFO BULLE =====
+const infoBtn = document.getElementById("infoBtn");
+const infoBubble = document.getElementById("infoBubble");
+const infoContent = document.getElementById("infoContent");
+
+infoBtn.addEventListener("click", () => {
+  infoContent.innerHTML = `
+    <b>Menante :</b> ${rpm} RPM (${(rpm/60).toFixed(2)} Hz)<br>
+    <b>Menée :</b> ${rpmDriven} RPM (${(rpmDriven/60).toFixed(2)} Hz)<br>
+    <b>Courroie :</b> ${beltFreq.toFixed(2)} Hz<br>
+    <b>Longueur :</b> ${beltLength.toFixed(2)} po
+  `;
+  infoBubble.classList.toggle("hidden");
+});
 
 })();
 </script>
