@@ -886,11 +886,6 @@ body.fullscreen .pc-layout .stage{
 /* === ÉTAPE 3 — PROPORTIONS CANVAS FULLSCREEN ===== */
 /* ================================================= */
 
-body.fullscreen .stage{
-  aspect-ratio: 16 / 9;        /* ratio stable */
-  max-height:100%;
-  max-width:100%;
-}
 
 body.fullscreen canvas{
   width:100% !important;
@@ -902,6 +897,31 @@ body.fullscreen canvas{
 body.fullscreen .stage-stage,
 body.fullscreen .stage-spectrum{
   overflow:hidden;
+}
+
+  /* ================================================= */
+/* === ÉTAPE 4 — RATIO OPTIMISÉ PAR ZONE ============ */
+/* ================================================= */
+
+/* Animation mécanique */
+body.fullscreen #sceneStage{
+  aspect-ratio: 16 / 9;
+  max-height:100%;
+  width:100%;
+}
+
+/* Spectre vibratoire */
+body.fullscreen #specStage{
+  aspect-ratio: 4 / 3;
+  max-height:100%;
+  width:100%;
+}
+
+/* Canvas toujours plein */
+body.fullscreen canvas{
+  width:100% !important;
+  height:100% !important;
+  display:block;
 }
 
 
