@@ -66,10 +66,13 @@ header{
   border:none;
 }
 
-.controls .full{
-  grid-column:1 / -1;
-}
 
+/* Mobile : les blocs "full" prennent toute la largeur */
+@media (max-width:1023px){
+  .controls .full{
+    grid-column:1 / -1;
+  }
+}
 /* ===================== BUTTONS ===================== */
 .buttons{
   display:flex;
