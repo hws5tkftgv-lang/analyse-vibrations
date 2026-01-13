@@ -228,6 +228,21 @@ body.app-fullscreen > .controls > *{
   max-width:1000px;
   width:100%;
 }
+/* ===== ÉTAPE 1 — CONTRÔLE RÉEL DE .controls ===== */
+
+/* on neutralise l'étirement fullscreen */
+body.app-fullscreen .controls{
+  width:100%;
+  max-width:1100px;
+  margin-left:auto;
+  margin-right:auto;
+
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:12px;
+
+  box-sizing:border-box;
+}
 
 </style>
 
