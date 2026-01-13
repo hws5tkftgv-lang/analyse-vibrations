@@ -2271,9 +2271,14 @@ function updateSpectrumModeByOrientation(){
   /* ========= ANIMATION ========= */
 const isFS = document.body.classList.contains("app-fullscreen");
 
+// 🔒 limites pédagogiques fixes en plein écran
+const SCENE_W_FS = 560;
+const SPEC_W_FS  = 560;
+
 const maxW = isFS
-  ? 640              // ✅ LIMITE PÉDAGOGIQUE EN FULLSCREEN
+  ? SCENE_W_FS
   : Math.min(window.innerWidth - 24, 720);
+
 
 
   if(!lockedWidth) lockedWidth = maxW;
@@ -2305,8 +2310,9 @@ lockedWidth = null;
     specCanvas.style.zIndex = "9999";
   }else{
     // 🟢 MODE NORMAL
-    specW = w;
-    specH = Math.max(220, h * 0.95);
+ specW = isFS ? SPEC_W_FS : w;
+specH = isFS ? h : Math.max(220, h * 0.95);
+
 
     specCanvas.style.position = "relative";
     specCanvas.style.marginTop = "18px";
