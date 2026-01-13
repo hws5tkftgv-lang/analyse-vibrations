@@ -1005,6 +1005,41 @@ body.fullscreen #fsInner{
   }
 }
 
+/* FULLSCREEN ROOT */
+body.app-fullscreen,
+body.app-fullscreen html{
+  margin: 0;
+  padding: 0;
+  overflow: hidden !important;
+  height: 100%;
+}
+
+/* CONTENEUR FULLSCREEN */
+body.app-fullscreen #fullscreenStage{
+  position: fixed;
+  inset: 0;
+  display: flex;
+  
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* ZONE INTERNE */
+body.app-fullscreen #fsInner{
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  padding: 24px;
+  box-sizing: border-box;
+}
+body.app-fullscreen canvas{
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
 
   
   </style>
@@ -2273,7 +2308,10 @@ const isFS = document.body.classList.contains("app-fullscreen");
 const FS_WIDTH = 520;   // ← valeur volontairement modérée
 
 
-const w = isFS ? FS_WIDTH : Math.min(window.innerWidth - 24, 720);
+const w = isFS
+  ? Math.min(window.innerWidth * 0.45, window.innerHeight * 0.8)
+  : Math.min(window.innerWidth - 24, 720);
+
 const h = w * 0.55;
 
 canvas.style.width  = w + "px";
