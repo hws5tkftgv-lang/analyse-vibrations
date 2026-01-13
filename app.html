@@ -591,6 +591,22 @@ body{
   }
 
 }
+
+  @media (min-width:1024px){
+  /* La bonne .controls uniquement */
+  .app-header + .controls{
+    display:grid;
+    grid-template-columns: 1fr;
+  }
+
+  /* Tous les éléments AVANT .controls-row */
+  .app-header + .controls > label{
+    max-width:1400px;
+    margin-left:auto;
+    margin-right:auto;
+  }
+}
+
 /* ================= PC : lignes logiques ================= */
 @media (min-width:1024px){
 
