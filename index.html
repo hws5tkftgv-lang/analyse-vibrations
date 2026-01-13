@@ -852,7 +852,27 @@ body{
     padding:0;
   }
 }
-  
+  /* ===================== ÉTAPE 1 : CONTENEUR STABLE ===================== */
+
+#fullscreenStage{
+  width:100%;
+  max-width:1400px;
+  margin:0 auto;
+  padding:24px 16px;
+  box-sizing:border-box;
+}
+
+#fsInner{
+  width:100%;
+}
+
+.pc-layout{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:24px;
+  align-items:center;
+}
+
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
