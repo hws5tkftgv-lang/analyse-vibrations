@@ -762,7 +762,18 @@ body{
   .numpad{ display:none !important; }
 }
     
-    
+    @media (min-width:1024px){
+  .controls-row.cc-faults{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:12px;
+    align-items:end;
+  }
+
+  .controls-row.cc-faults > *{
+    min-width:0;
+  }
+}
     
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -793,7 +804,7 @@ body{
   <label>Ø menante <input id="d1" type="number" inputmode="decimal" value="4"></label>
   <label>Ø menée <input id="d2" type="number" inputmode="decimal" value="9"></label>
 
-<div class="controls-row">
+<div class="controls-row cc-faults">
   <label>
     Entraxe des poulies (C-C)
     <input id="cc" type="number" inputmode="decimal" value="21">
