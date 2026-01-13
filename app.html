@@ -214,6 +214,21 @@ header .info-btn{
     height:auto !important;
   }
 }
+
+
+  /* ===== FIX CRITIQUE : isolement du fullscreen ===== */
+body.app-fullscreen > .controls{
+  width:100%;
+  display:flex;
+  justify-content:center;
+}
+
+/* le vrai conteneur centré */
+body.app-fullscreen > .controls > *{
+  max-width:1000px;
+  width:100%;
+}
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
