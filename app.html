@@ -69,9 +69,7 @@ header{
 
 /* Mobile : les blocs "full" prennent toute la largeur */
 @media (max-width:1023px){
-  .controls .full{
-    grid-column:1 / -1;
-  }
+  
 }
 /* ===================== BUTTONS ===================== */
 .buttons{
@@ -777,6 +775,23 @@ body{
     min-width:0;
   }
 }
+    
+    
+    /* ================= PC : Entraxe + Défauts sur 1 ligne ================= */
+@media (min-width:1024px){
+
+  .controls{
+    align-items:start;
+  }
+
+  .controls-row.cc-faults{
+    grid-column:1 / -1;          /* occupe toute la largeur du grid parent */
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+}
+    
     
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
