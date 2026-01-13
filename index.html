@@ -811,13 +811,7 @@ body{
 /* === ÉTAPE 2 — CONTAINER FULLSCREEN PC ============ */
 /* ================================================= */
 
-#fullscreenStage{
-  width:100vw;
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  background:#0b1436;
-}
+
 
 /* conteneur interne centré */
 #fsInner{
@@ -854,13 +848,7 @@ body{
 }
   /* ===================== ÉTAPE 1 : CONTENEUR STABLE ===================== */
 
-#fullscreenStage{
-  width:100%;
-  max-width:1400px;
-  margin:0 auto;
-  padding:24px 16px;
-  box-sizing:border-box;
-}
+
 
 #fsInner{
   width:100%;
@@ -872,14 +860,7 @@ body{
   gap:24px;
   align-items:center;
 }
-#fullscreenStage{
-  display:flex;
-  align-items:center;      /* 🔴 CENTRAGE VERTICAL */
-  justify-content:center;  /* centrage horizontal */
-  min-height: calc(100vh - 360px); /* 🔑 zone restante sous les contrôles */
-  width:100%;
-  box-sizing:border-box;
-}
+
 #fsInner{
   width:100%;
   max-width:1400px;
@@ -889,6 +870,19 @@ body{
   grid-template-columns: 1fr 1fr;
   gap:32px;
   align-items:center;   /* 🔴 IMPORTANT */
+}
+/* ================= ÉTAPE 1 — ALIGNEMENT CENTRAL RÉEL ================= */
+
+.pc-layout{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:32px;
+
+  align-items:center;       /* 🔴 centre verticalement les deux canvases */
+  justify-items:center;     /* 🔴 centre horizontalement chaque stage */
+
+  max-width:1400px;
+  margin:0 auto;            /* 🔴 centre le bloc dans la page */
 }
 
   </style>
