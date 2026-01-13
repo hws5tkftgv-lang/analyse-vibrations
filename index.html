@@ -481,18 +481,6 @@ body{
   }
 }
 
-@media (min-width:1024px){
-  .pc-layout{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:14px;
-    align-items:start;
-  }
-
-  .pc-layout .stage{
-    padding:0;
-  }
-}
 
 @media (min-width:1024px){
 
@@ -762,23 +750,7 @@ body{
   .numpad{ display:none !important; }
 }
     
-  /* ================================================= */
-/* ===== PC FULLSCREEN — ALIGNEMENT SCÈNE / SPECTRE */
-/* ================================================= */
-
-@media (min-width:1024px){
-
-  body.app-fullscreen #mainStage{
-    height: calc(100vh - 80px); /* enlève header */
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-
-    align-items: center;   /* CENTRAGE VERTICAL */
-    justify-items: center; /* CENTRAGE HORIZONTAL */
-
-    padding: 24px;
-  }
+  
 
   body.app-fullscreen .stage{
     width: 100%;
@@ -805,85 +777,58 @@ body{
     max-height: 100%;
   }
 
-}
+
   
-  /* ================================================= */
-/* === ÉTAPE 2 — CONTAINER FULLSCREEN PC ============ */
+
+
+
+
+
+
+
+
+
+/* ================================================= */
+/* === ÉTAPE 1 — ALIGNEMENT PC STABLE (NORMAL) ===== */
 /* ================================================= */
 
-
-
-/* conteneur interne centré */
-#fsInner{
-  width:100%;
-  max-width:1400px;        /* ajuste si tu veux */
-  min-height:100vh;
-
-  display:flex;
-  align-items:center;      /* CENTRAGE VERTICAL */
-  justify-content:center;
-
-  padding:24px;
-  box-sizing:border-box;
-}
-
-/* zone scène + spectre */
-#mainStage{
-  width:100%;
-}
-
-/* PC : grille propre */
 @media (min-width:1024px){
-  #mainStage{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:24px;
-    align-items:center;
+
+  /* conteneur général */
+  #fullscreenStage{
+    display:flex;
+    justify-content:center;
   }
 
-  #sceneStage,
-  #specStage{
+  /* limite de largeur + centrage */
+  #fsInner{
+    width:100%;
+    max-width:1400px;
+    padding:24px;
+    box-sizing:border-box;
+  }
+
+  /* grille animation / spectre */
+  .pc-layout{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:32px;
+
+    align-items:center;       /* CENTRAGE VERTICAL */
+    justify-items:center;     /* CENTRAGE HORIZONTAL */
+  }
+
+  /* chaque bloc stage */
+  .pc-layout .stage{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
     padding:0;
   }
 }
-  /* ===================== ÉTAPE 1 : CONTENEUR STABLE ===================== */
 
 
-
-#fsInner{
-  width:100%;
-}
-
-.pc-layout{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:24px;
-  align-items:center;
-}
-
-#fsInner{
-  width:100%;
-  max-width:1400px;
-}
-.pc-layout{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:32px;
-  align-items:center;   /* 🔴 IMPORTANT */
-}
-/* ================= ÉTAPE 1 — ALIGNEMENT CENTRAL RÉEL ================= */
-
-.pc-layout{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:32px;
-
-  align-items:center;       /* 🔴 centre verticalement les deux canvases */
-  justify-items:center;     /* 🔴 centre horizontalement chaque stage */
-
-  max-width:1400px;
-  margin:0 auto;            /* 🔴 centre le bloc dans la page */
-}
 
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
