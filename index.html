@@ -1,1 +1,2668 @@
-.
+<html lang="fr">
+<!doctype html>
+<head>
+<meta charset="utf-8" />
+
+
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vibration">
+<title>Simulateur analyse de vibration</title>
+<style>
+/* ===================== BASE ===================== */
+
+:root{
+  --bg:#0b1436;
+  --text:#eaf1ff;
+  --muted:rgba(234,241,255,.7);
+  --btn:#1c2b6a;
+  --bad:#ff4d4d;
+}
+
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,system-ui,sans-serif;
+  overflow-x:hidden;
+}
+
+body.modal-open{
+  overflow:hidden;
+}
+
+/* ===================== HEADER ===================== */
+header{
+  padding:10px 14px;
+  font-size:16px;
+  font-weight:700;
+}
+
+/* ===================== CONTROLS ===================== */
+.controls{
+  padding:10px 14px;
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px;
+}
+
+.controls label{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.controls input,
+.controls select{
+  width:100%;
+  padding:6px 8px;
+  font-size:13px;
+  border-radius:10px;
+  border:none;
+}
+
+.controls .full{
+  grid-column:1 / -1;
+}
+
+/* ===================== BUTTONS ===================== */
+.buttons{
+  display:flex;
+  gap:10px;
+  padding:0 14px 10px;
+  flex-wrap:wrap;
+}
+
+button{
+  flex:1;
+  min-width:120px;
+  padding:10px;
+  font-size:15px;
+  border:none;
+  border-radius:12px;
+  background:var(--btn);
+  color:white;
+  cursor:pointer;
+}
+
+button:active{
+  transform:scale(0.98);
+}
+
+/* ===================== STAGES ===================== */
+.stage{
+  padding:10px 14px;
+}
+
+canvas{
+  width:100%;
+  display:block;
+  background:#000;
+  border-radius:12px;
+}
+
+#scene{
+  background:#000;
+}
+
+#spectrum{
+  background:#05080f;
+  touch-action:none;
+}
+
+/* ===================== RESULTS ===================== */
+.results{
+  padding:10px 14px 18px;
+  font-size:14px;
+  line-height:1.45;
+}
+
+.bad{
+  color:var(--bad);
+  font-weight:700;
+}
+
+.small{
+  font-size:12px;
+  opacity:.75;
+  margin-top:6px;
+}
+
+/* ===================== OUTPUT BOX ===================== */
+.outputBox{
+  background:rgba(255,255,255,0.08);
+  border-radius:12px;
+  padding:10px;
+  font-size:13px;
+  line-height:1.4;
+}
+
+.outputBox b{
+  color:#cfe2ff;
+}
+
+/* ==================================================== */
+/* ===================== FULLSCREEN ==================== */
+/* ==================================================== */
+
+/* Canvas fullscreen ONLY */
+canvas.spectrum-only{
+  position:fixed;
+  inset:0;
+  width:100dvw !important;
+  height:100dvh !important;
+  border-radius:0 !important;
+  z-index:9999;
+}
+
+/* Mode spectre : cacher TOUT sauf spectre + HUD + warning */
+body.spectrum-mode{
+  overflow:hidden;
+}
+
+body.spectrum-mode header,
+body.spectrum-mode .controls,
+body.spectrum-mode .buttons,
+body.spectrum-mode .spectrum-controls,
+body.spectrum-mode #sceneStage,
+body.spectrum-mode .results{
+  display:none !important;
+}
+body.spectrum-mode #specStage,
+body.spectrum-mode #specStage *,
+body.spectrum-mode #fsHUD,
+body.spectrum-mode #rotateWarn{
+  display:block !important;
+}
+body.spectrum-mode{
+  overflow:hidden;
+}
+
+body.spectrum-mode #specStage{
+  padding:0 !important;
+  margin:0 !important;
+}
+
+/* ===================== HUD FULLSCREEN ===================== */
+/* ⚠️ HUD contrôlé UNIQUEMENT par JS */
+#fsHUD{
+  position:fixed;
+  top:12px;
+  left:12px;
+  z-index:10001;
+
+  padding:10px 12px;
+  border-radius:12px;
+  background:rgba(0,0,0,0.35);
+  color:#eaf1ff;
+  font-size:12px;
+  line-height:1.25;
+
+  display:none;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .3s ease;
+}
+
+#fsHUD.visible{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  opacity:1;
+  pointer-events:auto;
+}
+
+#fsHUD .fs-info{
+  pointer-events:none;
+}
+
+#exitSpectrumFS{
+  background:#b71c1c;
+  padding:8px 12px;
+  border-radius:10px;
+  font-size:13px;
+  white-space:nowrap;
+}
+
+/* ===================== ROTATION WARNING ===================== */
+.rotate-warning{
+  position:fixed;
+  inset:0;
+  z-index:9998; /* ⬅️ TOUJOURS SOUS le canvas fullscreen */
+  background:rgba(5,8,15,0.85);
+
+  display:none;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+
+  padding:24px;
+  font-size:18px;
+  font-weight:700;
+  color:#eaf1ff;
+
+  pointer-events:none;
+}
+.rotate-warning span{
+  display:block;
+  font-size:14px;
+  font-weight:400;
+  opacity:.85;
+  margin-top:10px;
+}
+
+/* ===================== SPECTRUM CONTROLS ===================== */
+.spectrum-controls{
+  display:flex;
+  gap:8px;
+  padding:0 14px 10px;
+}
+
+.spectrum-controls button{
+  padding:8px 12px;
+  border-radius:8px;
+  border:none;
+  background:#1c2b5a;
+  color:#eaf1ff;
+  font-weight:600;
+}
+
+/* ================================================= */
+/* ============ INFO BULLE — VERSION FINALE ======== */
+/* ================================================= */
+
+/* ===== Overlay ===== */
+.infoModal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  z-index:10050;
+  display:none;
+  padding:12px;
+  overscroll-behavior:contain;
+}
+
+.infoModal.show{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* ===== Carte ===== */
+.infoCard{
+  background:#0b1436;
+  color:#eaf1ff;
+  width:92%;
+  max-width:900px;
+  height:min(90vh, 100dvh - 24px); /* mobile iOS safe */
+  border-radius:16px;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+}
+
+/* ===== En-tête ===== */
+.infoHead{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 18px;
+  border-bottom:1px solid rgba(255,255,255,0.15);
+  font-size:18px;
+  font-weight:700;
+}
+
+.infoTitle{
+  font-size:18px;
+}
+
+/* ===== Actions ===== */
+.infoActions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.infoActions select,
+.infoPrint{
+  background:#1c2b6a;
+  color:#eaf1ff;
+  border:none;
+  padding:6px 10px;
+  border-radius:8px;
+  font-size:14px;
+}
+
+.infoPrint:active{
+  transform:scale(0.95);
+}
+
+.infoClose{
+  background:#b71c1c;
+  color:white;
+  border:none;
+  padding:6px 12px;
+  border-radius:8px;
+  font-size:14px;
+  cursor:pointer;
+}
+
+/* ===== Corps scrollable ===== */
+.infoBody{
+  flex:1;
+  min-height:0;                     /* 🔑 scroll fiable (iOS / flex) */
+  padding:18px;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+}
+
+/* ===== Code & tables ===== */
+.infoBody code{
+  display:block;
+  white-space:nowrap;
+  overflow-x:auto;
+  background:rgba(255,255,255,0.08);
+  padding:10px 14px;
+  border-radius:8px;
+  font-size:16px;
+  font-family:Consolas,"Courier New",monospace;
+}
+
+.isoTable{
+  width:100%;
+  border-collapse:collapse;
+  margin:16px 0;
+  font-size:15px;
+}
+
+.isoTable th,
+.isoTable td{
+  border:1px solid rgba(255,255,255,0.2);
+  padding:8px 10px;
+  text-align:center;
+}
+
+.isoTable th{
+  background:rgba(255,255,255,0.12);
+  font-weight:700;
+}
+
+.isoA{ background:rgba(0,200,0,0.15); }
+.isoB{ background:rgba(0,162,255,0.15); }
+.isoC{ background:rgba(255,165,0,0.18); }
+.isoD{ background:rgba(255,77,77,0.20); }
+
+/* ================================================= */
+/* ============ PC — PLEIN ÉCRAN =================== */
+/* ================================================= */
+@media (min-width:1024px){
+body{
+  font-size:16px;
+}
+.controls label{ font-size:13px; }
+.controls input,
+.controls select{ font-size:16px; }
+  .infoModal{
+    padding:0;                    /* aucun cadre */
+  }
+
+  .infoCard{
+    width:100vw;
+    height:100vh;
+    max-width:none;
+    max-height:none;
+    border-radius:0;              /* look app desktop */
+  }
+
+  .infoHead{
+    padding:18px 28px;
+    font-size:22px;
+  }
+
+  .infoTitle{
+    font-size:22px;
+  }
+
+  .infoBody{
+    padding:28px 36px;
+    font-size:18px;
+    line-height:1.75;
+  }
+
+  .infoActions select,
+  .infoActions button{
+    font-size:15px;
+  }
+}
+
+/* ================================================= */
+/* ============ MOBILE — ALIGNEMENT ACTIONS ======== */
+/* ================================================= */
+@media (max-width:1023px){
+  .infoActions{
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+
+  .infoActions select{
+    flex:1 1 100%;
+  }
+}
+@media (max-width:1023px){
+  .infoHead{
+    flex-direction:column;
+    align-items:stretch;
+    gap:10px;
+  }
+
+  .infoActions{
+    width:100%;
+  }
+
+  .infoActions select,
+  .infoActions button{
+    width:100%;
+  }
+}
+
+
+
+
+@media print{
+  .infoSection{
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+
+@media (min-width:1024px){
+  .pc-layout{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:14px;
+    align-items:start;
+  }
+
+  .pc-layout .stage{
+    padding:0;
+  }
+}
+
+@media (min-width:1024px){
+
+  /* ===== CONTROLS : grille PC ===== */
+  .controls{
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* ❌ enlève le comportement "ligne complète" sur PC */
+  .controls .full{
+    grid-column:auto;
+  }
+
+  /* 🎯 cible ENTRAXE + DÉFAUTS */
+  #cc,
+  #faultSelect{
+    width:100%;
+  }
+}
+
+
+@media (min-width:1024px){
+
+  /* ===== CONTROLS : grille PC ===== */
+  .controls{
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* ❌ enlève le full par défaut sur PC */
+  .controls .full{
+    grid-column:auto;
+  }
+
+  /* ✅ MAIS on force le bloc résultats à pleine largeur */
+  .controls .outputBox{
+    grid-column:1 / -1;
+  }
+}
+/* ================================================= */
+/* ===== PC : Entraxe + Défauts sur UNE SEULE LIGNE == */
+/* ================================================= */
+@media (min-width:1024px){
+
+  /* on annule le full-row POUR CES DEUX CHAMPS */
+  .controls label.full{
+    grid-column:auto;
+  }
+
+  /* on force 2 colonnes égales */
+  .controls{
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+
+
+/* ================================================= */
+/* === PC : Résultats + Défauts simulés sur 1 ligne == */
+/* ================================================= */
+@media (min-width:1024px){
+
+  /* on annule le full-row pour ces deux blocs */
+  .controls .outputBox.full,
+  .controls label:has(#faultSelect){
+    grid-column:auto;
+  }
+
+  /* on s’assure de 2 colonnes égales */
+  .controls{
+    grid-template-columns: 1fr 1fr;
+    align-items:start;
+  }
+}
+
+
+/* ================================================= */
+/* === PC : demi-largeur pour certains blocs ======= */
+/* ================================================= */
+@media (min-width:1024px){
+
+  .controls{
+    grid-template-columns: 1fr 1fr;
+    gap:14px;
+  }
+
+  .controls .half-pc{
+    grid-column: span 1;
+  }
+
+}
+/* ================= PC : lignes logiques ================= */
+@media (min-width:1024px){
+
+  .controls-row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:14px;
+    grid-column: 1 / -1; /* occupe toute la largeur du grid parent */
+  }
+
+}
+
+
+/* ================= RALENTI — TEXTE SUPERPOSÉ ================= */
+
+.slow-wrap{
+  position:relative;
+  padding-top:16px; /* espace pour le texte */
+}
+
+/* texte */
+.slow-label{
+  position:absolute;
+  top:0;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:12px;
+  opacity:0.8;
+  pointer-events:none; /* le slider reste cliquable */
+  white-space:nowrap;
+}
+
+/* PC : légèrement plus visible */
+@media (min-width:1024px){
+  .slow-label{
+    font-size:13px;
+  }
+}
+/* ===================== PLEIN ÉCRAN APP (PC) ===================== */
+
+    
+    
+    /* ================================================= */
+/* === PC PLEIN ÉCRAN : DÉCALAGE DES BOUTONS ======= */
+/* ================================================= */
+@media (min-width:1024px){
+
+  body.app-fullscreen #infoBtn,
+  body.app-fullscreen #enterSpectrumFS{
+    margin-top:64px;   /* même hauteur que le header */
+  }
+
+}
+    
+    
+    /* ================================================= */
+/* ===== PLEIN ÉCRAN PC : CACHER BOUTONS HUD ======= */
+/* ================================================= */
+
+@media (min-width:1024px){
+
+  body.app-fullscreen .info-btn,
+  body.app-fullscreen #btnEnterFS,
+  body.app-fullscreen #btnExitFS{
+    display:none !important;
+  }
+
+}
+    
+    /* ================================================= */
+/* === FULLSCREEN PC : ANNULER ESPACES HAUT ======== */
+/* ================================================= */
+
+@media (min-width:1024px){
+
+  body.app-fullscreen{
+    padding-top:0 !important;
+    margin-top:0 !important;
+  }
+
+  body.app-fullscreen header,
+  body.app-fullscreen .app-header{
+    margin-bottom:0 !important;
+  }
+
+}
+    
+    /* ================= NUMPAD PC ================= */
+
+/* ================= NUMPAD — DESIGN 2026 ================= */
+
+/* ================= NUMPAD — MODERNE 2026 (SANS FLOU) ================= */
+
+.numpad{
+  position:fixed;
+  inset:0;
+  z-index:20000;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  /* fond sombre net, NON flou */
+  background:rgba(5,8,20,0.75);
+}
+
+.numpad.hidden{
+  display:none;
+}
+
+/* ===== Carte ===== */
+.numpad-grid{
+  background:#0b1436;
+  padding:26px;
+  border-radius:20px;
+
+  display:grid;
+  grid-template-columns:repeat(3,88px);
+  gap:14px;
+
+  box-shadow:
+    0 24px 60px rgba(0,0,0,0.65),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* ===== Boutons ===== */
+.numpad button{
+  height:62px;
+  border-radius:14px;
+  border:none;
+
+  background:#1c2b6a;
+  color:#eaf1ff;
+
+  font-size:22px;
+  font-weight:600;
+
+  cursor:pointer;
+
+  transition:
+    transform .12s ease,
+    background .12s ease,
+    box-shadow .12s ease;
+}
+
+.numpad button:hover{
+  background:#25378c;
+}
+
+.numpad button:active{
+  transform:scale(0.94);
+  box-shadow:inset 0 0 0 2px #00a2ff;
+}
+
+/* ===== Boutons spéciaux ===== */
+.numpad .wide{
+  grid-column:span 2;
+}
+
+.numpad .ok{
+  background:#2e7d32;
+}
+
+.numpad .ok:hover{
+  background:#388e3c;
+}
+
+.numpad .warn{
+  background:#b71c1c;
+}
+
+.numpad .warn:hover{
+  background:#d32f2f;
+}
+/* PC seulement */
+@media (max-width:1023px){
+  .numpad{ display:none !important; }
+}
+    
+    
+    
+  </style>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+</head>
+
+<body>
+
+<header class="app-header">
+  <span class="title">🔄 Simulateur analyse vibratoire</span>
+
+  <div style="display:flex; gap:8px;">
+    <button id="enterAppFS" class="info-btn" aria-label="Plein écran">⛶</button>
+    <button id="infoBtn" class="info-btn" aria-label="Informations">ℹ️</button>
+  </div>
+</header>
+
+<div class="controls">
+  <label>RPM moteur <input id="rpm" type="number" inputmode="decimal" value="1500"></label>
+
+  <label>Unités(po/mm)
+    <select id="unit">
+      <option value="imperial" selected>po</option>
+      <option value="metric">mm</option>
+    </select>
+  </label>
+
+  <label>Ø menante <input id="d1" type="number" inputmode="decimal" value="4"></label>
+  <label>Ø menée <input id="d2" type="number" inputmode="decimal" value="9"></label>
+
+<div class="controls-row">
+  <label>
+    Entraxe des poulies (C-C)
+    <input id="cc" type="number" inputmode="decimal" value="21">
+  </label>
+  <label>
+    <b>Défauts simulés</b> (choix multiples)
+    <select id="faultSelect" multiple size="1">
+      <option value="all">Tout</option>
+      <option value="powerline">Hydro-Québec (60 Hz)</option>
+      <option value="unbalance">Balourd (1×)</option>
+      <option value="misalign">Désalignement</option>
+      <option value="looseness">Jeu mécanique</option>
+      <option value="belt">Défaut de courroie</option>
+      <option value="slip">Glissement</option>
+      <option value="bearing">Roulement</option>
+      <option value="resonance">Résonance</option>
+    </select>
+  </label>
+</div>
+  <div class="outputBox full half-pc">
+    <div><b>Menante</b> : <span id="out-rpm1">—</span> RPM | <span id="out-cpm1">—</span> CPM | <span id="out-hz1">—</span> Hz</div>
+    <div><b>Menée</b> : <span id="out-rpm2">—</span> RPM | <span id="out-cpm2">—</span> CPM | <span id="out-hz2">—</span> Hz</div>
+    <div><b>Courroie</b> : <span id="out-hzbelt">—</span> Hz | <span id="out-fpm">—</span> ft/min | <span id="out-strobe">—</span> FPM</div>
+    <div><b>Longueur courroie</b> : <span id="out-length">—</span></div>
+   
+  </div>
+    <div class="slow-wrap">
+  <span class="slow-label">Ralenti (plus grand = plus lent)</span>
+  <input id="slow" type="range" min="1" max="20" value="8">
+</div>
+  </div>
+</div>
+
+<div class="buttons">
+  <button id="play">Play</button>
+  <button id="pause">Pause</button>
+  <button id="reset">Reset</button>
+  <button id="exportPDF">PDF</button>
+</div>
+<div class="spectrum-controls">
+  <button id="enterSpectrumFS">🔍 Plein écran spectre</button>
+</div>
+
+<div id="fsHUD">
+  <div class="fs-info">
+    Pan: glisser ↔ (Hz)<br>
+    Play = spectre live
+  </div>
+  <button id="exitSpectrumFS">❌ Quitter</button>
+</div>
+<div class="pc-layout">
+  <div class="stage" id="sceneStage">
+    <canvas id="scene"></canvas>
+  </div>
+
+  <div class="stage" id="specStage">
+    <canvas id="spectrum"></canvas>
+  </div>
+</div>
+
+<div class="results" id="info"></div>
+
+<div id="rotateWarn" class="rotate-warning">
+  🔄 Tournez votre téléphone en mode paysage
+  <span>Pour une meilleure lecture du spectre</span>
+</div>
+
+
+<div id="infoModal" class="infoModal" aria-hidden="true">
+
+  <div class="infoCard" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+
+    <div class="infoHead">
+      <div class="infoTitle" id="infoTitle">ℹ️ Informations</div>
+
+      <div class="infoActions">
+        <select id="infoMenu">
+          <option value="simu">Info simulateur</option>
+          <option value="pruf">Info Pruftechnik</option>
+        </select>
+
+        <button type="button" id="printInfo" class="infoPrint">Imprimer</button>
+        <button type="button" id="closeInfo" class="infoClose">Fermer</button>
+      </div>
+    </div>
+
+    <div class="infoBody" id="infoBody">
+      <div class="infoPage" id="page-simu">
+        <!-- contenu simulateur -->
+        <section class="infoSection">
+        <h3> Objectif</h3>
+      <p>Cette application sert à comprendre <b>comment</b> une machine vibre et <b>pourquoi</b> certaines vibrations indiquent un défaut.</p>
+        </section>
+  
+   <section class="infoSection">
+      <h3>2️⃣ Unités</h3>
+      <p><b>RPM</b> = tours/minute. <b>Hz</b> = tours/seconde.</p>
+      <code>Hz = RPM ÷ 60</code>
+</section>
+  
+  <section class="infoSection">
+      <h3>3️⃣ Le 1× (le plus important)</h3>
+      <p><b>1×</b> correspond à la vitesse de rotation.</p>
+      <p>Exemple : 1500 RPM → 1500 ÷ 60 = <b>25 Hz</b> → donc <b>1× = 25 Hz</b>.</p>
+</section>
+  
+  <section class="infoSection">
+      <h3>4️⃣ Amplitude (combien ça vibre)</h3>
+      <p>On regarde la hauteur des lignes dans le spectre. L’unité ici est <b>mm/s</b>.</p>
+      <p>Plus le chiffre est grand → plus c’est sérieux.</p>
+</section>
+
+   <section class="infoSection">
+      <h3>5️⃣ Zones ISO (gravité)</h3>
+      <div style="
+  margin:16px 0;
+  padding:14px 18px;
+  background:rgba(255,255,255,0.08);
+  border-left:4px solid #00a2ff;
+  border-radius:8px;
+">
+  <b> Classe ISO utilisée dans ce simulateur</b><br><br>
+
+  Ce simulateur utilise la norme <b>ISO 10816 – Classe I</b>.<br><br>
+
+  <b>Classe I</b> :
+  <ul>
+    <li>Petites machines</li>
+    <li>Moteurs électriques</li>
+    <li>Puissance typiquement &lt; 15 kW</li>
+    <li>Machines rigides, montées sur socle</li>
+  </ul>
+
+  <b>Classe II</b> (non utilisée ici) :
+  <ul>
+    <li>Machines plus grosses</li>
+    <li>Structures plus flexibles</li>
+    <li>Seuils ISO plus permissifs</li>
+  </ul>
+
+  <b> Pour l’apprentissage, la Classe I est la plus réaliste et la plus sécuritaire.</b>
+</div>
+  </section>
+
+   <section class="infoSection">
+      <p>Les zones ISO servent à savoir si la vibration est acceptable :</p>
+      <p>A = très bon • B = acceptable • C = problème • D = critique</p>
+      <table class="isoTable">
+  <thead>
+    <tr>
+      <th>Zone ISO</th>
+      <th>Couleur</th>
+      <th>Amplitude RMS (mm/s)</th>
+      <th>Interprétation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="isoA">
+      <td>A</td>
+      <td>Vert</td>
+      <td>≤ 0,71</td>
+      <td>État excellent (machine neuve ou équilibrée)</td>
+    </tr>
+    <tr class="isoB">
+      <td>B</td>
+      <td>Bleu</td>
+      <td>0,71 – 1,8</td>
+      <td>Acceptable en service continu</td>
+    </tr>
+    <tr class="isoC">
+      <td>C</td>
+      <td>Orange</td>
+      <td>1,8 – 4,5</td>
+      <td>Défaut présent – intervention à planifier</td>
+    </tr>
+    <tr class="isoD">
+      <td>D</td>
+      <td>Rouge</td>
+      <td>> 4,5</td>
+      <td>Critique – arrêt recommandé</td>
+    </tr>
+  </tbody>
+</table>
+  </section>
+
+
+  <section class="infoSection">
+      <h3>6️⃣ Courroie</h3>
+      <p>La courroie a sa propre fréquence. Elle peut créer des pics différents du moteur.</p>
+
+      <h3>7️⃣ Formules utilisées (simplifiées)</h3>
+      <p><b>Vitesse de courroie</b> :</p>
+      <code>Vitesse = π × diamètre × RPM</code>
+      <p><b>Fréquence courroie</b> :</p>
+      <code>Hz courroie = vitesse ÷ longueur</code>
+
+      <h3>8️⃣ Défauts (exemples)</h3>
+      <p><b>Balourd</b> : pic fort à 1×</p>
+      <p><b>Désalignement</b> : pic fort à 2×</p>
+      <p><b>Jeu mécanique</b> : plusieurs harmoniques</p>
+
+      <h3> Méthode de lecture</h3>
+      <p>1) Trouver 1× • 2) Voir harmoniques • 3) Lire amplitude • 4) Vérifier ISO • 5) Associer un défaut</p>
+
+   </section>
+
+    <section class="infoSection">
+      <h3> 9️⃣ Calcul de la longueur de la courroie</h3>
+
+<p>Pour une transmission à <b>courroie ouverte</b> (comme dans ce simulateur), on utilise une formule
+qui permet <b>d’estimer</b> la longueur de la courroie.</p>
+
+<p><b>Formule utilisée :</b></p>
+
+<code>
+Longueur ≈ 2 × C + (π / 2) × (D1 + D2) + ((D2 − D1)² / (4 × C))
+</code>
+
+<p><b>Signification des termes :</b></p>
+<ul>
+  <li><b>C</b> : distance centre-à-centre entre les deux poulies</li>
+  <li><b>D1</b> : diamètre de la poulie menante</li>
+  <li><b>D2</b> : diamètre de la poulie menée</li>
+  <li><b>π (pi)</b> ≈ 3,14</li>
+</ul>
+
+<p>Cette formule additionne :</p>
+<ul>
+  <li>les parties droites de la courroie</li>
+  <li>les parties enroulées sur les poulies</li>
+  <li>une correction si les diamètres sont différents</li>
+</ul>
+
+<p><b>Important :</b> la longueur obtenue est <b>théorique</b>.  
+En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p>
+
+<hr>
+</section>
+
+    <section class="infoSection">
+<h3> 1️⃣0️⃣ Influence de l’angle de la courroie</h3>
+
+<p>La courroie <b>n’enveloppe pas complètement</b> les poulies.</p>
+
+<p>La portion de poulie réellement touchée s’appelle :</p>
+
+<p><b> l’angle d’enroulement</b></p>
+
+<p><b>Pourquoi c’est important ?</b></p>
+<ul>
+  <li>Grand angle → meilleure adhérence</li>
+  <li>Petit angle → plus de risque de glissement</li>
+</ul>
+
+<p><b>Exemples :</b></p>
+<ul>
+  <li>Poulies très rapprochées → angle faible → glissement possible</li>
+  <li>Poulies éloignées → angle plus grand → transmission plus stable</li>
+</ul>
+
+<p>Dans ce simulateur :</p>
+<ul>
+  <li>l’angle est calculé automatiquement</li>
+  <li>il influence la trajectoire de la courroie</li>
+  <li>il peut influencer les défauts simulés</li>
+</ul>
+
+<hr>
+</section>
+
+   <section class="infoSection">
+<h3> 1️⃣1️⃣ Longueur réelle vs longueur calculée</h3>
+
+<p>La formule suppose que la courroie roule sur le <b>diamètre extérieur</b> des poulies.</p>
+
+<p>En réalité :</p>
+<ul>
+  <li>la courroie s’enfonce légèrement dans la gorge</li>
+  <li>le diamètre réel de contact est un peu plus petit</li>
+</ul>
+
+<p><b>Conséquences :</b></p>
+<ul>
+  <li>la longueur réelle est légèrement différente</li>
+  <li>la vitesse réelle peut varier un peu</li>
+</ul>
+
+<p>En analyse vibratoire, ces écarts sont :</p>
+<ul>
+  <li>normaux</li>
+  <li>acceptés</li>
+  <li>pris en compte avec des tolérances</li>
+</ul>
+
+<hr>
+
+</section>
+
+ <section class="infoSection"> 
+<h3>⚡ 1️⃣2️⃣ Influence de la fréquence électrique (Hydro-Québec)</h3>
+
+<p>Au Québec, la fréquence électrique est :</p>
+
+<code>60 Hz</code>
+
+<p>Cette fréquence peut apparaître dans un spectre de vibration
+<b>sans être un défaut mécanique</b>.</p>
+
+<p>On peut voir :</p>
+<ul>
+  <li>60 Hz</li>
+  <li>120 Hz (2 × 60)</li>
+  <li>180 Hz (3 × 60)</li>
+</ul>
+
+<p><b>Sources possibles :</b></p>
+<ul>
+  <li>champ magnétique du moteur</li>
+  <li>effets électromagnétiques</li>
+  <li>couplage moteur / structure</li>
+</ul>
+
+<p><b>⚠️ Erreur fréquente! :</b></p>
+
+<p>Un pic à 60 Hz n’est <b>PAS automatiquement</b> un défaut mécanique.</p>
+
+<p><b>Règle simple :</b></p>
+<p><b> Si un pic est exactement à 60 Hz ou un multiple, penser d’abord à l’électricité.</b></p>
+
+<hr>
+</section>
+
+
+<section class="infoSection"> 
+  
+<h3> 1️⃣3️⃣ Ce que fait ce simulateur</h3>
+
+<p>Ce simulateur sert à :</p>
+<ul>
+  <li>comprendre les relations entre vitesses</li>
+  <li>visualiser les pics typiques</li>
+  <li>apprendre à lire un spectre vibratoire</li>
+</ul>
+
+<p>Il ne remplace pas :</p>
+<ul>
+  <li>un vrai capteur</li>
+  <li>une vraie machine</li>
+  <li>une vraie analyse terrain</li>
+</ul>
+
+<p><b>Mais il est parfait pour apprendre sans risque.</b></p>
+        
+  </section>      
+        
+      </div>
+
+      <div class="infoPage" id="page-pruf" style="display:none;">
+        <!-- contenu Pruftechnik -->
+        
+        <h3> Pruftechnik — Terminologie utilisée</h3>
+
+<p>Le simulateur utilise volontairement les <b>mêmes termes</b> que les analyseurs vibratoires
+<b>Pruftechnik</b> afin de préparer l’élève au terrain.</p>
+
+<h4>1️⃣ RMS (Root Mean Square)</h4>
+<p>Valeur efficace de la vibration.</p>
+<ul>
+  <li>Représente l’<b>énergie réelle</b> de vibration</li>
+  <li>C’est la valeur utilisée pour la <b>norme ISO</b></li>
+</ul>
+
+<p><b> Dans Pruftechnik :</b> affiché comme <b>Velocity RMS (mm/s)</b></p>
+
+<hr>
+
+<h4>2️⃣ Velocity (Vitesse vibratoire)</h4>
+<p>Indique la vitesse de déplacement de la machine pendant la vibration.</p>
+
+<ul>
+  <li>Unité : <b>mm/s</b></li>
+  <li>Très sensible aux défauts mécaniques globaux</li>
+</ul>
+
+<p><b> Dans Pruftechnik :</b> mode <b>Velocity</b></p>
+
+<hr>
+
+<h4>3️⃣ Peak (Pic)</h4>
+<p>Valeur maximale instantanée d’un signal.</p>
+
+<ul>
+  <li>Plus sensible aux chocs</li>
+  <li>Moins stable pour l’évaluation ISO</li>
+</ul>
+
+<p><b> Différence importante :</b></p>
+<ul>
+  <li>ISO = RMS</li>
+  <li>Chocs / impacts = Peak</li>
+</ul>
+
+<hr>
+
+<h4>4️⃣ 1×, 2×, 3× (Ordres)</h4>
+<p>Les <b>ordres</b> correspondent à des multiples de la vitesse de rotation.</p>
+
+<ul>
+  <li>1× = vitesse de rotation</li>
+  <li>2× = deux fois la vitesse</li>
+  <li>3× = trois fois la vitesse</li>
+</ul>
+
+<p><b> Dans Pruftechnik :</b> affiché sous forme de pics ordonnés</p>
+
+<hr>
+
+<h4>5️⃣ Spectrum (Spectre)</h4>
+<p>Graphique qui montre les vibrations <b>par fréquence</b>.</p>
+
+<ul>
+  <li>Axe horizontal = Hz</li>
+  <li>Axe vertical = amplitude (mm/s)</li>
+</ul>
+
+<p><b> Dans Pruftechnik :</b> écran principal d’analyse</p>
+
+<hr>
+
+<h4>6️⃣ Time Waveform (Signal temporel)</h4>
+<p>Représentation de la vibration dans le temps.</p>
+
+<ul>
+  <li>Permet de voir les chocs</li>
+  <li>Très utile pour les roulements</li>
+</ul>
+
+<p><b> Non simulé ici</b>, mais important à connaître</p>
+
+<hr>
+
+<h4>7️⃣ FFT (Fast Fourier Transform)</h4>
+<p>Transformation mathématique qui convertit :</p>
+
+<p><b>Temps → Fréquence</b></p>
+
+<p>Sans FFT, il serait impossible d’identifier les défauts.</p>
+
+<p><b> Pruftechnik :</b> FFT automatique en arrière-plan</p>
+
+<hr>
+
+<h4>8️⃣ ISO 10816 / 20816</h4>
+<p>Norme internationale pour juger la gravité vibratoire.</p>
+
+<ul>
+  <li>Basée sur la vitesse RMS</li>
+  <li>Classes A à D</li>
+</ul>
+
+<p><b> Utilisée directement dans Pruftechnik</b></p>
+
+<hr>
+
+<h4>9️⃣ Alarmes (Alert / Danger)</h4>
+<p>Seuils configurables pour avertir l’utilisateur.</p>
+
+<ul>
+  <li>Alert = intervention à planifier</li>
+  <li>Danger = arrêt recommandé</li>
+</ul>
+
+<p><b> Simulé ici via les zones ISO</b></p>
+
+<hr>
+
+<h4>🔟 Trending (Suivi dans le temps)</h4>
+<p>Comparaison des mesures sur plusieurs jours ou semaines.</p>
+
+<ul>
+  <li>Permet de voir une dégradation</li>
+  <li>Fondamental en maintenance prédictive</li>
+</ul>
+
+<p><b> Non simulé ici</b>, mais concept clé à comprendre</p>
+        
+        
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+
+
+<script>
+(() => {
+  "use strict";
+
+  /* ===================== CONSTANTES ===================== */
+  const TAU = Math.PI * 2;
+  const IN_TO_MM = 25.4;
+
+  const clamp = (v,a,b)=>Math.max(a, Math.min(b, v));
+  const isNum = (x)=>Number.isFinite(x);
+  const ISO_CLASS = "I"; // petites machines / moteurs < 15 kW
+const ISO_ZONES = [
+  { name:"A", label:"Très bon", max:0.71, col:"rgba(0,200,0,0.12)" },
+  { name:"B", label:"Acceptable", max:1.8, col:"rgba(0,162,255,0.12)" },
+  { name:"C", label:"Mauvais", max:4.5, col:"rgba(255,165,0,0.12)" },
+  { name:"D", label:"Critique", max:Infinity, col:"rgba(255,77,77,0.12)" }
+];
+function isoVerdict(mm_s_rms){
+  for(const z of ISO_ZONES){
+    if(mm_s_rms <= z.max) return z;
+  }
+  return ISO_ZONES[ISO_ZONES.length-1];
+}
+
+  function dprNow(){ return Math.min(3, window.devicePixelRatio || 1); }
+
+function isMobile(){
+  return /iphone|ipad|android/i.test(navigator.userAgent);
+}
+
+function isPortrait(){
+  return window.innerHeight > window.innerWidth;
+}
+
+  /* ===================== ÉTAT ===================== */
+  let running = false;
+  // ===== ENREGISTREMENT (Peak Hold par élément) =====
+let peakRecord = {}; // { label: { hz, amp } }   amp en mm/s
+let snapshotMode = false;
+
+  // temps séparés, MAIS une seule boucle RAF
+  let tMotion = 0; // courroie / poulies
+  let tSpec   = 0; // spectre (avance uniquement si running)
+
+  let ang1 = 0;
+  let ang2 = 0;
+
+  // largeur (pour éviter que ça saute visuellement sur mobile)
+  let lockedWidth = null;
+
+  // fullscreen spectre
+  let spectrumFS = false;
+
+  /* ===================== DOM ===================== */
+  const canvas     = document.getElementById("scene");
+  const ctx        = canvas.getContext("2d");
+
+  const specCanvas = document.getElementById("spectrum");
+  const specCtx    = specCanvas.getContext("2d");
+
+  const rpmEl   = document.getElementById("rpm");
+  const d1El    = document.getElementById("d1");
+  const d2El    = document.getElementById("d2");
+  const ccEl    = document.getElementById("cc");
+  const unitEl  = document.getElementById("unit");
+  const slowEl  = document.getElementById("slow");
+  
+
+  const infoEl     = document.getElementById("info");
+  const rotateWarn = document.getElementById("rotateWarn");
+
+  const outLength  = document.getElementById("out-length");
+  const outRPM1    = document.getElementById("out-rpm1");
+  const outCPM1    = document.getElementById("out-cpm1");
+  const outHZ1     = document.getElementById("out-hz1");
+  const outRPM2    = document.getElementById("out-rpm2");
+  const outCPM2    = document.getElementById("out-cpm2");
+  const outHZ2     = document.getElementById("out-hz2");
+  const outHZBelt  = document.getElementById("out-hzbelt");
+  const outFPM     = document.getElementById("out-fpm");
+  const outStrobe  = document.getElementById("out-strobe");
+const btnEnterFS = document.getElementById("enterSpectrumFS");
+const btnExitFS  = document.getElementById("exitSpectrumFS");
+let fsHideTimer = null;
+
+function showFSHUD(){
+  const hud = document.getElementById("fsHUD");
+
+  hud.classList.add("visible");
+
+  clearTimeout(fsHideTimer);
+  fsHideTimer = setTimeout(() => {
+    hud.classList.remove("visible");
+  }, 3000);
+}
+
+  function enableLongPressFS(){
+  if(!isMobile()) return;
+
+  let pressTimer = null;
+
+  specCanvas.addEventListener("touchstart", () => {
+    if(!spectrumFS) return;
+
+    pressTimer = setTimeout(() => {
+      showFSHUD();
+    }, 2000);
+  }, { passive:true });
+
+  ["touchend","touchcancel","touchmove"].forEach(evt=>{
+    specCanvas.addEventListener(evt, ()=>{
+      clearTimeout(pressTimer);
+      pressTimer = null;
+    }, { passive:true });
+  });
+}
+btnEnterFS.onclick = () => {
+  if(spectrumFS) return;
+
+  spectrumFS = true;
+  specCanvas.classList.add("spectrum-only");
+  document.body.classList.add("spectrum-mode");
+  document.body.classList.add("app-fullscreen");
+  btnEnterFS.style.display = "none";
+  btnExitFS.style.display = "inline-block";
+
+  rotateWarn.style.display = "none";
+
+  resize();
+  redrawSpectrumNow();
+
+  if(!isMobile()) showFSHUD(); // PC seulement
+};
+
+btnExitFS.onclick = () => {
+  spectrumFS = false;
+
+  specCanvas.classList.remove("spectrum-only");
+  document.body.classList.remove("spectrum-mode");
+    document.body.classList.remove("app-fullscreen");
+  rotateWarn.style.display = "none";
+
+  btnExitFS.style.display = "none";
+  btnEnterFS.style.display = "inline-block";
+
+  resize();
+  redrawSpectrumNow();
+  document.getElementById("fsHUD").classList.remove("visible");
+};
+  const playBtn  = document.getElementById("play");
+  const pauseBtn = document.getElementById("pause");
+  const resetBtn = document.getElementById("reset");
+  const pdfBtn = document.getElementById("exportPDF");
+pdfBtn.addEventListener("click", exportPDF);
+
+  
+
+  /* ===================== VUE SPECTRE (PAN) ===================== */
+  const spectrumView = { minHz:0, spanHz:50, maxHz:300 };
+
+  let isPanning   = false;
+  let panStartX   = 0;
+  let panStartMin = 0;
+
+  /* ===================== INPUTS / VALIDATION ===================== */
+  function readInputs(){
+    let rpm = parseFloat(rpmEl.value);
+    let d1  = parseFloat(d1El.value);
+    let d2  = parseFloat(d2El.value);
+    let cc  = parseFloat(ccEl.value);
+
+    if(!isNum(rpm) || !isNum(d1) || !isNum(d2) || !isNum(cc)) return null;
+    if(rpm <= 0 || d1 <= 0 || d2 <= 0 || cc <= 0) return null;
+
+    // conversion vers mm si impérial
+    if(unitEl.value === "imperial"){
+      d1 *= IN_TO_MM; d2 *= IN_TO_MM; cc *= IN_TO_MM;
+    }
+
+    return { rpm, d1mm:d1, d2mm:d2, ccmm:cc };
+  }
+
+  function validateGeometryOpenBelt(inp){
+    const r1 = inp.d1mm/2;
+    const r2 = inp.d2mm/2;
+    const minCC = Math.abs(r2 - r1); // condition math mini (open belt)
+
+    if(inp.ccmm <= minCC){
+      const minTxt = (unitEl.value === "imperial")
+        ? (minCC / IN_TO_MM).toFixed(2) + " po"
+        : minCC.toFixed(1) + " mm";
+
+      return {
+  ok:false,
+  html: `
+    <div class="bad">⛔ Géométrie impossible (open belt)</div>
+    <div>C-C doit être <b>&gt; |R2 − R1|</b>.</div>
+    <div class="small">Minimum = ${minTxt}</div>
+  `
+};
+    }
+    return { ok:true, html:"" };
+  }
+
+  /* ===================== CALCULS ===================== */
+  function beltLengthOpenBeltMM(D1mm, D2mm, Cmm){
+    // L = 2C + (π/2)(D1 + D2) + (D2 − D1)^2/(4C)
+    return 2*Cmm + (Math.PI/2)*(D1mm + D2mm) + ((D2mm - D1mm)**2)/(4*Cmm);
+  }
+
+  function beltLinearSpeed_mm_s(d1mm, rpm){
+    // v = π D (rpm/60)  -> mm/s si D en mm
+    return Math.PI * d1mm * (rpm/60);
+  }
+
+  /* ===================== GÉOMÉTRIE COURROIE ===================== */
+  function buildBeltPath(x1,y1,r1, x2,y2,r2){
+    const C = Math.hypot(x2-x1, y2-y1);
+    const R = Math.max(r1,r2);
+    const r = Math.min(r1,r2);
+
+    // open-belt : phi = acos((R-r)/C)
+    const phi = Math.acos(clamp((R - r)/C, -1, 1));
+
+    const aL_top =  phi;
+    const aL_bot = -phi;
+    const aR_top = Math.PI - phi;
+    const aR_bot = Math.PI + phi;
+
+    const Ltop = {x:x1 + r1*Math.cos(aL_top), y:y1 + r1*Math.sin(aL_top)};
+    const Lbot = {x:x1 + r1*Math.cos(aL_bot), y:y1 + r1*Math.sin(aL_bot)};
+    const Rtop = {x:x2 + r2*Math.cos(aR_top), y:y2 + r2*Math.sin(aR_top)};
+    const Rbot = {x:x2 + r2*Math.cos(aR_bot), y:y2 + r2*Math.sin(aR_bot)};
+
+    // sweeps (sens visuel cohérent)
+    const sweepRight = -(TAU - 2*phi); // arc long
+    const sweepLeft  = -(2*phi);       // arc court
+
+    function arcPoints(cx,cy,rad, aStart, sweep){
+      const absSweep = Math.abs(sweep);
+      const steps = Math.max(22, Math.floor((absSweep * rad) / 9));
+      const pts = [];
+      for(let i=0;i<=steps;i++){
+        const u = i/steps;
+        const a = aStart + sweep*u;
+        pts.push({x:cx + rad*Math.cos(a), y:cy + rad*Math.sin(a)});
+      }
+      return pts;
+    }
+
+    // boucle : Ltop -> Rtop -> arc droite -> Lbot -> arc gauche -> Ltop
+    const clean = [];
+    clean.push(Ltop, Rtop);
+
+    const arcR = arcPoints(x2,y2,r2, aR_top, sweepRight);
+    for(let i=1;i<arcR.length;i++) clean.push(arcR[i]); // finit sur Rbot
+
+    clean.push(Lbot); // ligne Rbot -> Lbot
+
+    const arcL = arcPoints(x1,y1,r1, aL_bot, sweepLeft);
+    for(let i=1;i<arcL.length;i++) clean.push(arcL[i]); // finit sur Ltop
+
+    return clean;
+  }
+
+  function polylineLength(pts){
+    let L=0;
+    for(let i=1;i<pts.length;i++){
+      L += Math.hypot(pts[i].x-pts[i-1].x, pts[i].y-pts[i-1].y);
+    }
+    return L;
+  }
+
+  function pointAt(pts, s){
+    let acc = 0;
+    for(let i=1;i<pts.length;i++){
+      const a = pts[i-1], b = pts[i];
+      const seg = Math.hypot(b.x-a.x, b.y-a.y);
+      if(acc + seg >= s){
+        const u = (s - acc)/seg;
+        return { x: a.x + (b.x-a.x)*u, y: a.y + (b.y-a.y)*u };
+      }
+      acc += seg;
+    }
+    return pts[pts.length-1];
+  }
+
+  function drawPulley(cx, cy, r, col, angle){
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, TAU);
+    ctx.stroke();
+
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.arc(cx + (r-6)*Math.cos(angle), cy + (r-6)*Math.sin(angle), 3, 0, TAU);
+    ctx.fill();
+  }
+  function peaks_powerline(_fMotor, _fBelt, t){
+  const base = 60; // Hydro-Québec
+  return [
+    { hz: base,     amp: 0.90 + 0.10*Math.sin(t),     col:"#00e5ff", label:"Élec 60 Hz" },
+    { hz: base*2,   amp: 0.60 + 0.08*Math.sin(t*1.4), col:"#00bcd4", label:"Élec 120 Hz" },
+    { hz: base*3,   amp: 0.45 + 0.06*Math.sin(t*1.9), col:"#26c6da", label:"Élec 180 Hz" }
+  ];
+}
+
+  /* ===================== SPECTRE (PICS) ===================== */
+  // Table des défauts: chaque entrée renvoie un tableau de pics
+  function peaks_normal(fMotor, _fBelt, t){
+    const a_base = 1.00 + 0.10*Math.sin(t);
+    return [
+      { hz:fMotor, amp:a_base, col:"#00a2ff", label:"1× moteur" },
+      { hz:fMotor*2, amp:0.35 + 0.05*Math.sin(t*1.7), col:"#5fbfff", label:"2× moteur" }
+    ];
+  }
+
+  function peaks_unbalance(fMotor, _fBelt, t){
+    return [
+      { hz:fMotor, amp:1.85 + 0.25*Math.sin(t), col:"#ff5555", label:"Balourd (1×)" },
+      { hz:fMotor*2, amp:0.35 + 0.10*Math.sin(t*1.7), col:"#ff8888", label:"Harmonique (2×)" }
+    ];
+  }
+
+  function peaks_misalign(fMotor, _fBelt, t){
+    return [
+      { hz:fMotor, amp:1.10 + 0.20*Math.sin(t*1.7), col:"#ff9800", label:"Désalign. (1×)" },
+      { hz:fMotor*2, amp:1.55 + 0.25*Math.sin(t), col:"#ff9800", label:"Désalign. (2×)" },
+      { hz:fMotor*3, amp:0.55 + 0.10*Math.sin(t*2.3), col:"#ffb74d", label:"3× (souvent)" }
+    ];
+  }
+
+  function peaks_looseness(fMotor, _fBelt, t){
+    return [
+      { hz:fMotor*0.5, amp:0.65 + 0.15*Math.sin(t*0.9), col:"#ffd54f", label:"0.5× (jeu)" },
+      { hz:fMotor,     amp:1.05 + 0.20*Math.sin(t),     col:"#ffd54f", label:"Jeu 1×" },
+      { hz:fMotor*2,   amp:0.95 + 0.20*Math.sin(t*1.7), col:"#ffd54f", label:"Jeu 2×" },
+      { hz:fMotor*3,   amp:0.80 + 0.20*Math.sin(t*2.3), col:"#ffd54f", label:"Jeu 3×" }
+    ];
+  }
+
+  function peaks_belt(fMotor, fBelt, t){
+    const fb = fBelt;
+    return [
+      { hz:fb,   amp:1.20 + 0.20*Math.sin(t),     col:"#ffffff", label:"Courroie (1×)" },
+      { hz:fb*2, amp:0.65 + 0.15*Math.sin(t*1.7), col:"#bbbbbb", label:"Courroie (2×)" },
+      { hz:Math.max(0, fb - fMotor), amp:0.35 + 0.10*Math.sin(t*1.7), col:"#e0e0e0", label:"SB (fb−1×)" },
+      { hz:fb + fMotor,              amp:0.35 + 0.10*Math.sin(t*2.3), col:"#e0e0e0", label:"SB (fb+1×)" }
+    ];
+  }
+
+  function peaks_slip(_fMotor, fBelt, t){
+    const slip = 0.92 + 0.08*Math.sin(t*1.5);
+    return [
+      { hz:fBelt*slip, amp:0.95 + 0.20*Math.sin(t*1.7), col:"#ffcc00", label:"Glissement (fb×slip)" },
+      { hz:fBelt,      amp:0.45 + 0.10*Math.sin(t*2.3), col:"#fff59d", label:"fb (réf.)" }
+    ];
+  }
+
+  function peaks_bearing(fMotor, _fBelt, t){
+    const bpfo = fMotor * 4.0;
+    const bpfi = fMotor * 5.2;
+    const bsf  = fMotor * 2.6;
+    return [
+      { hz:bpfo,   amp:0.70 + 0.25*Math.sin(t*2.3), col:"#c77dff", label:"Roulement (BPFO)" },
+      { hz:bpfi,   amp:0.60 + 0.25*Math.sin(t*1.7), col:"#c77dff", label:"Roulement (BPFI)" },
+      { hz:bsf,    amp:0.45 + 0.20*Math.sin(t),     col:"#d7a7ff", label:"Roulement (BSF)" },
+      { hz:bpfo*2, amp:0.35 + 0.10*Math.sin(t),     col:"#b388ff", label:"BPFO×2" },
+      { hz:bpfi*2, amp:0.30 + 0.10*Math.sin(t*1.7), col:"#b388ff", label:"BPFI×2" }
+    ];
+  }
+
+  function peaks_resonance(fMotor, _fBelt, t){
+    const fr = fMotor * 2.6;
+    return [
+      { hz:fr-0.8, amp:1.10 + 0.20*Math.sin(t),     col:"#ff1744", label:"Réson. (fr−)" },
+      { hz:fr,     amp:2.20 + 0.35*Math.sin(t),     col:"#ff1744", label:"Réson. (fr)" },
+      { hz:fr+0.8, amp:1.00 + 0.20*Math.sin(t*1.7), col:"#ff1744", label:"Réson. (fr+)" }
+    ];
+  }
+
+  const FAULT_TABLE = {
+    none      : (fM,fB,t)=>peaks_normal(fM,fB,t),
+    unbalance : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_unbalance(fM,fB,t) ],
+    misalign  : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_misalign(fM,fB,t) ],
+    looseness : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_looseness(fM,fB,t) ],
+    belt      : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_belt(fM,fB,t) ],
+    slip      : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_slip(fM,fB,t) ],
+    bearing   : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_bearing(fM,fB,t) ],
+    resonance : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_resonance(fM,fB,t) ],
+    all       : (fM,fB,t)=>[
+      ...peaks_powerline(fM,fB,t),
+      ...peaks_normal(fM,fB,t).slice(0,1),
+      ...peaks_unbalance(fM,fB,t),
+      ...peaks_misalign(fM,fB,t),
+      ...peaks_looseness(fM,fB,t),
+      ...peaks_belt(fM,fB,t),
+      ...peaks_slip(fM,fB,t),
+      ...peaks_bearing(fM,fB,t),
+      ...peaks_resonance(fM,fB,t),
+      { hz:fM*4, amp:0.35 + 0.10*Math.sin(t*1.7), col:"#90caf9", label:"4× moteur" },
+      { hz:fM*6, amp:0.25 + 0.10*Math.sin(t*2.3), col:"#90caf9", label:"6× moteur" }
+    ],
+    powerline : (fM,fB,t)=>[
+  ...peaks_normal(fM,fB,t).slice(0,1),
+  ...peaks_powerline(fM,fB,t)
+],
+  };
+
+  function buildPeaks(fMotor, fBelt, time){
+  const selected = getSelectedFaults();
+
+  // Aucun défaut sélectionné → normal
+  if(selected.length === 0){
+    return peaks_normal(fMotor, fBelt, time);
+  }
+
+  let peaks = [];
+
+  for(const key of selected){
+    const fn = FAULT_TABLE[key];
+    if(fn){
+      peaks = peaks.concat(fn(fMotor, fBelt, time));
+    }
+  }
+
+  return peaks;
+}
+  /* ===================== DESSIN SPECTRE ===================== */
+  function drawSpectrum(hzMotor, hzBelt, time){
+    const dpr = dprNow();
+    const W = specCanvas.width / dpr;
+    const H = specCanvas.height / dpr;
+
+    const hzZoneHeight = 42;
+    let hzZoneY = spectrumFS ? (H - hzZoneHeight - 80) : (H - hzZoneHeight - 10);
+    hzZoneY = Math.max(80, hzZoneY);
+
+    const gridTop    = 16;
+    const gridBottom = hzZoneY - 10;
+    const gridHeight = gridBottom - gridTop;
+
+    const ampLabelWidth = 58;
+    const plotLeft  = ampLabelWidth;
+    const plotRight = W;
+    const plotWidth = plotRight - plotLeft;
+
+    // ===== AUTO-SCALE AMPLITUDE (OPTION 1) =====
+const peaks = buildPeaks(hzMotor, hzBelt, time);
+// ===== ENREGISTREMENT AUTO (uniquement quand Play) =====
+if(running){
+  for(const p of peaks){
+    if(!Number.isFinite(p.hz)) continue;
+
+    // EXACTEMENT le même facteur que l’affichage
+    const ampMMs = (Number.isFinite(p.amp) ? p.amp : 0) * 5;
+
+    // clé = label (donc "1× moteur", "Balourd (1×)", etc.)
+    const key = (p.label || "").trim();
+    if(!key) continue;
+
+    // garde le max
+    if(!peakRecord[key] || ampMMs > peakRecord[key].amp){
+      peakRecord[key] = { hz: p.hz, amp: ampMMs };
+    }
+  }
+}
+// amplitude max réelle (en mm/s pédagogiques)
+let maxAmp = 1;
+for(const p of peaks){
+  const ampMMs = p.amp * 5;   // même facteur que tes barres
+  if(ampMMs > maxAmp) maxAmp = ampMMs;
+}
+
+// marge pédagogique + arrondi propre
+const AMP_MAX  = Math.max(2, Math.ceil(maxAmp * 1.15));
+const AMP_STEP = AMP_MAX <= 6 ? 1 : 2;
+    const minHz = spectrumView.minHz;
+    const maxHz = minHz + spectrumView.spanHz;
+    const scaleX = plotWidth / (maxHz - minHz);
+
+    specCtx.clearRect(0,0,W,H);
+    specCtx.fillStyle = "#05080f";
+    specCtx.fillRect(0,0,W,H);
+
+    // bande Hz
+    specCtx.fillStyle = "rgba(0,162,255,0.15)";
+    specCtx.fillRect(0, hzZoneY, W, hzZoneHeight);
+
+// ===== BANDES ISO (derrière les barres) =====
+// mapping mm/s -> Y
+const yFromAmp = (amp) => gridBottom - (amp / AMP_MAX) * gridHeight;
+
+// on dessine A, B, C, D en bandes horizontales
+let prev = 0;
+for(const z of ISO_ZONES){
+  const topAmp = Math.min(z.max, AMP_MAX);
+  const yTop = yFromAmp(topAmp);
+  const yBot = yFromAmp(prev);
+
+  // si la bande dépasse l'échelle actuelle, on coupe
+  const y1 = Math.max(gridTop, Math.min(gridBottom, yTop));
+  const y2 = Math.max(gridTop, Math.min(gridBottom, yBot));
+  const hBand = Math.abs(y2 - y1);
+
+  if(hBand > 0.5){
+    specCtx.fillStyle = z.col;
+    specCtx.fillRect(plotLeft, Math.min(y1,y2), (plotRight - plotLeft), hBand);
+
+    // petit label de zone à gauche
+    specCtx.fillStyle = "rgba(234,241,255,0.85)";
+    specCtx.font = "11px Arial";
+    specCtx.textAlign = "left";
+    specCtx.textBaseline = "middle";
+    specCtx.fillText(
+  `ISO ${ISO_CLASS} ${z.name} (${z.label})`,
+  plotLeft + 6,
+  Math.min(y1,y2) + 12
+);
+  }
+
+  prev = z.max;
+}
+
+    // règle Hz
+    specCtx.strokeStyle = "rgba(255,255,255,0.35)";
+    specCtx.fillStyle   = "#eaf1ff";
+    specCtx.font        = "11px Arial";
+    specCtx.textAlign   = "center";
+    specCtx.textBaseline= "top";
+
+    const majorStep = 10;
+    const minorStep = 5;
+
+    for(let hz = Math.ceil(minHz / minorStep) * minorStep; hz <= maxHz; hz += minorStep){
+      const x = plotLeft + (hz - minHz) * scaleX;
+      const isMajor = (hz % majorStep === 0);
+
+      specCtx.beginPath();
+      specCtx.moveTo(x, hzZoneY);
+      specCtx.lineTo(x, hzZoneY + (isMajor ? 12 : 6));
+      specCtx.stroke();
+
+      if(isMajor){
+        specCtx.fillText(hz + " Hz", x, hzZoneY + 14);
+      }
+    }
+
+    // grille verticale
+    specCtx.strokeStyle = "rgba(255,255,255,0.08)";
+    for(let i=0;i<=8;i++){
+      const x = plotLeft + i * plotWidth / 8;
+      specCtx.beginPath();
+      specCtx.moveTo(x, gridTop);
+      specCtx.lineTo(x, gridBottom);
+      specCtx.stroke();
+    }
+
+    // grille horizontale + labels mm/s
+    specCtx.strokeStyle = "rgba(255,255,255,0.12)";
+    specCtx.fillStyle   = "#cfd6ff";
+    specCtx.font        = "11px Arial";
+    specCtx.textAlign   = "right";
+    specCtx.textBaseline= "middle";
+
+    for(let a=0; a<=AMP_MAX; a+=AMP_STEP){
+      const y = gridBottom - (a / AMP_MAX) * gridHeight;
+      specCtx.beginPath();
+      specCtx.moveTo(plotLeft, y);
+      specCtx.lineTo(plotRight, y);
+      specCtx.stroke();
+      specCtx.fillText(a + " mm/s", plotLeft - 6, y);
+    }
+
+    
+    
+
+    // barres
+    for(const p of peaks){
+      if(!isNum(p.hz) || p.hz < minHz || p.hz > maxHz) continue;
+
+      const x = plotLeft + (p.hz - minHz) * scaleX;
+
+      const ampMMs = p.amp * 5; // facteur pédagogique
+      const h = (ampMMs / AMP_MAX) * gridHeight;
+      const yTop = gridBottom - h;
+
+      specCtx.strokeStyle = p.col;
+      specCtx.lineWidth = 3;
+      specCtx.beginPath();
+      specCtx.moveTo(x, gridBottom);
+      specCtx.lineTo(x, yTop);
+      specCtx.stroke();
+
+      specCtx.fillStyle = "#cfd6ff";
+      specCtx.font = "12px Arial";
+      specCtx.textAlign = "center";
+      specCtx.textBaseline = "bottom";
+      specCtx.fillText(p.label, x, Math.max(yTop - 6, gridTop + 14));
+    }
+// ===== VERDICT ISO basé sur le pic max (dans la fenêtre affichée) =====
+let maxShown = 0;
+for(const p of peaks){
+  if(!Number.isFinite(p.hz)) continue;
+  if(p.hz < minHz || p.hz > maxHz) continue;  // seulement ce qui est visible
+  const ampMMs = (Number.isFinite(p.amp) ? p.amp : 0) * 5;
+  if(ampMMs > maxShown) maxShown = ampMMs;
+}
+
+const z = isoVerdict(maxShown);
+
+// bande de titre (en haut à gauche)
+specCtx.fillStyle = "rgba(0,0,0,0.35)";
+specCtx.fillRect(plotLeft, 0, 270, 18);
+
+specCtx.fillStyle = "#eaf1ff";
+specCtx.font = "12px Arial";
+specCtx.textAlign = "left";
+specCtx.textBaseline = "middle";
+specCtx.fillText(
+  `ISO ${ISO_CLASS} : ${z.name} — ${z.label} (max ${maxShown.toFixed(2)} mm/s)`,
+  plotLeft + 6,
+  9
+);
+    // axe
+    specCtx.fillStyle = "#9aa5d6";
+    specCtx.font = "12px Arial";
+    specCtx.textAlign = "right";
+    specCtx.textBaseline = "top";
+    specCtx.fillText("Hz →", W - 6, 6);
+  }
+
+function getSelectedFaults(){
+  const sel = document.getElementById("faultSelect");
+  const values = Array.from(sel.selectedOptions).map(o => o.value);
+
+  // 🟢 Si "Tout" est sélectionné → moteur en mode ALL
+  if(values.includes("all")){
+    return ["all"];
+  }
+
+  return values;
+}
+function renderPeakList(){
+  const keys = Object.keys(peakRecord);
+
+  if(keys.length === 0){
+    infoEl.innerHTML = "<div class='small'>📸 Aucun pic enregistré (appuie Play).</div>";
+    return;
+  }
+
+  // tri par amplitude décroissante
+  keys.sort((a,b) => peakRecord[b].amp - peakRecord[a].amp);
+
+  let html = "<b>📸 Photo instantanée — pics max enregistrés</b><br><br>";
+// verdict global ISO basé sur le plus gros pic enregistré
+let maxRec = 0;
+for(const k of keys){
+  if(peakRecord[k].amp > maxRec) maxRec = peakRecord[k].amp;
+}
+const z = isoVerdict(maxRec);
+html += `
+  <div style="margin-bottom:12px;">
+    <b>ISO ${ISO_CLASS}</b> : ${z.name} — ${z.label}
+    (max ${maxRec.toFixed(2)} mm/s)
+  </div>
+`;
+  for(const label of keys){
+    const p = peakRecord[label];
+    html += `
+  <div style="margin-bottom:10px;">
+    • <b>${label}</b><br>
+    &nbsp;&nbsp;${p.hz.toFixed(2)} Hz — ${p.amp.toFixed(2)} mm/s
+  </div>
+`;
+  }
+
+  infoEl.innerHTML = html;
+}
+
+function updateSpectrumModeByOrientation(){
+
+  // 🔴 Si PAS en plein écran spectre → JAMAIS de message
+  if(!spectrumFS){
+    rotateWarn.style.display = "none";
+    return;
+  }
+
+  // 💻 PC → JAMAIS de message
+  if(!isMobile()){
+    rotateWarn.style.display = "none";
+    return;
+  }
+
+  // 📱 Mobile
+  const isLandscape = window.innerWidth > window.innerHeight;
+
+  if(isLandscape){
+    // ✅ OK → on enlève le message
+    rotateWarn.style.display = "none";
+
+    // recalcul propre
+    setTimeout(() => {
+      resize();
+      redrawSpectrumNow();
+    }, 120);
+
+    showFSHUD();
+}else{
+  // 📱 PORTRAIT + FULLSCREEN → MODE SÉCURISÉ
+  rotateWarn.style.display = "flex";
+
+  const hud = document.getElementById("fsHUD");
+
+  // 🔒 HUD FORCÉ VISIBLE
+  hud.classList.add("visible");
+  hud.style.pointerEvents = "auto";
+
+  // ⛔ INTERDIT DE LE CACHER
+  clearTimeout(fsHideTimer);
+  fsHideTimer = null;
+}
+}
+  /* ===================== RESIZE ===================== */
+  function resize(){
+  const dpr = dprNow();
+
+  /* ========= ANIMATION ========= */
+  const maxW = Math.min(window.innerWidth - 24, 720);
+  if(!lockedWidth) lockedWidth = maxW;
+  lockedWidth = Math.min(lockedWidth, maxW);
+
+  const w = lockedWidth;
+  const h = w * 0.55;
+
+  canvas.style.width  = w + "px";
+  canvas.style.height = h + "px";
+  canvas.width  = Math.round(w * dpr);
+  canvas.height = Math.round(h * dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+
+  /* ========= SPECTRE ========= */
+  let specW, specH;
+
+  if(spectrumFS){
+    // 🔴 FULLSCREEN
+    specW = window.innerWidth;
+    specH = window.innerHeight;
+
+    specCanvas.style.position = "fixed";
+    specCanvas.style.left = "0";
+    specCanvas.style.top  = "0";
+    specCanvas.style.margin = "0";
+    specCanvas.style.borderRadius = "0";
+    specCanvas.style.zIndex = "9999";
+  }else{
+    // 🟢 MODE NORMAL
+    specW = w;
+    specH = Math.max(220, h * 0.95);
+
+    specCanvas.style.position = "relative";
+    specCanvas.style.marginTop = "18px";
+    specCanvas.style.borderRadius = "12px";
+    specCanvas.style.zIndex = "auto";
+  }
+
+  specCanvas.style.width  = specW + "px";
+  specCanvas.style.height = specH + "px";
+  specCanvas.width  = Math.round(specW * dpr);
+  specCanvas.height = Math.round(specH * dpr);
+
+  specCtx.setTransform(dpr,0,0,dpr,0,0);
+  specCtx.imageSmoothingEnabled = false;
+}
+  /* ===================== FULLSCREEN / ORIENTATION ===================== */
+  
+  
+
+  /* ===================== REDRAW SPECTRE (pause ok) ===================== */
+  function redrawSpectrumNow(){
+    const inp = readInputs();
+    if(!inp){
+      drawSpectrum(0, 0, tSpec);
+      return;
+    }
+
+    const geo = validateGeometryOpenBelt(inp);
+    const hzMotor = inp.rpm/60;
+
+    if(!geo.ok){
+      drawSpectrum(hzMotor, 0, tSpec);
+      return;
+    }
+
+    const Lmm  = beltLengthOpenBeltMM(inp.d1mm, inp.d2mm, inp.ccmm);
+    const vmm  = beltLinearSpeed_mm_s(inp.d1mm, inp.rpm);
+    const hzBelt = (Lmm > 0) ? (vmm / Lmm) : 0;
+
+    drawSpectrum(hzMotor, hzBelt, tSpec);
+  }
+
+  /* ===================== DRAW GLOBAL ===================== */
+  function draw(){
+    const dpr = dprNow();
+    const W = canvas.width / dpr;
+    const H = canvas.height / dpr;
+
+    // fond scène
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle="#000";
+    ctx.fillRect(0,0,W,H);
+
+    const inp = readInputs();
+    if(!inp){
+      infoEl.innerHTML = `<span class="bad">⛔ Entre RPM, Ø menante, Ø menée et C-C.</span>`;
+      outLength.textContent = "—";
+      outRPM1.textContent = outCPM1.textContent = outHZ1.textContent = "—";
+      outRPM2.textContent = outCPM2.textContent = outHZ2.textContent = "—";
+      outHZBelt.textContent = outFPM.textContent = outStrobe.textContent = "—";
+      drawSpectrum(0,0,tSpec);
+      return;
+    }
+
+    const geo = validateGeometryOpenBelt(inp);
+    if(!geo.ok){
+      infoEl.innerHTML = geo.html;
+
+      // stop play (évite “angles qui partent en NaN” dans certaines configs)
+      running = false;
+
+      const hzMotor = inp.rpm/60;
+
+      outRPM1.textContent = inp.rpm.toFixed(0);
+      outCPM1.textContent = inp.rpm.toFixed(0);
+      outHZ1.textContent  = hzMotor.toFixed(2);
+
+      const rpmMenee = inp.rpm * (inp.d1mm / inp.d2mm);
+      const hzMenee  = rpmMenee/60;
+      outRPM2.textContent = rpmMenee.toFixed(0);
+      outCPM2.textContent = rpmMenee.toFixed(0);
+      outHZ2.textContent  = hzMenee.toFixed(2);
+
+      outHZBelt.textContent = "—";
+      outFPM.textContent    = "—";
+      outStrobe.textContent = "—";
+      outLength.textContent = "—";
+
+      drawSpectrum(hzMotor, 0, tSpec);
+      return;
+    }else{
+      if(!snapshotMode){
+  infoEl.innerHTML = "";
+}
+    }
+
+    // calculs
+    const Lmm = beltLengthOpenBeltMM(inp.d1mm, inp.d2mm, inp.ccmm);
+    const v_mm_s   = beltLinearSpeed_mm_s(inp.d1mm, inp.rpm);
+    const v_in_s   = v_mm_s / IN_TO_MM;
+    const v_ft_min = v_in_s * 5;
+
+    const hzMotor = inp.rpm / 60;
+    const hzBelt  = (Lmm > 0) ? (v_mm_s / Lmm) : 0;
+
+    const strobeFPM = hzBelt * 60;
+
+    // outputs
+    outLength.textContent = (unitEl.value === "imperial")
+      ? (Lmm / IN_TO_MM).toFixed(2) + " po"
+      : Lmm.toFixed(1) + " mm";
+
+    outRPM1.textContent = inp.rpm.toFixed(0);
+    outCPM1.textContent = inp.rpm.toFixed(0);
+    outHZ1.textContent  = hzMotor.toFixed(2);
+
+    const rpmMenee = inp.rpm * (inp.d1mm / inp.d2mm);
+    const hzMenee  = rpmMenee / 60;
+    outRPM2.textContent = rpmMenee.toFixed(0);
+    outCPM2.textContent = rpmMenee.toFixed(0);
+    outHZ2.textContent  = hzMenee.toFixed(2);
+
+    outHZBelt.textContent = hzBelt.toFixed(3);
+    outFPM.textContent    = v_ft_min.toFixed(0);
+    outStrobe.textContent = strobeFPM.toFixed(0);
+
+    // spectre (live uniquement si running car tSpec n’avance que si running)
+    drawSpectrum(hzMotor, hzBelt, tSpec);
+
+    // dessin scène courroie + poulies
+    const r1mm = inp.d1mm/2;
+    const r2mm = inp.d2mm/2;
+    const Cmm  = inp.ccmm;
+
+    const margin = 26;
+    const s = Math.min(
+      (W - 2*margin) / (Cmm + r1mm + r2mm),
+      (H - 2*margin) / (2 * Math.max(r1mm, r2mm))
+    );
+
+    const r1 = r1mm*s, r2 = r2mm*s, C = Cmm*s;
+    const x1 = margin + r1;
+    const x2 = x1 + C;
+    const y  = H/2;
+
+    const pts = buildBeltPath(x1,y,r1, x2,y,r2);
+
+    ctx.strokeStyle = "#9a9a9a";
+    ctx.lineWidth = 4;
+    ctx.lineCap="round";
+    ctx.lineJoin="round";
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.stroke();
+
+    drawPulley(x1, y, r1, "#00a2ff", ang1);
+    drawPulley(x2, y, r2, "#ff9800", ang2);
+
+    // point sur courroie
+    const w1 = TAU*(inp.rpm/60);
+    const v_px_s = Math.abs(w1) * r1;
+    const totalLen = polylineLength(pts);
+    const sPos = (totalLen - (v_px_s * tMotion) % totalLen) % totalLen;
+    const P = pointAt(pts, sPos);
+
+    ctx.fillStyle="#fff";
+    ctx.beginPath();
+    ctx.arc(P.x,P.y,4,0,TAU);
+    ctx.fill();
+  }
+
+  /* ===================== LOOP UNIQUE RAF ===================== */
+  let lastTS = null;
+  function loop(ts){
+    if(lastTS === null) lastTS = ts;
+    const dt = (ts - lastTS) / 1000;
+    lastTS = ts;
+
+    if(running){
+      const slow = Math.max(1, parseFloat(slowEl.value) || 1);
+
+      // avance temps (Play seulement)
+      tMotion += dt / slow;
+      tSpec   += dt;
+
+      // angles: utilisent les valeurs converties (mm) pour ratio correct même en impérial
+      const inp = readInputs();
+      if(inp){
+        const w1 = TAU * (inp.rpm / 60);
+        const ratio = inp.d1mm / inp.d2mm;
+        const w2 = w1 * ratio;
+        ang1 += (w1 * dt) / slow;
+        ang2 += (w2 * dt) / slow;
+      }
+    }
+
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  /* ===================== EVENTS UI ===================== */
+
+window.addEventListener("resize", () => {
+  updateSpectrumModeByOrientation();
+  draw();
+});
+
+window.addEventListener("orientationchange", () => {
+  updateSpectrumModeByOrientation();
+  draw();
+});
+
+if(window.visualViewport){
+  window.visualViewport.addEventListener("resize", () => {
+    updateSpectrumModeByOrientation();
+    draw();
+  });
+}
+
+playBtn.addEventListener("click", () => {
+
+  snapshotMode = false;   // on quitte le mode photo
+  peakRecord = {};        // on repart un nouvel enregistrement
+  infoEl.innerHTML = "";  // nettoie l’affichage
+
+  const inp = readInputs();
+  if(!inp){ running = false; draw(); return; }
+
+  const geo = validateGeometryOpenBelt(inp);
+  if(!geo.ok){ running = false; draw(); return; }
+
+  running = true;         // 🔴 LIVE reprend
+});
+  pauseBtn.addEventListener("click", () => {
+  running = false;
+  snapshotMode = true;   // 🔒 verrou affichage
+  renderPeakList();      // 📸 affiche la fiche
+});
+
+  resetBtn.addEventListener("click", () => {
+  running = false;
+  tMotion = 0;
+  tSpec   = 0;
+  ang1 = 0;
+  ang2 = 0;
+
+  peakRecord = {};      // ✅ efface la mémoire
+  infoEl.innerHTML = ""; // optionnel: efface l'affichage
+
+  draw();
+});
+  
+  
+
+  // Inputs : redraw (spectre figé si pause)
+  [rpmEl,d1El,d2El,ccEl,unitEl,slowEl].forEach(el=>{
+    el.addEventListener("input", () => {
+      // si la géométrie devient invalide en Play, draw() stoppera running
+      draw();
+    });
+  });
+
+  // Resize / orientation
+  function handleViewportChange(){
+    resize();
+    
+    
+    draw();
+  }
+  
+  /* ===================== PAN SPECTRE (pause ok) ===================== */
+  specCanvas.addEventListener("pointerdown", e => {
+    isPanning = true;
+    panStartX = e.clientX;
+    panStartMin = spectrumView.minHz;
+    try{ specCanvas.setPointerCapture(e.pointerId); }catch(_){}
+  });
+
+  specCanvas.addEventListener("pointermove", e => {
+    if(!isPanning) return;
+
+    const dxPx = e.clientX - panStartX;
+    const widthPx = specCanvas.clientWidth || 1;
+    const hzPerPx = spectrumView.spanHz / widthPx;
+
+    let newMin = panStartMin - dxPx * hzPerPx;
+    newMin = Math.max(0, Math.min(spectrumView.maxHz - spectrumView.spanHz, newMin));
+    spectrumView.minHz = newMin;
+
+    // redraw immédiat (tSpec figé si pause)
+    redrawSpectrumNow();
+  });
+
+  function endPan(e){
+    isPanning = false;
+    if(e && e.pointerId != null){
+      try{ specCanvas.releasePointerCapture(e.pointerId); }catch(_){}
+    }
+  }
+  specCanvas.addEventListener("pointerup", endPan);
+  specCanvas.addEventListener("pointercancel", endPan);
+
+  /* ===================== INIT ===================== */
+  resize();
+updateSpectrumModeByOrientation();
+draw();
+// ===== GESTION DU MENU DÉFAUTS (choix multiples + "Tout") =====
+const faultSelect = document.getElementById("faultSelect");
+
+if(faultSelect){
+  faultSelect.addEventListener("change", () => {
+    const values = Array.from(faultSelect.selectedOptions).map(o => o.value);
+
+    // 🟢 Si "Tout" est sélectionné → il écrase les autres
+    if(values.includes("all")){
+      Array.from(faultSelect.options).forEach(opt => {
+        opt.selected = (opt.value === "all");
+      });
+    }
+
+    // 🔄 Mise à jour immédiate du spectre
+    redrawSpectrumNow();
+  });
+}
+
+function exportPDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  const keys = Object.keys(peakRecord);
+  if(keys.length === 0){
+    alert("Aucune donnée enregistrée.\n\nAppuie sur Play puis Pause.");
+    return;
+  }
+
+  let y = 14;
+
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(16);
+  doc.text("Analyse vibratoire — Photo instantanée", 14, y);
+  y += 10;
+
+  doc.setFontSize(11);
+  doc.setFont("helvetica","normal");
+  doc.text(`Date : ${new Date().toLocaleString()}`, 14, y);
+  y += 10;
+
+  doc.setFont("helvetica","bold");
+  doc.text("Résultats mesurés :", 14, y);
+  y += 8;
+
+  const sorted = keys.sort((a,b)=>peakRecord[b].amp - peakRecord[a].amp);
+
+  for(const label of sorted){
+    const p = peakRecord[label];
+    const iso = isoVerdict(p.amp);
+
+    if(y > 270){
+      doc.addPage();
+      y = 14;
+    }
+
+    doc.setFont("helvetica","bold");
+    doc.text(label, 14, y);
+
+    doc.setFont("helvetica","normal");
+    y += 6;
+    doc.text(`Fréquence : ${p.hz.toFixed(2)} Hz`, 18, y);
+    y += 6;
+    doc.text(`Amplitude : ${p.amp.toFixed(2)} mm/s`, 18, y);
+    y += 6;
+
+    doc.setTextColor(0,0,0);
+    doc.text(`Classe ISO : ${iso.label}`, 18, y);
+    doc.setTextColor(0,0,0);
+
+    y += 10;
+  }
+
+  doc.save("Analyse_vibratoire_ISO.pdf");
+}
+document.addEventListener("keydown", (e) => {
+  if(e.key === "Escape" && spectrumFS){
+    btnExitFS.click();
+  }
+});
+
+if(window.visualViewport){
+  window.visualViewport.addEventListener("resize", () => {
+    updateSpectrumModeByOrientation();
+  });
+}
+/* ===================== FULLSCREEN APP (PC) ===================== */
+
+const btnAppFS = document.getElementById("enterAppFS");
+
+if(btnAppFS){
+  btnAppFS.addEventListener("click", async () => {
+
+    // PC seulement
+    if(window.innerWidth < 1024) return;
+
+    try{
+      if(!document.fullscreenElement){
+        await document.documentElement.requestFullscreen();
+        document.body.classList.add("app-fullscreen");
+      }else{
+        await document.exitFullscreen();
+        document.body.classList.remove("app-fullscreen");
+      }
+    }catch(err){
+      console.warn("Fullscreen refusé :", err);
+    }
+  });
+}
+
+// sécurité : si l’utilisateur sort avec ESC
+document.addEventListener("fullscreenchange", () => {
+  if(!document.fullscreenElement){
+    document.body.classList.remove("app-fullscreen");
+  }
+});
+enableLongPressFS();
+specCanvas.addEventListener("mousemove", () => {
+  if(spectrumFS && !isMobile()){
+    showFSHUD();
+  }
+});
+requestAnimationFrame(loop);
+
+
+/* ================= INFO BULLE ================= */
+
+const infoModal = document.getElementById("infoModal");
+const closeInfo = document.getElementById("closeInfo");
+
+function openInfo(){
+  infoModal.classList.add("show");
+  infoModal.setAttribute("aria-hidden","false");
+  document.body.classList.add("modal-open"); // ✅ BLOQUE LE BODY
+}
+closeInfo.addEventListener("click", () => {
+  infoModal.classList.remove("show");
+  infoModal.setAttribute("aria-hidden","true");
+  document.body.classList.remove("modal-open");
+});
+
+const infoBtn = document.getElementById("infoBtn");
+
+if(infoBtn){
+  infoBtn.addEventListener("click", openInfo);
+}
+
+
+const printBtn = document.getElementById("printInfo");
+
+if(printBtn){
+  printBtn.addEventListener("click", () => {
+
+    const content =
+  (infoMenu.value === "simu")
+    ? pageSimu.innerHTML
+    : pagePruf.innerHTML;
+
+    const printWindow = window.open("", "_blank");
+
+    printWindow.document.write(`
+      <!doctype html>
+      <html lang="fr">
+      <head>
+        <meta charset="utf-8">
+        <title>Guide pédagogique – Analyse vibratoire</title>
+        <style>
+          body{
+            font-family: Arial, system-ui, sans-serif;
+            margin:30mm;
+            line-height:1.6;
+            color:#000;
+          }
+          h3{ margin-top:24px; }
+          code{
+            display:block;
+            background:#f2f2f2;
+            padding:8px 12px;
+            border-radius:6px;
+            white-space:nowrap;
+          }
+          ul,ol{ margin-left:20px; }
+          hr{ margin:30px 0; }
+         </style>
+      </head>
+      <body>
+        <h1>Guide pédagogique – Analyse vibratoire</h1>
+        ${content}
+      </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.onload = () => {
+  printWindow.print();
+};
+  });
+}
+const infoMenu = document.getElementById("infoMenu");
+const pageSimu = document.getElementById("page-simu");
+const pagePruf = document.getElementById("page-pruf");
+
+
+if(infoMenu){
+  infoMenu.addEventListener("change", () => {
+    pageSimu.style.display = infoMenu.value === "simu" ? "block" : "none";
+    pagePruf.style.display = infoMenu.value === "pruf" ? "block" : "none";
+  });
+}
+
+
+/* ================= NUMPAD PC ================= */
+
+/* ================= NUMPAD PC ================= */
+
+let activeInput = null;
+
+window.addEventListener("DOMContentLoaded", () => {
+
+  const numPad = document.getElementById("numPad");
+  if(!numPad) return; // sécurité absolue
+
+  document.addEventListener("focusin", (e) => {
+    if(window.innerWidth < 1024) return;
+
+    const el = e.target;
+    if(el.tagName === "INPUT" && el.type === "number"){
+      activeInput = el;
+      numPad.classList.remove("hidden");
+    }
+  });
+
+  document.addEventListener("focusout", (e) => {
+    if(e.target === activeInput){
+      setTimeout(()=>{ 
+        if(!numPad.contains(document.activeElement)){
+          numPad.classList.add("hidden");
+          activeInput = null;
+        }
+      }, 150);
+    }
+  });
+
+  numPad.addEventListener("click", (e) => {
+    if(!activeInput) return;
+    const btn = e.target.closest("button");
+    if(!btn) return;
+
+    const key = btn.dataset.key;
+    const action = btn.dataset.action;
+
+    if(key){
+      activeInput.value += key;
+      activeInput.dispatchEvent(new Event("input"));
+    }
+
+    if(action === "back"){
+      activeInput.value = activeInput.value.slice(0,-1);
+      activeInput.dispatchEvent(new Event("input"));
+    }
+
+    if(action === "clear"){
+      activeInput.value = "";
+      activeInput.dispatchEvent(new Event("input"));
+    }
+
+    if(action === "ok"){
+      activeInput.blur();
+      numPad.classList.add("hidden");
+      activeInput = null;
+    }
+  });
+
+});
+
+})();
+</script>
+
+
+
+
+<!-- ICI : ÉTAPE 1 -->
+<div id="numPad" class="numpad hidden">
+  <div class="numpad-grid">
+    <button data-key="7">7</button>
+    <button data-key="8">8</button>
+    <button data-key="9">9</button>
+
+    <button data-key="4">4</button>
+    <button data-key="5">5</button>
+    <button data-key="6">6</button>
+
+    <button data-key="1">1</button>
+    <button data-key="2">2</button>
+    <button data-key="3">3</button>
+
+    <button data-key="0" class="wide">0</button>
+    <button data-key=".">.</button>
+    <button data-action="back">←</button>
+
+    <button data-action="clear" class="warn">C</button>
+    <button data-action="ok" class="ok wide">OK</button>
+  </div>
+</div>
+
+</body>
+</html>
