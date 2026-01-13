@@ -579,25 +579,73 @@ body.spectrum-mode #specStage{
 /* ============ APP FULLSCREEN — PC ================= */
 /* ================================================= */
 
-body.app-fullscreen{
-  height:100vh;
-  overflow:hidden;
-}
+/* ================================================= */
+/* ========= PC — FULLSCREEN PRO (FINAL) ============ */
+/* ================================================= */
+@media (min-width:1024px){
 
-/* cache boutons inutiles */
-body.app-fullscreen .info-btn,
-body.app-fullscreen #enterSpectrumFS{
-  display:none !important;
-}
+  body.app-fullscreen{
+    height:100vh;
+    overflow:hidden;
+    font-size:18px; /* 🔍 police globale plus grande */
+  }
 
-/* zone graphique = tout ce qui reste sous les contrôles */
-body.app-fullscreen .pc-layout{
-  height:calc(100vh - 220px); /* hauteur contrôles */
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:20px;
-  padding:20px;
-  align-items:center;
+  /* cacher boutons inutiles */
+  body.app-fullscreen .info-btn,
+  body.app-fullscreen #enterSpectrumFS{
+    display:none !important;
+  }
+
+  /* ================= ZONE GRAPHIQUE ================= */
+  body.app-fullscreen .pc-layout{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+
+    /* 🔼 remonte animation + spectre */
+    margin-top:8px;
+
+    /* 🔽 prend presque tout l’écran */
+    height: calc(100vh - 180px);
+
+    gap:32px;
+    padding:24px;
+    align-items:center;
+  }
+
+  /* ================= STAGES ================= */
+  body.app-fullscreen .stage{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  body.app-fullscreen .stage canvas{
+    width:100% !important;
+    height:100% !important;
+    max-width:100%;
+    max-height:100%;
+  }
+
+  /* ================= POLICES ================= */
+  body.app-fullscreen .controls label{
+    font-size:15px;
+  }
+
+  body.app-fullscreen .controls input,
+  body.app-fullscreen .controls select{
+    font-size:18px;
+    height:42px;
+  }
+
+  body.app-fullscreen .buttons button{
+    font-size:18px;
+    padding:14px;
+  }
+
+  body.app-fullscreen .outputBox{
+    font-size:16px;
+    line-height:1.5;
+  }
 }
 
 /* canvas bien centré */
