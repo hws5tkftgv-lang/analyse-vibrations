@@ -990,6 +990,23 @@ body.fullscreen #fsInner{
   overflow:hidden;
 }
 
+/* ===== FULLSCREEN PC : LIMITER LA TAILLE ===== */
+@media (min-width:1024px){
+  body.app-fullscreen canvas{
+    max-width: 640px;
+    max-height: 360px;
+    width: 100%;
+    height: auto;
+  }
+
+  body.app-fullscreen #specStage canvas{
+    max-width: 640px;
+    max-height: 360px;
+  }
+}
+
+
+  
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
