@@ -762,7 +762,51 @@ body{
   .numpad{ display:none !important; }
 }
     
-    
+  /* ================================================= */
+/* ===== PC FULLSCREEN — ALIGNEMENT SCÈNE / SPECTRE */
+/* ================================================= */
+
+@media (min-width:1024px){
+
+  body.app-fullscreen #mainStage{
+    height: calc(100vh - 80px); /* enlève header */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+
+    align-items: center;   /* CENTRAGE VERTICAL */
+    justify-items: center; /* CENTRAGE HORIZONTAL */
+
+    padding: 24px;
+  }
+
+  body.app-fullscreen .stage{
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* 🔵 Animation */
+  body.app-fullscreen .stage-scene canvas{
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  /* 🔴 Spectre */
+  body.app-fullscreen .stage-spectrum canvas{
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+}
+  
     
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -844,12 +888,12 @@ body{
   </div>
   <button id="exitSpectrumFS">❌ Quitter</button>
 </div>
-<div class="pc-layout">
-  <div class="stage" id="sceneStage">
+<div class="pc-layout" id="mainStage">
+  <div class="stage stage-scene" id="sceneStage">
     <canvas id="scene"></canvas>
   </div>
 
-  <div class="stage" id="specStage">
+  <div class="stage stage-spectrum" id="specStage">
     <canvas id="spectrum"></canvas>
   </div>
 </div>
@@ -2020,7 +2064,10 @@ function updateSpectrumModeByOrientation(){
   const dpr = dprNow();
 
   /* ========= ANIMATION ========= */
-  const maxW = Math.min(window.innerWidth - 24, 720);
+ const maxW = document.body.classList.contains("app-fullscreen")
+  ? (window.innerWidth / 2) - 48
+  : Math.min(window.innerWidth - 24, 720);
+
   if(!lockedWidth) lockedWidth = maxW;
   lockedWidth = Math.min(lockedWidth, maxW);
 
