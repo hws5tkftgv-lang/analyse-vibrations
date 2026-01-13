@@ -823,6 +823,34 @@ body{
 body.app-fullscreen{
   overflow: hidden;
 }
+
+
+
+/* === PC FULLSCREEN : visuels prennent toute la place === */
+body.app-fullscreen .pc-layout{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  height: calc(100vh - var(--app-top));
+  padding: 16px;
+}
+body.app-fullscreen .stage{
+  height: 100%;
+  display: flex;
+}
+body.app-fullscreen .stage canvas{
+  width: 100% !important;
+  height: 100% !important;
+}
+body.app-fullscreen #scene,
+body.app-fullscreen #spectrum{
+  transform: scale(1.05);
+  transform-origin: center;
+}
+
+
+
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
