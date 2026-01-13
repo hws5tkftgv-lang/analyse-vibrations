@@ -261,6 +261,52 @@ canvas{
   background:#000;
   border-radius:12px;
 }
+/* ================================================= */
+/* === FIX INFO BULLE — PC SEULEMENT =============== */
+/* ================================================= */
+@media (min-width:1024px){
+
+  /* Overlay */
+  .infoModal{
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:center;        /* 🔑 centre vertical */
+    justify-content:center;    /* 🔑 centre horizontal */
+    padding:0;
+    background:rgba(0,0,0,0.7);
+    z-index:10050;
+  }
+
+  /* Carte */
+  .infoCard{
+    position:relative;
+    width:90vw;
+    max-width:1400px;
+    height:90vh;               /* 🔑 empêche le débordement */
+    max-height:90vh;
+
+    display:flex;
+    flex-direction:column;
+
+    border-radius:16px;
+    overflow:hidden;           /* 🔑 empêche fuite vers le bas */
+  }
+
+  /* En-tête */
+  .infoHead{
+    flex:0 0 auto;
+  }
+
+  /* Corps scrollable */
+  .infoBody{
+    flex:1 1 auto;
+    overflow-y:auto;           /* 🔑 scroll interne */
+    min-height:0;              /* 🔑 CRITIQUE pour flex */
+    padding:28px 36px;
+  }
+
+}
 
 </style>
 
