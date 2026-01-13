@@ -953,6 +953,39 @@ body.fullscreen canvas{
   height:100% !important;
   display:block;
 }
+/* =============================== */
+/* === ACTION 4 — NO SCROLL FS === */
+/* =============================== */
+
+body.fullscreen,
+body.fullscreen html{
+  height:100vh !important;
+  overflow:hidden !important;
+}
+
+body.fullscreen #fullscreenStage{
+  height:100vh;
+  overflow:hidden;
+}
+
+body.fullscreen #fsInner{
+  height:100vh;
+  overflow:hidden;
+}
+/* =============================== */
+/* === FULLSCREEN = ZÉRO SCROLL === */
+/* =============================== */
+
+body.fullscreen{
+  height:100vh !important;
+  overflow:hidden !important;
+}
+
+body.fullscreen #fullscreenStage,
+body.fullscreen #fsInner{
+  height:100vh;
+  overflow:hidden;
+}
 
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -2654,26 +2687,36 @@ if(btnAppFS){
     // PC seulement
     if(window.innerWidth < 1024) return;
 
-    try{
-      if(!document.fullscreenElement){
-        await document.documentElement.requestFullscreen();
-        document.body.classList.add("app-fullscreen");
-      }else{
-        await document.exitFullscreen();
-        document.body.classList.remove("app-fullscreen");
-      }
-    }catch(err){
-      console.warn("Fullscreen refusé :", err);
-    }
+try{
+  if(!document.fullscreenElement){
+    await document.documentElement.requestFullscreen();
+
+    // 🔴 AJOUT ICI
+    document.body.classList.add("fullscreen");
+    document.body.classList.add("app-fullscreen");
+
+  }else{
+    await document.exitFullscreen();
+
+    // 🔴 AJOUT ICI
+    document.body.classList.remove("fullscreen");
+    document.body.classList.remove("app-fullscreen");
+  }
+}catch(err){
+  console.warn("Fullscreen refusé :", err);
+}
+
+
   });
 }
 
-// sécurité : si l’utilisateur sort avec ESC
 document.addEventListener("fullscreenchange", () => {
   if(!document.fullscreenElement){
     document.body.classList.remove("app-fullscreen");
+    document.body.classList.remove("fullscreen"); // 🔴 IMPORTANT
   }
 });
+
 enableLongPressFS();
 specCanvas.addEventListener("mousemove", () => {
   if(spectrumFS && !isMobile()){
