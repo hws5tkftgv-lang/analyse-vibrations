@@ -1,10 +1,7 @@
-<!doctype html>
 <html lang="fr">
+<!doctype html>
 <head>
 <meta charset="utf-8" />
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 
 
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
@@ -484,6 +481,18 @@ body{
   }
 }
 
+@media (min-width:1024px){
+  .pc-layout{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:14px;
+    align-items:start;
+  }
+
+  .pc-layout .stage{
+    padding:0;
+  }
+}
 
 @media (min-width:1024px){
 
@@ -753,295 +762,8 @@ body{
   .numpad{ display:none !important; }
 }
     
-  
-
-  body.app-fullscreen .stage{
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* 🔵 Animation */
-  body.app-fullscreen .stage-scene canvas{
-    width: 100%;
-    height: 100%;
-    max-width: 100%;
-    max-height: 100%;
-  }
-
-  /* 🔴 Spectre */
-  body.app-fullscreen .stage-spectrum canvas{
-    width: 100%;
-    height: 100%;
-    max-width: 100%;
-    max-height: 100%;
-  }
-
-
-  
-
-
-
-
-
-
-
-
-
-/* ================================================= */
-/* === ÉTAPE 1 — ALIGNEMENT PC STABLE (NORMAL) ===== */
-/* ================================================= */
-
-@media (min-width:1024px){
-
-  /* conteneur général */
-  #fullscreenStage{
-    display:flex;
-    justify-content:center;
-  }
-
-  /* limite de largeur + centrage */
-  #fsInner{
-    width:100%;
-    max-width:1400px;
-    padding:24px;
-    box-sizing:border-box;
-  }
-
-  /* grille animation / spectre */
-  .pc-layout{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:32px;
-
-    align-items:center;       /* CENTRAGE VERTICAL */
-    justify-items:center;     /* CENTRAGE HORIZONTAL */
-  }
-
-  /* chaque bloc stage */
-  .pc-layout .stage{
-    width:100%;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:0;
-  }
-}
-/* ================================================= */
-/* === ÉTAPE 2 — FULLSCREEN SANS SCROLL ============ */
-/* ================================================= */
-
-body.fullscreen,
-html.fullscreen{
-  margin:0;
-  padding:0;
-  width:100vw;
-  height:100vh;
-  overflow:hidden;   /* 🔴 CLÉ ABSOLUE */
-}
-
-body.fullscreen #fullscreenStage{
-  position:fixed;
-  inset:0;
-  width:100vw;
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  overflow:hidden;
-  z-index:9999;
-}
-
-body.fullscreen #fsInner{
-  width:100%;
-  height:100%;
-  max-width:none;
-  max-height:none;
-  padding:24px;
-  box-sizing:border-box;
-  display:flex;
-  align-items:center;
-}
-
-body.fullscreen .pc-layout{
-  width:100%;
-  height:100%;
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr;   /* 🔴 clé */
-  gap:32px;
-  align-items:stretch;      /* 🔴 clé */
-  justify-items:stretch;
-}
-
-
-body.fullscreen .pc-layout .stage{
-  width:100%;
-  height:100%;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  overflow:hidden;
-}
-
-/* ================================================= */
-/* === ÉTAPE 3 — PROPORTIONS CANVAS FULLSCREEN ===== */
-/* ================================================= */
-
-
-body.fullscreen canvas{
-  width:100% !important;
-  height:100% !important;
-  display:block;
-}
-
-/* sécurité anti débordement */
-body.fullscreen .stage-stage,
-body.fullscreen .stage-spectrum{
-  overflow:hidden;
-}
-
-  /* ================================================= */
-/* === ÉTAPE 4 — RATIO OPTIMISÉ PAR ZONE ============ */
-/* ================================================= */
-
-/* Animation mécanique */
-body.fullscreen #sceneStage{
-  aspect-ratio: 16 / 9;
-  max-height:100%;
-  width:100%;
-}
-
-/* Spectre vibratoire */
-body.fullscreen #specStage{
-  aspect-ratio: 4 / 3;
-  max-height:100%;
-  width:100%;
-}
-
-/* Canvas toujours plein */
-body.fullscreen canvas{
-  width:100% !important;
-  height:100% !important;
-  display:block;
-}
-
-body.fullscreen .stage{
-  height:100%;
-  width:100%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-/* =============================== */
-/* === ACTION 3 — RATIOS ========= */
-/* =============================== */
-
-/* Animation mécanique */
-body.fullscreen #sceneStage{
-  aspect-ratio: 16 / 9;
-}
-
-/* Spectre vibratoire */
-body.fullscreen #specStage{
-  aspect-ratio: 4 / 3;
-}
-
-/* Canvas toujours plein */
-body.fullscreen canvas{
-  width:100% !important;
-  height:100% !important;
-  display:block;
-}
-/* =============================== */
-/* === ACTION 4 — NO SCROLL FS === */
-/* =============================== */
-
-body.fullscreen,
-body.fullscreen html{
-  height:100vh !important;
-  overflow:hidden !important;
-}
-
-body.fullscreen #fullscreenStage{
-  height:100vh;
-  overflow:hidden;
-}
-
-body.fullscreen #fsInner{
-  height:100vh;
-  overflow:hidden;
-}
-/* =============================== */
-/* === FULLSCREEN = ZÉRO SCROLL === */
-/* =============================== */
-
-body.fullscreen{
-  height:100vh !important;
-  overflow:hidden !important;
-}
-
-body.fullscreen #fullscreenStage,
-body.fullscreen #fsInner{
-  height:100vh;
-  overflow:hidden;
-}
-
-/* ===== FULLSCREEN PC : LIMITER LA TAILLE ===== */
-@media (min-width:1024px){
-  body.app-fullscreen canvas{
-    max-width: 640px;
-    max-height: 360px;
-    width: 100%;
-    height: auto;
-  }
-
-  body.app-fullscreen #specStage canvas{
-    max-width: 640px;
-    max-height: 360px;
-  }
-}
-
-/* FULLSCREEN ROOT */
-body.app-fullscreen,
-body.app-fullscreen html{
-  margin: 0;
-  padding: 0;
-  overflow: hidden !important;
-  height: 100%;
-}
-
-/* CONTENEUR FULLSCREEN */
-body.app-fullscreen #fullscreenStage{
-  position: fixed;
-  inset: 0;
-  display: flex;
-  
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-/* ZONE INTERNE */
-body.app-fullscreen #fsInner{
-  width: 100vw;
-  height: 100vh;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  padding: 24px;
-  box-sizing: border-box;
-}
-body.app-fullscreen canvas{
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-
-  
+    
+    
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
@@ -1122,19 +844,13 @@ body.app-fullscreen canvas{
   </div>
   <button id="exitSpectrumFS">❌ Quitter</button>
 </div>
-<div id="fullscreenStage">
-  <div id="fsInner">
+<div class="pc-layout">
+  <div class="stage" id="sceneStage">
+    <canvas id="scene"></canvas>
+  </div>
 
-    <div class="pc-layout" id="mainStage">
-      <div class="stage stage-scene" id="sceneStage">
-        <canvas id="scene"></canvas>
-      </div>
-
-      <div class="stage stage-spectrum" id="specStage">
-        <canvas id="spectrum"></canvas>
-      </div>
-    </div>
-
+  <div class="stage" id="specStage">
+    <canvas id="spectrum"></canvas>
   </div>
 </div>
 
@@ -2302,26 +2018,20 @@ function updateSpectrumModeByOrientation(){
   /* ===================== RESIZE ===================== */
   function resize(){
   const dpr = dprNow();
-const isFS = document.body.classList.contains("app-fullscreen");
 
-// 🔒 largeur pédagogique commune en fullscreen PC
-const FS_WIDTH = 520;   // ← valeur volontairement modérée
+  /* ========= ANIMATION ========= */
+  const maxW = Math.min(window.innerWidth - 24, 720);
+  if(!lockedWidth) lockedWidth = maxW;
+  lockedWidth = Math.min(lockedWidth, maxW);
 
+  const w = lockedWidth;
+  const h = w * 0.55;
 
-const w = isFS
-  ? Math.min(window.innerWidth * 0.45, window.innerHeight * 0.8)
-  : Math.min(window.innerWidth - 24, 720);
-
-const h = w * 0.55;
-
-canvas.style.width  = w + "px";
-canvas.style.height = h + "px";
-canvas.width  = Math.round(w * dpr);
-canvas.height = Math.round(h * dpr);
-ctx.setTransform(dpr,0,0,dpr,0,0);
-
-
-
+  canvas.style.width  = w + "px";
+  canvas.style.height = h + "px";
+  canvas.width  = Math.round(w * dpr);
+  canvas.height = Math.round(h * dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
 
   /* ========= SPECTRE ========= */
   let specW, specH;
@@ -2339,9 +2049,8 @@ ctx.setTransform(dpr,0,0,dpr,0,0);
     specCanvas.style.zIndex = "9999";
   }else{
     // 🟢 MODE NORMAL
- specW = isFS ? SPEC_W_FS : w;
-specH = isFS ? h : Math.max(220, h * 0.95);
-
+    specW = w;
+    specH = Math.max(220, h * 0.95);
 
     specCanvas.style.position = "relative";
     specCanvas.style.marginTop = "18px";
@@ -2621,7 +2330,6 @@ playBtn.addEventListener("click", () => {
     try{ specCanvas.setPointerCapture(e.pointerId); }catch(_){}
   });
 
-  
   specCanvas.addEventListener("pointermove", e => {
     if(!isPanning) return;
 
@@ -2746,36 +2454,26 @@ if(btnAppFS){
     // PC seulement
     if(window.innerWidth < 1024) return;
 
-try{
-  if(!document.fullscreenElement){
-    await document.documentElement.requestFullscreen();
-
-    // 🔴 AJOUT ICI
-    document.body.classList.add("fullscreen");
-    document.body.classList.add("app-fullscreen");
-
-  }else{
-    await document.exitFullscreen();
-
-    // 🔴 AJOUT ICI
-    document.body.classList.remove("fullscreen");
-    document.body.classList.remove("app-fullscreen");
-  }
-}catch(err){
-  console.warn("Fullscreen refusé :", err);
-}
-
-
+    try{
+      if(!document.fullscreenElement){
+        await document.documentElement.requestFullscreen();
+        document.body.classList.add("app-fullscreen");
+      }else{
+        await document.exitFullscreen();
+        document.body.classList.remove("app-fullscreen");
+      }
+    }catch(err){
+      console.warn("Fullscreen refusé :", err);
+    }
   });
 }
 
+// sécurité : si l’utilisateur sort avec ESC
 document.addEventListener("fullscreenchange", () => {
   if(!document.fullscreenElement){
     document.body.classList.remove("app-fullscreen");
-    document.body.classList.remove("fullscreen"); // 🔴 IMPORTANT
   }
 });
-
 enableLongPressFS();
 specCanvas.addEventListener("mousemove", () => {
   if(spectrumFS && !isMobile()){
