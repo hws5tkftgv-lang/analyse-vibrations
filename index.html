@@ -1609,12 +1609,22 @@ pdfBtn.addEventListener("click", exportPDF);
     ];
   }
 
-  function peaks_unbalance(fMotor, _fBelt, t){
-    return [
-      { hz:fMotor, amp:1.85 + 0.25*Math.sin(t), col:"#ff5555", label:"Balourd (1×)" },
-      { hz:fMotor*2, amp:0.35 + 0.10*Math.sin(t*1.7), col:"#ff8888", label:"Harmonique (2×)" }
-    ];
-  }
+  function peaks_unbalance(fMotor, _fBelt, fDriven, t){
+  return [
+    {
+      hz: fDriven,
+      amp: 1.85 + 0.25*Math.sin(t),
+      col:"#ff5555",
+      label:"Balourd (1× menée)"
+    },
+    {
+      hz: fDriven * 2,
+      amp: 0.35 + 0.10*Math.sin(t*1.7),
+      col:"#ff8888",
+      label:"Balourd (2× menée)"
+    }
+  ];
+}
 
   function peaks_misalign(fMotor, _fBelt, t){
     return [
@@ -1677,7 +1687,7 @@ pdfBtn.addEventListener("click", exportPDF);
     none      : (fM,fB,t)=>peaks_normal(fM,fB,t),
     unbalance : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_unbalance(fM,fB,t) ],
     misalign  : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_misalign(fM,fB,t) ],
-    looseness : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_looseness(fM,fB,t) ],
+    looseness : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1),peaks_unbalance(fM,fB, fM * (d1El.value / d2El.value), t)],
     belt      : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_belt(fM,fB,t) ],
     slip      : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_slip(fM,fB,t) ],
     bearing   : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_bearing(fM,fB,t) ],
@@ -1702,6 +1712,7 @@ pdfBtn.addEventListener("click", exportPDF);
   };
 
   function buildPeaks(fMotor, fBelt, time){
+    const fDriven = fMotor * (d1El.value / d2El.value);
   const selected = getSelectedFaults();
 
   // Aucun défaut sélectionné → normal
