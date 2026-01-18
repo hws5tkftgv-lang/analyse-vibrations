@@ -2158,7 +2158,7 @@ function updateSpectrumModeByOrientation(){
 
 function drawDrivenDefect(cx, cy, r){
 
-  const a = thetaDriven + defectAngleDriven;
+  const a = Math.PI / 2; // 6h FIXE à l'écran
 
   // === TACHY 1× (MENÉE) ===
   tachyPulse = false;
