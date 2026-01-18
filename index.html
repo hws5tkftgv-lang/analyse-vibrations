@@ -2848,7 +2848,7 @@ function exportPDF(){
 
   
 
-  // =====================================================
+    // =====================================================
   // 🔁 RESTAURATION ÉTAT UTILISATEUR (APRÈS PDF)
   // =====================================================
 
@@ -2858,8 +2858,8 @@ function exportPDF(){
   snapshotMode = savedSnap;
 
   redrawSpectrumNow();
-}
 
+  // 💾 SAUVEGARDE PDF (ICI SEULEMENT)
   doc.save("Analyse_vibratoire_ISO.pdf");
 }
 document.addEventListener("keydown", (e) => {
