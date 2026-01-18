@@ -2157,20 +2157,25 @@ function updateSpectrumModeByOrientation(){
 
 
 function drawDrivenDefect(cx, cy, r){
+
   const a = thetaDriven + defectAngleDriven;
-  // détection keyphasor (1 impulsion par tour)
-tachyPulse = false;
 
-// passage de ~2π → 0 (front descendant)
-if(lastThetaDriven > (1.8 * Math.PI) && thetaDriven < (0.2 * Math.PI)){
-  tachyPulse = true;
-  if(tachyPulse){
-  console.log("TACHY 1× MENÉE");
-}
-}
+  // === TACHY 1× (MENÉE) ===
+  tachyPulse = false;
 
-lastThetaDriven = thetaDriven;
+  // détection passage 2π → 0 (front descendant)
+  if(lastThetaDriven > (1.8 * Math.PI) && thetaDriven < (0.2 * Math.PI)){
+    tachyPulse = true;
 
+    // 🔴 TEST VISUEL (1 frame par tour)
+    ctx.fillStyle = "yellow";
+    ctx.fillRect(10, 10, 20, 20);
+  }
+
+  // mémorisation angle
+  lastThetaDriven = thetaDriven;
+
+  // === POINT DE DÉFAUT (6h) ===
   const x = cx + (r - 6) * Math.cos(a);
   const y = cy + (r - 6) * Math.sin(a);
 
@@ -2179,7 +2184,6 @@ lastThetaDriven = thetaDriven;
   ctx.arc(x, y, 5, 0, Math.PI * 2);
   ctx.fill();
 }
-
   /* ===================== DRAW GLOBAL ===================== */
   function draw(){
     const dpr = dprNow();
