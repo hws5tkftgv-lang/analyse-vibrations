@@ -2740,45 +2740,54 @@ console.log("tachyEnabled =", tachyEnabled);
 }
 
 function exportPDF(){
+  
+  // === CANVAS SNAPSHOT DÉDIÉ (pas le live) ===
+const snapCanvas = document.createElement("canvas");
+snapCanvas.width  = specCanvas.width;
+snapCanvas.height = specCanvas.height;
+
+const snapCtx = snapCanvas.getContext("2d");
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  // ===============================
-  // 📸 SNAPSHOT SPECTRE 0–300 Hz
-  // ===============================
+// ===============================
+// 📸 SNAPSHOT SPECTRE 0–300 Hz (PROPRE)
+// ===============================
 
-  // Sauvegarde état utilisateur
-  const savedMinHz  = spectrumView.minHz;
-  const savedSpanHz = spectrumView.spanHz;
-  const savedRunning = running;
+// Sauvegarde état utilisateur
+const savedMinHz  = spectrumView.minHz;
+const savedSpanHz = spectrumView.spanHz;
+const savedSnapshot = snapshotMode;
 
-  // Force état snapshot
-  running = false;
-  snapshotMode = true;
+// Figer moteur
+running = false;
+snapshotMode = true;
 
-  spectrumView.minHz  = 0;
-  spectrumView.spanHz = 300;
+// Vue pédagogique
+spectrumView.minHz  = 0;
+spectrumView.spanHz = 300;
 
-  // ⚠️ NETTOYAGE OBLIGATOIRE DU CANVAS
-  specCtx.clearRect(0, 0, specCanvas.width, specCanvas.height);
+// Nettoyage canvas snapshot
+snapCtx.clearRect(0, 0, snapCanvas.width, snapCanvas.height);
 
-  // Dessin UNIQUE du spectre
-  redrawSpectrumNow();
+// ⚠️ DESSIN EXPLICITE DU SPECTRE DANS snapCtx
+drawSpectrum(snapCtx, {
+  hideISO: true,
+  hideLabels: true,
+  hideUI: true
+});
 
-  // Capture image
-  const specImg = specCanvas.toDataURL("image/png");
+// Capture image PROPRE
+const specImg = snapCanvas.toDataURL("image/png");
 
-  // ===============================
-  // 🔁 RESTAURATION ÉTAT NORMAL
-  // ===============================
-  spectrumView.minHz  = savedMinHz;
-  spectrumView.spanHz = savedSpanHz;
-  snapshotMode = false;
-  running = savedRunning;
+// Restauration
+spectrumView.minHz  = savedMinHz;
+spectrumView.spanHz = savedSpanHz;
+snapshotMode = savedSnapshot;
 
-  specCtx.clearRect(0, 0, specCanvas.width, specCanvas.height);
-  redrawSpectrumNow();
+// Redraw écran normal
+redrawSpectrumNow();
 
   // ===============================
   // 📄 PDF
