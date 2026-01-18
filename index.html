@@ -1,5 +1,5 @@
-<html lang="fr">
 <!doctype html>
+<html lang="fr">
 <head>
 <meta charset="utf-8" />
 
@@ -1312,6 +1312,7 @@ En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p
 // GESTION TACHY (SELON DÉFAUT)
 // ===============================
 let tachyEnabled = false;
+let balourdActif = false;
   let tachyDriven = false;
   // ===============================
 // PHASE / TACHY MENÉE
@@ -2265,7 +2266,7 @@ if(tachyEnabled){
   /* ===================== DRAW GLOBAL ===================== */
   function draw(){
     const sev = getDefectSeverity();
-const balourdActif = sev.balourd > 0;
+balourdActif = sev.balourd > 0;
     const dpr = dprNow();
     const W = canvas.width / dpr;
     const H = canvas.height / dpr;
