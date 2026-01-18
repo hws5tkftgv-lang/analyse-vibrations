@@ -772,7 +772,20 @@ body{
 body.snapshot-mode .pc-layout{
   display:block !important;
 }
-    
+    /* ================= SNAPSHOT MODE — PC ================= */
+@media (min-width:1024px){
+
+  body.snapshot-mode .pc-layout{
+    display:block !important;     /* sort du grid */
+  }
+
+  body.snapshot-mode .left-pane,
+  body.snapshot-mode .right-pane{
+    width:100% !important;
+    position:static !important;   /* 🔴 clé absolue */
+  }
+
+}
     
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -2667,7 +2680,8 @@ document.body.classList.remove("snapshot-mode"); // 🔑 LIGNE À AJOUTER
   pauseBtn.addEventListener("click", () => {
   running = false;
   snapshotMode = true;
-
+// 🔒 IMPORTANT : ne pas recréer le spectre
+  if(document.body.classList.contains("snapshot-mode")) return;
   document.body.classList.add("snapshot-mode"); // 🔑 CLÉ PC
 
   renderPeakList();
