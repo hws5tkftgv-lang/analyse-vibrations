@@ -1667,28 +1667,41 @@ pdfBtn.addEventListener("click", exportPDF);
   }
 
   function peaks_unbalance(_fMotor, _fBelt, fDriven, t){
-  const sev = getDefectSeverity().balourd;  // 0..10
-  const k = Math.max(0, Math.min(1, sev / 10)); // 0..1
-  if(k <= 0) return [];
+  const sev = getDefectSeverity().balourd; // 0..10
+  if(sev <= 0) return [];
 
-  // Terrain: balourd = 1× MENÉE dominant. 2× très faible (optionnel)
+  const k = sev / 10; // normalisation 0..1
+
   return [
     {
       hz: fDriven,
-      amp: (0.25 + 0.85 * k + 0.10*Math.sin(t)) ,  // base + proportionnel
+      amp: 0.4 + 2.8 * k,   // ⬅️ AMPLITUDE RÉALISTE
       col:"#ff5555",
       label:"Balourd (1× menée)"
     }
   ];
 }
   function peaks_misalign(fMotor, _fBelt, t){
-    return [
-      { hz:fMotor, amp:1.10 + 0.20*Math.sin(t*1.7), col:"#ff9800", label:"Désalign. (1×)" },
-      { hz:fMotor*2, amp:1.55 + 0.25*Math.sin(t), col:"#ff9800", label:"Désalign. (2×)" },
-      { hz:fMotor*3, amp:0.55 + 0.10*Math.sin(t*2.3), col:"#ffb74d", label:"3× (souvent)" }
-    ];
-  }
+  const sev = getDefectSeverity().misalign;
+  if(sev <= 0) return [];
 
+  const k = sev / 10;
+
+  return [
+    {
+      hz: fMotor,
+      amp: 0.4 + 1.2 * k,
+      col:"#ff9800",
+      label:"Désalignement (1×)"
+    },
+    {
+      hz: fMotor * 2,
+      amp: 0.6 + 2.4 * k,
+      col:"#ff9800",
+      label:"Désalignement (2×)"
+    }
+  ];
+}
   function peaks_looseness(fMotor, _fBelt, t){
     return [
       { hz:fMotor*0.5, amp:0.65 + 0.15*Math.sin(t*0.9), col:"#ffd54f", label:"0.5× (jeu)" },
@@ -1698,16 +1711,27 @@ pdfBtn.addEventListener("click", exportPDF);
     ];
   }
 
-  function peaks_belt(fMotor, fBelt, t){
-    const fb = fBelt;
-    return [
-      { hz:fb,   amp:1.20 + 0.20*Math.sin(t),     col:"#ffffff", label:"Courroie (1×)" },
-      { hz:fb*2, amp:0.65 + 0.15*Math.sin(t*1.7), col:"#bbbbbb", label:"Courroie (2×)" },
-      { hz:Math.max(0, fb - fMotor), amp:0.35 + 0.10*Math.sin(t*1.7), col:"#e0e0e0", label:"SB (fb−1×)" },
-      { hz:fb + fMotor,              amp:0.35 + 0.10*Math.sin(t*2.3), col:"#e0e0e0", label:"SB (fb+1×)" }
-    ];
-  }
+  function peaks_belt(_fMotor, fBelt, t){
+  const sev = getDefectSeverity().belt;
+  if(sev <= 0) return [];
 
+  const k = sev / 10;
+
+  return [
+    {
+      hz: fBelt,
+      amp: 0.3 + 1.2 * k,
+      col:"#dddddd",
+      label:"Courroie (1×)"
+    },
+    {
+      hz: fBelt * 2,
+      amp: 0.2 + 0.6 * k,
+      col:"#bbbbbb",
+      label:"Courroie (2×)"
+    }
+  ];
+}
   function peaks_slip(_fMotor, fBelt, t){
     const slip = 0.92 + 0.08*Math.sin(t*1.5);
     return [
@@ -2225,8 +2249,8 @@ if(!tachyEnabled) return;
 
   // passage exact sur 6h
 if(tachyEnabled){
-  if(prevRel > currRel){
-    tachyDriven = true;
+  if(tachyEnabled && balourdActif && prevRel > currRel){
+  tachyDriven = true;
 
     // 🔶 feedback visuel 1 frame
     ctx.fillStyle = "yellow";
@@ -2235,8 +2259,13 @@ if(tachyEnabled){
 }
   lastAng2 = ang2;
 }
+
+
+
   /* ===================== DRAW GLOBAL ===================== */
   function draw(){
+    const sev = getDefectSeverity();
+const balourdActif = sev.balourd > 0;
     const dpr = dprNow();
     const W = canvas.width / dpr;
     const H = canvas.height / dpr;
