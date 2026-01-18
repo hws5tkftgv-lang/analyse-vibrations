@@ -1361,6 +1361,18 @@ const ISO_ZONES = [
   { name:"C", label:"Mauvais", max:4.5, col:"rgba(255,165,0,0.12)" },
   { name:"D", label:"Critique", max:Infinity, col:"rgba(255,77,77,0.12)" }
 ];
+
+const COUPLING = {
+  unbalance: { motor: 0.15, driven: 1.0 },
+  belt:      { motor: 0.10, driven: 0.7 },
+  misalign:  { motor: 0.70, driven: 1.0 },
+  looseness: { motor: 0.50, driven: 0.8 },
+  resonance: { motor: 1.00, driven: 1.0 },
+  powerline: { motor: 1.00, driven: 0.0 }
+};
+
+
+
 function isoVerdict(mm_s_rms){
   for(const z of ISO_ZONES){
     if(mm_s_rms <= z.max) return z;
@@ -1668,36 +1680,194 @@ pdfBtn.addEventListener("click", exportPDF);
   }
 
   function peaks_unbalance(_fMotor, _fBelt, fDriven, t){
-  const sev = getDefectSeverity().balourd; // 0..10
+  const sev = getDefectSeverity().balourd;
   if(sev <= 0) return [];
 
-  const k = sev / 10; // normalisation 0..1
+  const k = sev / 10;
+
+  // 🔥 modulation lente (réaliste terrain)
+  const mod = 1 + 0.08 * Math.sin(t * 2);
 
   return [
     {
       hz: fDriven,
-      amp: 0.4 + 2.8 * k,   // ⬅️ AMPLITUDE RÉALISTE
+      amp: (0.4 + 2.8 * k) * mod,
       col:"#ff5555",
       label:"Balourd (1× menée)"
     }
   ];
 }
+function peaks_misalign_driven(fMotor, _fBelt, t) {
+
+  // 🔒 Sévérité (0–10)
+  const sev = getDefectSeverity().misalign;
+  if (sev <= 0) return [];
+
+  // Normalisation 0..1
+  const k = sev / 10;
+
+  // 🎯 Couplage MÉNÉE (charge)
+  const cd = COUPLING.misalign.driven;
+
+  // 🔄 Modulation lente (spectre vivant)
+  const mod1 = 1 + 0.07 * Math.sin(t * 2.0);
+  const mod2 = 1 + 0.15 * Math.sin(t * 2.7);
+
+  return [
+    {
+      hz: fMotor,
+      amp: (0.6 + 1.6 * k) * cd * mod1,
+      col: "#ff9800",
+      label: "Désalignement (1× menée)"
+    },
+    {
+      hz: fMotor * 2,
+      amp: (1.2 + 3.2 * k) * cd * mod2,
+      col: "#ff9800",
+      label: "Désalignement (2× menée)"
+    }
+  ];
+}
+  
+  function peaks_unbalance_driven(fMotor, _fBelt, t) {
+
+  const sev = getDefectSeverity().unbalance;
+  if (sev <= 0) return [];
+
+  const k  = sev / 10;
+  const cd = COUPLING.unbalance.driven;
+
+  const mod = 1 + 0.10 * Math.sin(t * 2);
+
+  return [
+    {
+      hz: fMotor,
+      amp: (1.5 + 4.5 * k) * cd * mod,
+      col: "#ff3333",
+      label: "Balourd (1× menée)"
+    },
+    {
+      hz: fMotor * 2,
+      amp: (0.2 + 0.4 * k) * cd,
+      col: "#ff9999",
+      label: "Balourd (2× menée)"
+    }
+  ];
+}
+  
+  
+  function peaks_unbalance_motor(fMotor, _fBelt, t) {
+
+  const sev = getDefectSeverity().unbalance;
+  if (sev <= 0) return [];
+
+  const k  = sev / 10;
+  const cm = COUPLING.unbalance.motor;
+
+  const mod = 1 + 0.05 * Math.sin(t * 1.5);
+
+  return [
+    {
+      hz: fMotor,
+      amp: (0.3 + 0.9 * k) * cm * mod,
+      col: "#ff7777",
+      label: "Balourd transmis (1× moteur)"
+    }
+  ];
+}
+  
+  function peaks_misalign_motor(fMotor, _fBelt, t) {
+
+  const sev = getDefectSeverity().misalign;
+  if (sev <= 0) return [];
+
+  const k  = sev / 10;
+  const cm = COUPLING.misalign.motor;
+
+  const mod1 = 1 + 0.06 * Math.sin(t * 2.1);
+  const mod2 = 1 + 0.12 * Math.sin(t * 2.9);
+
+  return [
+    {
+      hz: fMotor,
+      amp: (0.4 + 1.1 * k) * cm * mod1,
+      col: "#ffb74d",
+      label: "Désalignement (1× moteur)"
+    },
+    {
+      hz: fMotor * 2,
+      amp: (0.6 + 1.6 * k) * cm * mod2,
+      col: "#ffb74d",
+      label: "Désalignement (2× moteur)"
+    }
+  ];
+}
+
+function peaks_belt(_fMotor, fBelt, t) {
+
+  const sev = getDefectSeverity().belt;
+  if (sev <= 0 || fBelt <= 0) return [];
+
+  const k = sev / 10;
+
+  const mod = 1 + 0.10 * Math.sin(t * 3);
+
+  return [
+    {
+      hz: fBelt,
+      amp: (0.6 + 1.8 * k) * mod,
+      col: "#4fc3f7",
+      label: "Courroie (1×)"
+    },
+    {
+      hz: fBelt * 2,
+      amp: (0.3 + 0.9 * k),
+      col: "#81d4fa",
+      label: "Courroie (2×)"
+    }
+  ];
+}
+
+function peaks_looseness(fMotor, _fBelt, t) {
+
+  const sev = getDefectSeverity().looseness;
+  if (sev <= 0) return [];
+
+  const k = sev / 10;
+
+  const jitter = 1 + 0.15 * Math.sin(t * 4);
+
+  return [
+    { hz: fMotor * 0.5, amp: (0.4 + 0.9 * k) * jitter, col:"#ba68c8", label:"Jeu (½×)" },
+    { hz: fMotor,       amp: (0.8 + 1.6 * k),         col:"#ab47bc", label:"Jeu (1×)" },
+    { hz: fMotor * 2,   amp: (0.6 + 1.2 * k),         col:"#9c27b0", label:"Jeu (2×)" },
+    { hz: fMotor * 3,   amp: (0.4 + 0.8 * k),         col:"#8e24aa", label:"Jeu (3×)" }
+  ];
+}
+  
+  
+  
+  
   function peaks_misalign(fMotor, _fBelt, t){
+    const cm = COUPLING.misalign.motor;
   const sev = getDefectSeverity().misalign;
   if(sev <= 0) return [];
 
   const k = sev / 10;
 
+  const mod1 = 1 + 0.07 * Math.sin(t * 2);
+  const mod2 = 1 + 0.15 * Math.sin(t * 2.7);
+
   return [
     {
       hz: fMotor,
-      amp: 0.4 + 1.2 * k,
+      amp: (0.4 + 1.2 * k) * cm * mod1,
       col:"#ff9800",
       label:"Désalignement (1×)"
     },
     {
       hz: fMotor * 2,
-      amp: 0.6 + 2.4 * k,
+      amp: (0.6 + 2.4 * k) * cm * mod2,
       col:"#ff9800",
       label:"Désalignement (2×)"
     }
@@ -1718,16 +1888,19 @@ pdfBtn.addEventListener("click", exportPDF);
 
   const k = sev / 10;
 
+  const mod1 = 1 + 0.12 * Math.sin(t * 3.1);
+  const mod2 = 1 + 0.10 * Math.sin(t * 2.4 + 1);
+
   return [
     {
       hz: fBelt,
-      amp: 0.3 + 1.2 * k,
+      amp: (0.3 + 1.2 * k) * mod1,
       col:"#dddddd",
       label:"Courroie (1×)"
     },
     {
       hz: fBelt * 2,
-      amp: 0.2 + 0.6 * k,
+      amp: (0.2 + 0.6 * k) * mod2,
       col:"#bbbbbb",
       label:"Courroie (2×)"
     }
