@@ -2549,9 +2549,7 @@ balourdActif = sev.balourd > 0;
 
     // spectre (live uniquement si running car tSpec n’avance que si running)
     // ❌ NE PAS redessiner le spectre quand on est en pause
-if (running) {
-  drawSpectrum(hzMotor, hzBelt, tSpec);
-}
+
 
     // dessin scène courroie + poulies
     const r1mm = inp.d1mm/2;
@@ -2626,7 +2624,9 @@ if (running) {
         thetaDriven = ang2 % (Math.PI * 2);
       }
     }
-
+if (running) {
+  redrawSpectrumNow();
+}
     draw();
     requestAnimationFrame(loop);
     
