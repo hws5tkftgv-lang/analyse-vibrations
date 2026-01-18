@@ -2548,7 +2548,10 @@ balourdActif = sev.balourd > 0;
     outStrobe.textContent = strobeFPM.toFixed(0);
 
     // spectre (live uniquement si running car tSpec n’avance que si running)
-    drawSpectrum(hzMotor, hzBelt, tSpec);
+    // ❌ NE PAS redessiner le spectre quand on est en pause
+if (running) {
+  drawSpectrum(hzMotor, hzBelt, tSpec);
+}
 
     // dessin scène courroie + poulies
     const r1mm = inp.d1mm/2;
@@ -2664,16 +2667,13 @@ document.body.classList.remove("snapshot-mode"); // 🔑 LIGNE À AJOUTER
   running = true;         // 🔴 LIVE reprend
 });
   pauseBtn.addEventListener("click", () => {
-  running = false;
+  if (!running) return;   // 🔒 anti-double clic
 
-  // photo logique (liste de pics) OUI
+  running = false;
   snapshotMode = true;
 
-  // ❌ IMPORTANT : ne JAMAIS appliquer snapshot-mode ici (ça cassait ton layout PC)
-  document.body.classList.remove("snapshot-mode");
-
   renderPeakList();
-  redrawSpectrumNow();
+  redrawSpectrumNow();    // ✅ UN SEUL dessin
 });
   resetBtn.addEventListener("click", () => {
   running = false;
