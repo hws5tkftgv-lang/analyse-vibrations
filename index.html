@@ -1364,6 +1364,15 @@ function getUnbalanceFactor(){
   if(!Number.isFinite(v)) return 1;
   return Math.max(0, Math.min(1, v / 10)); // 0..1
 }
+function getMaxISOByUnbalance(){
+  if(!unbalanceWeightEl) return Infinity;
+
+  const w = parseInt(unbalanceWeightEl.value, 10);
+
+  if(w <= 2) return 1.8;   // max ISO B
+  if(w <= 6) return 4.5;   // max ISO C
+  return Infinity;         // ISO D (pas de plafond)
+}
 function isMobile(){
   return /iphone|ipad|android/i.test(navigator.userAgent);
 }
@@ -1844,12 +1853,15 @@ if(running){
     }
   }
 }
-// amplitude max réelle (en mm/s pédagogiques)
 let maxAmp = 1;
 for(const p of peaks){
-  const ampMMs = p.amp * 5;   // même facteur que tes barres
+  const ampMMs = p.amp * 5;
   if(ampMMs > maxAmp) maxAmp = ampMMs;
 }
+
+// 🔒 VERROU ISO SELON POIDS DU BALOURD
+const isoCap = getMaxISOByUnbalance();
+maxAmp = Math.min(maxAmp, isoCap);
 
 // marge pédagogique + arrondi propre
 const AMP_MAX  = Math.max(2, Math.ceil(maxAmp * 1.15));
@@ -1985,7 +1997,19 @@ for(const p of peaks){
   const ampMMs = (Number.isFinite(p.amp) ? p.amp : 0) * 5;
   if(ampMMs > maxShown) maxShown = ampMMs;
 }
-
+// 🔒 plafond ISO pédagogique
+const isoCap2 = getMaxISOByUnbalance();
+maxShown = Math.min(maxShown, isoCap2);
+if(getUnbalanceFactor() > 0){
+  specCtx.fillStyle = "rgba(255,255,255,0.75)";
+  specCtx.font = "11px Arial";
+  specCtx.textAlign = "left";
+  specCtx.fillText(
+    "⚖️ Zone ISO limitée par le poids du balourd",
+    plotLeft + 6,
+    26
+  );
+}
 const z = isoVerdict(maxShown);
 
 // bande de titre (en haut à gauche)
