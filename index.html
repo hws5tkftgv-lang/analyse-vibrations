@@ -1294,7 +1294,11 @@ En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p
 <script>
 (() => {
   "use strict";
-  
+  // ===============================
+// PHASE / TACHY MENÉE
+// ===============================
+let tachyDriven = false;     // impulsion 1x
+let lastThetaDriven = 0;     // angle précédent
   // ===== TACHY MENÉE (synchro bille orange / défaut à 6h) =====
 let lastAng2 = 0;                 // angle précédent de la MENÉE (rad)
 const TACHY_TARGET = Math.PI / 2; // 6h (bas de la poulie)
@@ -2162,7 +2166,7 @@ function updateSpectrumModeByOrientation(){
 
 function drawDrivenDefect(cx, cy, r){
 
-  // 🔴 Point de défaut FIXE à 6h (écran)
+  // 🔴 Point rouge FIXE à 6h (écran)
   const x = cx + (r - 6) * Math.cos(TACHY_TARGET);
   const y = cy + (r - 6) * Math.sin(TACHY_TARGET);
 
@@ -2171,19 +2175,26 @@ function drawDrivenDefect(cx, cy, r){
   ctx.arc(x, y, 5, 0, Math.PI * 2);
   ctx.fill();
 
-  // ✅ TACHY basé sur la BILLE ORANGE (ang2)
+  // ===============================
+  // TACHY MENÉE (bille ORANGE)
+  // ===============================
+  tachyDriven = false;
+
+  // normalisation 0..2π
   const prev = ((lastAng2 % TAU) + TAU) % TAU;
   const curr = ((ang2     % TAU) + TAU) % TAU;
 
+  // angle relatif au 6h
   const prevRel = (prev - TACHY_TARGET + TAU) % TAU;
   const currRel = (curr - TACHY_TARGET + TAU) % TAU;
 
-  tachyPulse = (prevRel > currRel); // passage exact à 6h
+  // passage exact sur 6h
+  if(prevRel > currRel){
+    tachyDriven = true;
 
-  if(tachyPulse){
+    // 🔶 feedback visuel 1 frame
     ctx.fillStyle = "yellow";
     ctx.fillRect(10, 10, 20, 20);
-    console.log("TACHY 1× MENÉE @ 6h");
   }
 
   lastAng2 = ang2;
