@@ -777,6 +777,12 @@ body{
 
 }
     
+    /* ================= SNAPSHOT MODE PC ================= */
+body.snapshot-mode .pc-layout{
+  display:block !important;
+}
+    
+    
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
@@ -2669,10 +2675,13 @@ document.body.classList.remove("snapshot-mode"); // 🔑 LIGNE À AJOUTER
 });
   pauseBtn.addEventListener("click", () => {
   running = false;
-  snapshotMode = true;   // 🔒 verrou affichage
-  renderPeakList();      // 📸 affiche la fiche
-});
+  snapshotMode = true;
 
+  document.body.classList.add("snapshot-mode"); // 🔑 CLÉ PC
+
+  renderPeakList();
+  redrawSpectrumNow(); // 🔑 force un seul rendu propre
+});
   resetBtn.addEventListener("click", () => {
   running = false;
   tMotion = 0;
