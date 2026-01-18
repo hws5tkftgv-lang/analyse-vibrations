@@ -2717,9 +2717,14 @@ console.log("tachyEnabled =", tachyEnabled);
 }
 
 function exportPDF(){
+  // 🔒 Force un snapshot du spectre AVANT export
+running = false;
+snapshotMode = true;
+renderPeakList();
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-
+  // 📸 Capture du spectre
+const specImg = specCanvas.toDataURL("image/png"); 
   const keys = Object.keys(peakRecord);
   if(keys.length === 0){
     alert("Aucune donnée enregistrée.\n\nAppuie sur Play puis Pause.");
@@ -2732,6 +2737,16 @@ function exportPDF(){
   doc.setFontSize(16);
   doc.text("Analyse vibratoire — Photo instantanée", 14, y);
   y += 10;
+  // Image du spectre
+doc.addImage(
+  specImg,
+  "PNG",
+  14,
+  y,
+  180,
+  70
+);
+y += 80;
 
   doc.setFontSize(11);
   doc.setFont("helvetica","normal");
@@ -2741,7 +2756,14 @@ function exportPDF(){
   doc.setFont("helvetica","bold");
   doc.text("Résultats mesurés :", 14, y);
   y += 8;
+const faults = getSelectedFaults().join(", ") || "Aucun";
+doc.setFont("helvetica","bold");
+doc.text("Défaut(s) simulé(s) :", 14, y);
+y += 6;
 
+doc.setFont("helvetica","normal");
+doc.text(faults, 18, y);
+y += 10;
   const sorted = keys.sort((a,b)=>peakRecord[b].amp - peakRecord[a].amp);
 
   for(const label of sorted){
