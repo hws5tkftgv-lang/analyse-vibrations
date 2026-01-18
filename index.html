@@ -2792,16 +2792,7 @@ redrawSpectrumNow();
   doc.setFontSize(16);
   doc.text("Analyse vibratoire — Photo instantanée", 14, y);
   y += 10;
-  // Image du spectre
-doc.addImage(
-  specImg,
-  "PNG",
-  14,
-  y,
-  180,
-  70
-);
-y += 80;
+  
 // 🖼️ Image du spectre (réduite pour le PDF)
 doc.addImage(
   specImg,
