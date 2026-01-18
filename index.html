@@ -1666,22 +1666,18 @@ pdfBtn.addEventListener("click", exportPDF);
     ];
   }
 
-  function peaks_unbalance(fMotor, _fBelt, fDriven, t){
-  const k = getUnbalanceFactor(); // 0..1
-  if(k <= 0) return [];           // poids 0 => aucun pic
+  function peaks_unbalance(_fMotor, _fBelt, fDriven, t){
+  const sev = getDefectSeverity().balourd;  // 0..10
+  const k = Math.max(0, Math.min(1, sev / 10)); // 0..1
+  if(k <= 0) return [];
 
+  // Terrain: balourd = 1× MENÉE dominant. 2× très faible (optionnel)
   return [
     {
       hz: fDriven,
-      amp: (1.85 + 0.25*Math.sin(t)) * k,
+      amp: (0.25 + 0.85 * k + 0.10*Math.sin(t)) ,  // base + proportionnel
       col:"#ff5555",
       label:"Balourd (1× menée)"
-    },
-    {
-      hz: fDriven * 2,
-      amp: (0.35 + 0.10*Math.sin(t*1.7)) * k,
-      col:"#ff8888",
-      label:"Balourd (2× menée)"
     }
   ];
 }
@@ -2458,7 +2454,7 @@ playBtn.addEventListener("click", () => {
   
   
 
-[rpmEl,d1El,d2El,ccEl,unitEl,slowEl]
+[rpmEl,d1El,d2El,ccEl,unitEl,slowEl, balourdEl, beltSevEl, misalignEl]
   .filter(Boolean)
   .forEach(el=>{
     el.addEventListener("input", () => {
