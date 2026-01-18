@@ -2740,49 +2740,47 @@ console.log("tachyEnabled =", tachyEnabled);
 }
 
 function exportPDF(){
-  // 🔒 Force un snapshot du spectre AVANT export
-running = false;
-snapshotMode = true;
-renderPeakList();
+
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-  
-  
-  // ===============================
-// 📸 SNAPSHOT SPECTRE 0–300 Hz
-// ===============================
 
-// Sauvegarde vue actuelle
-const savedMinHz  = spectrumView.minHz;
-const savedSpanHz = spectrumView.spanHz;
+  // =====================================================
+  // 🔒 SNAPSHOT DU SPECTRE (0–300 Hz)
+  // =====================================================
 
-// Force vue complète pédagogique
-spectrumView.minHz  = 0;
-spectrumView.spanHz = 300;
+  // Sauvegarde état utilisateur
+  const savedMinHz   = spectrumView.minHz;
+  const savedSpanHz  = spectrumView.spanHz;
+  const savedRunning = running;
+  const savedSnap    = snapshotMode;
 
-// Fige l’état
-running = false;
-snapshotMode = true;
+  // Fige l’animation
+  running = false;
+  snapshotMode = true;
 
-// Redessine AVANT capture
-redrawSpectrumNow();
+  // Force vue pédagogique
+  spectrumView.minHz  = 0;
+  spectrumView.spanHz = 300;
 
-// Capture image
-const specImg = specCanvas.toDataURL("image/png");
+  // Redessine UNE SEULE FOIS pour la capture
+  redrawSpectrumNow();
 
-// Restaure la vue utilisateur
-spectrumView.minHz  = savedMinHz;
-spectrumView.spanHz = savedSpanHz;
+  // 📸 Capture canvas
+  const specImg = specCanvas.toDataURL("image/png");
 
-// Redessine vue normale
-redrawSpectrumNow();
-  
-  
-  // 📸 Capture du spectre
+  // =====================================================
+  // 📄 GÉNÉRATION PDF
+  // =====================================================
 
   const keys = Object.keys(peakRecord);
   if(keys.length === 0){
     alert("Aucune donnée enregistrée.\n\nAppuie sur Play puis Pause.");
+    // restauration avant sortie
+    spectrumView.minHz  = savedMinHz;
+    spectrumView.spanHz = savedSpanHz;
+    running = savedRunning;
+    snapshotMode = savedSnap;
+    redrawSpectrumNow();
     return;
   }
 
@@ -2792,17 +2790,18 @@ redrawSpectrumNow();
   doc.setFontSize(16);
   doc.text("Analyse vibratoire — Photo instantanée", 14, y);
   y += 10;
-  
-// 🖼️ Image du spectre (réduite pour le PDF)
-doc.addImage(
-  specImg,
-  "PNG",
-  14,   // x
-  y,    // y
-  180,  // largeur (page A4)
-  65    // hauteur réduite
-);
-y += 75;
+
+  // 🖼️ Image UNIQUE du spectre
+  doc.addImage(
+    specImg,
+    "PNG",
+    14,
+    y,
+    180,
+    65
+  );
+  y += 75;
+
   doc.setFontSize(11);
   doc.setFont("helvetica","normal");
   doc.text(`Date : ${new Date().toLocaleString()}`, 14, y);
@@ -2811,14 +2810,16 @@ y += 75;
   doc.setFont("helvetica","bold");
   doc.text("Résultats mesurés :", 14, y);
   y += 8;
-const faults = getSelectedFaults().join(", ") || "Aucun";
-doc.setFont("helvetica","bold");
-doc.text("Défaut(s) simulé(s) :", 14, y);
-y += 6;
 
-doc.setFont("helvetica","normal");
-doc.text(faults, 18, y);
-y += 10;
+  const faults = getSelectedFaults().join(", ") || "Aucun";
+  doc.text("Défaut(s) simulé(s) :", 14, y);
+  y += 6;
+
+  doc.setFont("helvetica","normal");
+  doc.text(faults, 18, y);
+  y += 10;
+
+  // Tri des pics
   const sorted = keys.sort((a,b)=>peakRecord[b].amp - peakRecord[a].amp);
 
   for(const label of sorted){
@@ -2832,20 +2833,32 @@ y += 10;
 
     doc.setFont("helvetica","bold");
     doc.text(label, 14, y);
+    y += 6;
 
     doc.setFont("helvetica","normal");
-    y += 6;
     doc.text(`Fréquence : ${p.hz.toFixed(2)} Hz`, 18, y);
     y += 6;
+
     doc.text(`Amplitude : ${p.amp.toFixed(2)} mm/s`, 18, y);
     y += 6;
 
-    doc.setTextColor(0,0,0);
     doc.text(`Classe ISO : ${iso.label}`, 18, y);
-    doc.setTextColor(0,0,0);
-
     y += 10;
   }
+
+  
+
+  // =====================================================
+  // 🔁 RESTAURATION ÉTAT UTILISATEUR (APRÈS PDF)
+  // =====================================================
+
+  spectrumView.minHz  = savedMinHz;
+  spectrumView.spanHz = savedSpanHz;
+  running = savedRunning;
+  snapshotMode = savedSnap;
+
+  redrawSpectrumNow();
+}
 
   doc.save("Analyse_vibratoire_ISO.pdf");
 }
