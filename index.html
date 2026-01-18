@@ -1294,6 +1294,10 @@ En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p
 <script>
 (() => {
   "use strict";
+  // ===============================
+// GESTION TACHY (SELON DÉFAUT)
+// ===============================
+let tachyEnabled = false;
   let tachyDriven = false;
   // ===============================
 // PHASE / TACHY MENÉE
@@ -2476,7 +2480,11 @@ const faultSelect = document.getElementById("faultSelect");
 if(faultSelect){
   faultSelect.addEventListener("change", () => {
     const values = Array.from(faultSelect.selectedOptions).map(o => o.value);
-
+    tachyEnabled = (
+  values.includes("unbalance") ||
+  values.includes("all")
+);
+console.log("tachyEnabled =", tachyEnabled);
     // 🟢 Si "Tout" est sélectionné → il écrase les autres
     if(values.includes("all")){
       Array.from(faultSelect.options).forEach(opt => {
