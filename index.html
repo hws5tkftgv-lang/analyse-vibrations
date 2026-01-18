@@ -2744,43 +2744,48 @@ function exportPDF(){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  // =====================================================
-  // 🔒 SNAPSHOT DU SPECTRE (0–300 Hz)
-  // =====================================================
+  // ===============================
+  // 📸 SNAPSHOT SPECTRE 0–300 Hz
+  // ===============================
 
   // Sauvegarde état utilisateur
-  const savedMinHz   = spectrumView.minHz;
-  const savedSpanHz  = spectrumView.spanHz;
+  const savedMinHz  = spectrumView.minHz;
+  const savedSpanHz = spectrumView.spanHz;
   const savedRunning = running;
-  const savedSnap    = snapshotMode;
 
-  // Fige l’animation
+  // Force état snapshot
   running = false;
   snapshotMode = true;
 
-  // Force vue pédagogique
   spectrumView.minHz  = 0;
   spectrumView.spanHz = 300;
 
-  // Redessine UNE SEULE FOIS pour la capture
+  // ⚠️ NETTOYAGE OBLIGATOIRE DU CANVAS
+  specCtx.clearRect(0, 0, specCanvas.width, specCanvas.height);
+
+  // Dessin UNIQUE du spectre
   redrawSpectrumNow();
 
-  // 📸 Capture canvas
+  // Capture image
   const specImg = specCanvas.toDataURL("image/png");
 
-  // =====================================================
-  // 📄 GÉNÉRATION PDF
-  // =====================================================
+  // ===============================
+  // 🔁 RESTAURATION ÉTAT NORMAL
+  // ===============================
+  spectrumView.minHz  = savedMinHz;
+  spectrumView.spanHz = savedSpanHz;
+  snapshotMode = false;
+  running = savedRunning;
 
+  specCtx.clearRect(0, 0, specCanvas.width, specCanvas.height);
+  redrawSpectrumNow();
+
+  // ===============================
+  // 📄 PDF
+  // ===============================
   const keys = Object.keys(peakRecord);
   if(keys.length === 0){
     alert("Aucune donnée enregistrée.\n\nAppuie sur Play puis Pause.");
-    // restauration avant sortie
-    spectrumView.minHz  = savedMinHz;
-    spectrumView.spanHz = savedSpanHz;
-    running = savedRunning;
-    snapshotMode = savedSnap;
-    redrawSpectrumNow();
     return;
   }
 
@@ -2791,7 +2796,7 @@ function exportPDF(){
   doc.text("Analyse vibratoire — Photo instantanée", 14, y);
   y += 10;
 
-  // 🖼️ Image UNIQUE du spectre
+  // 🖼️ Image du spectre
   doc.addImage(
     specImg,
     "PNG",
@@ -2819,7 +2824,6 @@ function exportPDF(){
   doc.text(faults, 18, y);
   y += 10;
 
-  // Tri des pics
   const sorted = keys.sort((a,b)=>peakRecord[b].amp - peakRecord[a].amp);
 
   for(const label of sorted){
@@ -2846,20 +2850,6 @@ function exportPDF(){
     y += 10;
   }
 
-  
-
-    // =====================================================
-  // 🔁 RESTAURATION ÉTAT UTILISATEUR (APRÈS PDF)
-  // =====================================================
-
-  spectrumView.minHz  = savedMinHz;
-  spectrumView.spanHz = savedSpanHz;
-  running = savedRunning;
-  snapshotMode = savedSnap;
-
-  redrawSpectrumNow();
-
-  // 💾 SAUVEGARDE PDF (ICI SEULEMENT)
   doc.save("Analyse_vibratoire_ISO.pdf");
 }
 document.addEventListener("keydown", (e) => {
