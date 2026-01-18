@@ -1358,7 +1358,12 @@ function isoVerdict(mm_s_rms){
 }
 
   function dprNow(){ return Math.min(3, window.devicePixelRatio || 1); }
-
+function getUnbalanceFactor(){
+  if(!unbalanceWeightEl) return 1; // sécurité
+  const v = parseFloat(unbalanceWeightEl.value);
+  if(!Number.isFinite(v)) return 1;
+  return Math.max(0, Math.min(1, v / 10)); // 0..1
+}
 function isMobile(){
   return /iphone|ipad|android/i.test(navigator.userAgent);
 }
@@ -1399,7 +1404,7 @@ let snapshotMode = false;
   const ccEl    = document.getElementById("cc");
   const unitEl  = document.getElementById("unit");
   const slowEl  = document.getElementById("slow");
-  
+  const unbalanceWeightEl = document.getElementById("unbalanceWeight");
 
   const infoEl     = document.getElementById("info");
   const rotateWarn = document.getElementById("rotateWarn");
@@ -1652,22 +1657,24 @@ pdfBtn.addEventListener("click", exportPDF);
   }
 
   function peaks_unbalance(fMotor, _fBelt, fDriven, t){
+  const k = getUnbalanceFactor(); // 0..1
+  if(k <= 0) return [];           // poids 0 => aucun pic
+
   return [
     {
       hz: fDriven,
-      amp: 1.85 + 0.25*Math.sin(t),
+      amp: (1.85 + 0.25*Math.sin(t)) * k,
       col:"#ff5555",
       label:"Balourd (1× menée)"
     },
     {
       hz: fDriven * 2,
-      amp: 0.35 + 0.10*Math.sin(t*1.7),
+      amp: (0.35 + 0.10*Math.sin(t*1.7)) * k,
       col:"#ff8888",
       label:"Balourd (2× menée)"
     }
   ];
 }
-
   function peaks_misalign(fMotor, _fBelt, t){
     return [
       { hz:fMotor, amp:1.10 + 0.20*Math.sin(t*1.7), col:"#ff9800", label:"Désalign. (1×)" },
@@ -2427,14 +2434,14 @@ playBtn.addEventListener("click", () => {
   
   
 
-  // Inputs : redraw (spectre figé si pause)
-  [rpmEl,d1El,d2El,ccEl,unitEl,slowEl].forEach(el=>{
+  [rpmEl,d1El,d2El,ccEl,unitEl,slowEl,unbalanceWeightEl]
+  .filter(Boolean)
+  .forEach(el=>{
     el.addEventListener("input", () => {
-      // si la géométrie devient invalide en Play, draw() stoppera running
-      draw();
+      redrawSpectrumNow(); // spectre mis à jour immédiatement
+      draw();              // scène mise à jour
     });
   });
-
   // Resize / orientation
   function handleViewportChange(){
     resize();
