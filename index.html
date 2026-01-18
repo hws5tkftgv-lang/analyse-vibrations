@@ -2089,7 +2089,7 @@ let prev = 0;
 // ===== BANDES ISO =====
 if(!snapshotMode){
 
-  let prev = 0;
+  
 
   for(const z of ISO_ZONES){
     const topAmp = Math.min(z.max, AMP_MAX);
@@ -2194,6 +2194,7 @@ if(!snapshotMode){
     x,
     Math.max(yTop - 6, gridTop + 14)
   );
+}
 }
 // ===== VERDICT ISO basé sur le pic max (dans la fenêtre affichée) =====
 let maxShown = 0;
