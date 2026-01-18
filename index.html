@@ -1399,7 +1399,7 @@ function isPortrait(){
   let running = false;
   // ===== ENREGISTREMENT (Peak Hold par élément) =====
 let peakRecord = {}; // { label: { hz, amp } }   amp en mm/s
-let snapshotMode = false;
+
 
   // temps séparés, MAIS une seule boucle RAF
   let tMotion = 0; // courroie / poulies
@@ -2051,7 +2051,7 @@ if(running){
 }
 let maxAmp = 1;
 for(const p of peaks){
-  const ampMMs = p.amp * 5;
+  amp: snapshotMode ? 0 : (0.05 + 0.02 * Math.sin(t * 1.1)),
   if(ampMMs > maxAmp) maxAmp = ampMMs;
 }
 
@@ -2083,26 +2083,31 @@ let prev = 0;
 // ===== BANDES ISO =====
 if(!snapshotMode){
 
+  let prev = 0;
+
   for(const z of ISO_ZONES){
     const topAmp = Math.min(z.max, AMP_MAX);
+
     const yTop = yFromAmp(topAmp);
     const yBot = yFromAmp(prev);
+    const hBand = yBot - yTop;
 
-    if(hBand > 0.5){
+    if(hBand > 1){
       specCtx.fillStyle = z.col;
-      specCtx.fillRect(plotLeft, Math.min(y1,y2), plotWidth, hBand);
+      specCtx.fillRect(plotLeft, yTop, plotWidth, hBand);
 
       specCtx.fillStyle = "rgba(234,241,255,0.85)";
+      specCtx.font = "11px Arial";
       specCtx.fillText(
         `ISO ${ISO_CLASS} ${z.name}`,
         plotLeft + 6,
-        Math.min(y1,y2) + 12
+        yTop + 12
       );
     }
+
     prev = z.max;
   }
-
-} // ⬅️ ICI TU FERMES LE if
+}
     // règle Hz
     specCtx.strokeStyle = "rgba(255,255,255,0.35)";
     specCtx.fillStyle   = "#eaf1ff";
@@ -2177,7 +2182,7 @@ if(!snapshotMode){
       specCtx.font = "12px Arial";
       specCtx.textAlign = "center";
       specCtx.textBaseline = "bottom";
-      if(!){
+   if(!snapshotMode){
   specCtx.fillText(
     p.label,
     x,
