@@ -2667,13 +2667,12 @@ document.body.classList.remove("snapshot-mode"); // 🔑 LIGNE À AJOUTER
   running = true;         // 🔴 LIVE reprend
 });
   pauseBtn.addEventListener("click", () => {
-  if (!running) return;   // 🔒 anti-double clic
+  if (!running) return;
 
   running = false;
   snapshotMode = true;
 
-  renderPeakList();
-  redrawSpectrumNow();    // ✅ UN SEUL dessin
+  renderPeakList();   // texte seulement
 });
   resetBtn.addEventListener("click", () => {
   running = false;
