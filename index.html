@@ -1294,6 +1294,10 @@ En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p
 <script>
 (() => {
   "use strict";
+  
+  // ===== TACHY MENÉE (synchro bille orange / défaut à 6h) =====
+let lastAng2 = 0;                 // angle précédent de la MENÉE (rad)
+const TACHY_TARGET = Math.PI / 2; // 6h (bas de la poulie)
     // ===============================
   // ÉTAPE 1 – ANGLE MENÉE (BASE)
   // ===============================
@@ -2158,31 +2162,31 @@ function updateSpectrumModeByOrientation(){
 
 function drawDrivenDefect(cx, cy, r){
 
-  const a = Math.PI / 2; // 6h FIXE à l'écran
-
-  // === TACHY 1× (MENÉE) ===
-  tachyPulse = false;
-
-  // détection passage 2π → 0 (front descendant)
-  if(lastThetaDriven > (1.8 * Math.PI) && thetaDriven < (0.2 * Math.PI)){
-    tachyPulse = true;
-
-    // 🔴 TEST VISUEL (1 frame par tour)
-    ctx.fillStyle = "yellow";
-    ctx.fillRect(10, 10, 20, 20);
-  }
-
-  // mémorisation angle
-  lastThetaDriven = thetaDriven;
-
-  // === POINT DE DÉFAUT (6h) ===
-  const x = cx + (r - 6) * Math.cos(a);
-  const y = cy + (r - 6) * Math.sin(a);
+  // 🔴 Point de défaut FIXE à 6h (écran)
+  const x = cx + (r - 6) * Math.cos(TACHY_TARGET);
+  const y = cy + (r - 6) * Math.sin(TACHY_TARGET);
 
   ctx.fillStyle = "#ff3333";
   ctx.beginPath();
   ctx.arc(x, y, 5, 0, Math.PI * 2);
   ctx.fill();
+
+  // ✅ TACHY basé sur la BILLE ORANGE (ang2)
+  const prev = ((lastAng2 % TAU) + TAU) % TAU;
+  const curr = ((ang2     % TAU) + TAU) % TAU;
+
+  const prevRel = (prev - TACHY_TARGET + TAU) % TAU;
+  const currRel = (curr - TACHY_TARGET + TAU) % TAU;
+
+  tachyPulse = (prevRel > currRel); // passage exact à 6h
+
+  if(tachyPulse){
+    ctx.fillStyle = "yellow";
+    ctx.fillRect(10, 10, 20, 20);
+    console.log("TACHY 1× MENÉE @ 6h");
+  }
+
+  lastAng2 = ang2;
 }
   /* ===================== DRAW GLOBAL ===================== */
   function draw(){
