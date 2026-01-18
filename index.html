@@ -2127,8 +2127,11 @@ if(!snapshotMode){
     specCtx.textAlign   = "center";
     specCtx.textBaseline= "top";
 
-    const majorStep = 10;
-    const minorStep = 5;
+    // ===============================
+// GRADUATIONS Hz (adaptatives)
+// ===============================
+const majorStep = snapshotMode ? 25 : 10;
+const minorStep = snapshotMode ? 5  : 5;
 
     for(let hz = Math.ceil(minHz / minorStep) * minorStep; hz <= maxHz; hz += minorStep){
       const x = plotLeft + (hz - minHz) * scaleX;
