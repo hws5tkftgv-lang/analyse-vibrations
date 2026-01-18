@@ -1297,8 +1297,7 @@ En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p
   // ===============================
 // PHASE / TACHY MENÉE
 // ===============================
-let tachyDriven = false;     // impulsion 1x
-let lastThetaDriven = 0;     // angle précédent
+
   // ===== TACHY MENÉE (synchro bille orange / défaut à 6h) =====
 let lastAng2 = 0;                 // angle précédent de la MENÉE (rad)
 const TACHY_TARGET = Math.PI / 2; // 6h (bas de la poulie)
@@ -2337,11 +2336,16 @@ function drawDrivenDefect(cx, cy, r){
     lastTS = ts;
 
     if(running){
-      const slow = Math.max(1, parseFloat(slowEl.value) || 1);
+  const slow = Math.max(1, parseFloat(slowEl.value) || 1);
 
-      // avance temps (Play seulement)
-      tMotion += dt / slow;
-      tSpec   += dt;
+  tMotion += dt / slow;
+
+  // 🔒 PHASE VERROUILLÉE SUR TACHY
+  if(tachyDriven){
+    tSpec = 0;
+  }else{
+    tSpec += dt;
+  }
 
       // angles: utilisent les valeurs converties (mm) pour ratio correct même en impérial
       const inp = readInputs();
