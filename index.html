@@ -1315,7 +1315,12 @@ En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p
   // position du défaut sur la poulie menée (radians)
   // 0 = à droite (3h), π/2 = en bas (6h), π = à gauche (9h)
   const defectAngleDriven = Math.PI / 2;
+    // ===============================
+  // ÉTAPE 3 – TACHY (MENÉE)
+  // ===============================
 
+  let tachyPulse = false;       // impulsion instantanée
+  let lastThetaDriven = 0;      // angle précédent (pour détection front)
   /* ===================== CONSTANTES ===================== */
   const TAU = Math.PI * 2;
   const IN_TO_MM = 25.4;
@@ -2153,6 +2158,18 @@ function updateSpectrumModeByOrientation(){
 
 function drawDrivenDefect(cx, cy, r){
   const a = thetaDriven + defectAngleDriven;
+  // détection keyphasor (1 impulsion par tour)
+tachyPulse = false;
+
+// passage de ~2π → 0 (front descendant)
+if(lastThetaDriven > (1.8 * Math.PI) && thetaDriven < (0.2 * Math.PI)){
+  tachyPulse = true;
+  if(tachyPulse){
+  console.log("TACHY 1× MENÉE");
+}
+}
+
+lastThetaDriven = thetaDriven;
 
   const x = cx + (r - 6) * Math.cos(a);
   const y = cy + (r - 6) * Math.sin(a);
