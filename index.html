@@ -1674,7 +1674,7 @@ pdfBtn.addEventListener("click", exportPDF);
   function peaks_motor_background(fMotor, _fBelt, t){
 
   // bruit de fond très faible (ISO A/B)
-  const base = 0.25; // mm/s
+  const base = 0.12; // mm/s
 
   const mod = 1 + 0.02 * Math.sin(t * 1.1);
 
@@ -1811,30 +1811,7 @@ function peaks_misalign_driven(fMotor, _fBelt, t) {
   ];
 }
 
-function peaks_belt(_fMotor, fBelt, t) {
 
-  const sev = getDefectSeverity().belt;
-  if (sev <= 0 || fBelt <= 0) return [];
-
-  const k = sev / 10;
-
-  const mod = 1 + 0.10 * Math.sin(t * 3);
-
-  return [
-    {
-      hz: fBelt,
-      amp: (0.6 + 1.8 * k) * mod,
-      col: "#4fc3f7",
-      label: "Courroie (1×)"
-    },
-    {
-      hz: fBelt * 2,
-      amp: (0.3 + 0.9 * k),
-      col: "#81d4fa",
-      label: "Courroie (2×)"
-    }
-  ];
-}
 
 function peaks_looseness(fMotor, _fBelt, t) {
 
@@ -1881,14 +1858,7 @@ function peaks_looseness(fMotor, _fBelt, t) {
     }
   ];
 }
-  function peaks_looseness(fMotor, _fBelt, t){
-    return [
-      { hz:fMotor*0.5, amp:0.65 + 0.15*Math.sin(t*0.9), col:"#ffd54f", label:"0.5× (jeu)" },
-      { hz:fMotor,     amp:1.05 + 0.20*Math.sin(t),     col:"#ffd54f", label:"Jeu 1×" },
-      { hz:fMotor*2,   amp:0.95 + 0.20*Math.sin(t*1.7), col:"#ffd54f", label:"Jeu 2×" },
-      { hz:fMotor*3,   amp:0.80 + 0.20*Math.sin(t*2.3), col:"#ffd54f", label:"Jeu 3×" }
-    ];
-  }
+  
 
   function peaks_belt(_fMotor, fBelt, t){
   const sev = getDefectSeverity().belt;
@@ -1943,6 +1913,12 @@ function peaks_looseness(fMotor, _fBelt, t) {
       { hz:fr+0.8, amp:1.00 + 0.20*Math.sin(t*1.7), col:"#ff1744", label:"Réson. (fr+)" }
     ];
   }
+  
+  function peaks_normal(fMotor, fBelt, t){
+  return [
+    ...peaks_motor_background(fMotor, fBelt, t)
+  ];
+}
 
   const FAULT_TABLE = {
   none : (fM,fB,t,fD)=>peaks_normal(fM,fB,t),
