@@ -1684,51 +1684,76 @@ pdfBtn.addEventListener("click", exportPDF);
   }
 
   const FAULT_TABLE = {
-    none      : (fM,fB,t)=>peaks_normal(fM,fB,t),
-    unbalance : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_unbalance(fM,fB,t) ],
-    misalign  : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_misalign(fM,fB,t) ],
-    looseness : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1),peaks_unbalance(fM,fB, fM * (d1El.value / d2El.value), t)],
-    belt      : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_belt(fM,fB,t) ],
-    slip      : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_slip(fM,fB,t) ],
-    bearing   : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_bearing(fM,fB,t) ],
-    resonance : (fM,fB,t)=>[ ...peaks_normal(fM,fB,t).slice(0,1), ...peaks_resonance(fM,fB,t) ],
-    all       : (fM,fB,t)=>[
-      ...peaks_powerline(fM,fB,t),
-      ...peaks_normal(fM,fB,t).slice(0,1),
-      ...peaks_unbalance(fM,fB,t),
-      ...peaks_misalign(fM,fB,t),
-      ...peaks_looseness(fM,fB,t),
-      ...peaks_belt(fM,fB,t),
-      ...peaks_slip(fM,fB,t),
-      ...peaks_bearing(fM,fB,t),
-      ...peaks_resonance(fM,fB,t),
-      { hz:fM*4, amp:0.35 + 0.10*Math.sin(t*1.7), col:"#90caf9", label:"4× moteur" },
-      { hz:fM*6, amp:0.25 + 0.10*Math.sin(t*2.3), col:"#90caf9", label:"6× moteur" }
-    ],
-    powerline : (fM,fB,t)=>[
-  ...peaks_normal(fM,fB,t).slice(0,1),
-  ...peaks_powerline(fM,fB,t)
-],
-  };
+  none : (fM,fB,t,fD)=>peaks_normal(fM,fB,t),
+
+  unbalance : (fM,fB,t,fD)=>[
+    ...peaks_normal(fM,fB,t).slice(0,1),
+    ...peaks_unbalance(fM,fB,fD,t)
+  ],
+
+  misalign : (fM,fB,t,fD)=>[
+    ...peaks_normal(fM,fB,t).slice(0,1),
+    ...peaks_misalign(fM,fB,t)
+  ],
+
+  looseness : (fM,fB,t,fD)=>[
+    ...peaks_normal(fM,fB,t).slice(0,1),
+    ...peaks_looseness(fM,fB,t)
+  ],
+
+  belt : (fM,fB,t,fD)=>[
+    ...peaks_normal(fM,fB,t).slice(0,1),
+    ...peaks_belt(fM,fB,t)
+  ],
+
+  slip : (fM,fB,t,fD)=>[
+    ...peaks_normal(fM,fB,t).slice(0,1),
+    ...peaks_slip(fM,fB,t)
+  ],
+
+  bearing : (fM,fB,t,fD)=>[
+    ...peaks_normal(fM,fB,t).slice(0,1),
+    ...peaks_bearing(fM,fB,t)
+  ],
+
+  resonance : (fM,fB,t,fD)=>[
+    ...peaks_normal(fM,fB,t).slice(0,1),
+    ...peaks_resonance(fM,fB,t)
+  ],
+
+  powerline : (fM,fB,t,fD)=>[
+    ...peaks_normal(fM,fB,t).slice(0,1),
+    ...peaks_powerline(fM,fB,t)
+  ],
+
+  all : (fM,fB,t,fD)=>[
+    ...peaks_powerline(fM,fB,t),
+    ...peaks_normal(fM,fB,t),
+    ...peaks_unbalance(fM,fB,fD,t),
+    ...peaks_misalign(fM,fB,t),
+    ...peaks_looseness(fM,fB,t),
+    ...peaks_belt(fM,fB,t),
+    ...peaks_slip(fM,fB,t),
+    ...peaks_bearing(fM,fB,t),
+    ...peaks_resonance(fM,fB,t)
+  ]
+};
 
   function buildPeaks(fMotor, fBelt, time){
-    const fDriven = fMotor * (d1El.value / d2El.value);
+  const fDriven = fMotor * (d1El.value / d2El.value);
   const selected = getSelectedFaults();
 
-  // Aucun défaut sélectionné → normal
   if(selected.length === 0){
     return peaks_normal(fMotor, fBelt, time);
   }
 
   let peaks = [];
-
   for(const key of selected){
     const fn = FAULT_TABLE[key];
     if(fn){
-      peaks = peaks.concat(fn(fMotor, fBelt, time));
+      peaks = peaks.concat(fn(fMotor, fBelt, time, fDriven));
     }
   }
-
   return peaks;
 }
   /* ===================== DESSIN SPECTRE ===================== */
