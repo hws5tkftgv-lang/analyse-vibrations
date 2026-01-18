@@ -2017,9 +2017,15 @@ function getDefectSeverity(){
     const H = specCanvas.height / dpr;
 
     const hzZoneHeight = 42;
-    let hzZoneY = spectrumFS ? (H - hzZoneHeight - 80) : (H - hzZoneHeight - 10);
-    hzZoneY = Math.max(80, hzZoneY);
+    let hzZoneY;
 
+if(snapshotMode){
+  hzZoneY = H - hzZoneHeight - 20; // 🔒 toujours visible en PDF
+}else{
+  hzZoneY = spectrumFS
+    ? (H - hzZoneHeight - 80)
+    : (H - hzZoneHeight - 10);
+}
     const gridTop    = 16;
     const gridBottom = hzZoneY - 10;
     const gridHeight = gridBottom - gridTop;
@@ -2751,20 +2757,25 @@ function exportPDF(){
 // 📸 SNAPSHOT SPECTRE 0–300 Hz
 // ===============================
 
-// Sauvegarde vue utilisateur
-const savedMinHz  = spectrumView.minHz;
-const savedSpanHz = spectrumView.spanHz;
-const savedSnapshot = snapshotMode;
+// ===============================
+// 📸 MODE PDF — Hz FORCÉS
+// ===============================
 
-// Fige le moteur
+// Sauvegarde état utilisateur
+const savedMinHz   = spectrumView.minHz;
+const savedSpanHz  = spectrumView.spanHz;
+const savedSnapshot = snapshotMode;
+const savedRunning  = running;
+
+// Figer l’animation
 running = false;
 snapshotMode = true;
 
-// Force vue pédagogique
+// 🔒 FORÇAGE STRICT POUR LE PDF
 spectrumView.minHz  = 0;
 spectrumView.spanHz = 300;
 
-// 🔒 Redessine UNE FOIS le canvas live
+// Redessin immédiat avec cette vue
 redrawSpectrumNow();
 
 // ⏱️ Laisse le canvas finir de se dessiner
