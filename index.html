@@ -824,10 +824,7 @@ body{
   <span class="slow-label">Ralenti (plus grand = plus lent)</span>
   <input id="slow" type="range" min="1" max="20" value="8">
 </div>
-<label class="full">
-  Poids du balourd (0 à 10)
-  <input id="unbalanceWeight" type="range" min="0" max="10" value="5" step="1">
-</label>
+
 <label>
   Tension de courroie (0 = lousse, 10 = très tendue)
   <input id="beltSeverity" type="range" min="0" max="10" step="1" value="0">
@@ -1368,21 +1365,7 @@ function isoVerdict(mm_s_rms){
 }
 
   function dprNow(){ return Math.min(3, window.devicePixelRatio || 1); }
-function getUnbalanceFactor(){
-  if(!unbalanceWeightEl) return 1; // sécurité
-  const v = parseFloat(unbalanceWeightEl.value);
-  if(!Number.isFinite(v)) return 1;
-  return Math.max(0, Math.min(1, v / 10)); // 0..1
-}
-function getMaxISOByUnbalance(){
-  if(!unbalanceWeightEl) return Infinity;
 
-  const w = parseInt(unbalanceWeightEl.value, 10);
-
-  if(w <= 2) return 1.8;   // max ISO B
-  if(w <= 6) return 4.5;   // max ISO C
-  return Infinity;         // ISO D (pas de plafond)
-}
 function isMobile(){
   return /iphone|ipad|android/i.test(navigator.userAgent);
 }
@@ -1423,8 +1406,13 @@ let snapshotMode = false;
   const ccEl    = document.getElementById("cc");
   const unitEl  = document.getElementById("unit");
   const slowEl  = document.getElementById("slow");
-  const unbalanceWeightEl = document.getElementById("unbalanceWeight");
-
+  
+  // ===============================
+// SÉVÉRITÉ DES DÉFAUTS (0 → 10)
+// ===============================
+const balourdEl   = document.getElementById("balourdSeverity");
+const beltSevEl   = document.getElementById("beltSeverity");
+const misalignEl  = document.getElementById("misalignSeverity");
   const infoEl     = document.getElementById("info");
   const rotateWarn = document.getElementById("rotateWarn");
 
@@ -1824,6 +1812,14 @@ pdfBtn.addEventListener("click", exportPDF);
   }
   return peaks;
 }
+
+function getDefectSeverity(){
+  return {
+    balourd   : balourdEl   ? Number(balourdEl.value)   : 0,
+    belt      : beltSevEl   ? Number(beltSevEl.value)   : 0,
+    misalign  : misalignEl  ? Number(misalignEl.value)  : 0
+  };
+}
   /* ===================== DESSIN SPECTRE ===================== */
   function drawSpectrum(hzMotor, hzBelt, time){
     const dpr = dprNow();
@@ -1869,9 +1865,6 @@ for(const p of peaks){
   if(ampMMs > maxAmp) maxAmp = ampMMs;
 }
 
-// 🔒 VERROU ISO SELON POIDS DU BALOURD
-const isoCap = getMaxISOByUnbalance();
-maxAmp = Math.min(maxAmp, isoCap);
 
 // marge pédagogique + arrondi propre
 const AMP_MAX  = Math.max(2, Math.ceil(maxAmp * 1.15));
@@ -2008,18 +2001,8 @@ for(const p of peaks){
   if(ampMMs > maxShown) maxShown = ampMMs;
 }
 // 🔒 plafond ISO pédagogique
-const isoCap2 = getMaxISOByUnbalance();
-maxShown = Math.min(maxShown, isoCap2);
-if(getUnbalanceFactor() > 0){
-  specCtx.fillStyle = "rgba(255,255,255,0.75)";
-  specCtx.font = "11px Arial";
-  specCtx.textAlign = "left";
-  specCtx.fillText(
-    "⚖️ Zone ISO limitée par le poids du balourd",
-    plotLeft + 6,
-    26
-  );
-}
+
+
 const z = isoVerdict(maxShown);
 
 // bande de titre (en haut à gauche)
@@ -2468,7 +2451,7 @@ playBtn.addEventListener("click", () => {
   
   
 
-  [rpmEl,d1El,d2El,ccEl,unitEl,slowEl,unbalanceWeightEl]
+[rpmEl,d1El,d2El,ccEl,unitEl,slowEl]
   .filter(Boolean)
   .forEach(el=>{
     el.addEventListener("input", () => {
