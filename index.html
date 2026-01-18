@@ -2608,6 +2608,7 @@ balourdActif = sev.balourd > 0;
 
     draw();
     requestAnimationFrame(loop);
+    if (snapshotMode) return;
   }
 
   /* ===================== EVENTS UI ===================== */
@@ -2909,6 +2910,7 @@ specCanvas.addEventListener("mousemove", () => {
   }
 });
 requestAnimationFrame(loop);
+if (snapshotMode) return;
 
 
 /* ================= INFO BULLE ================= */
