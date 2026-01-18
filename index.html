@@ -1308,6 +1308,9 @@ En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p
 <script>
 (() => {
   "use strict";
+  
+  let snapshotMode = false;
+  
   // ===============================
 // GESTION TACHY (SELON DÉFAUT)
 // ===============================
@@ -1380,7 +1383,9 @@ function isoVerdict(mm_s_rms){
   return ISO_ZONES[ISO_ZONES.length-1];
 }
 
-  function dprNow(){ return Math.min(3, window.devicePixelRatio || 1); }
+  function dprNow(){
+  return snapshotMode ? 3 : Math.min(3, window.devicePixelRatio || 1);
+}
 
 function isMobile(){
   return /iphone|ipad|android/i.test(navigator.userAgent);
@@ -2054,9 +2059,12 @@ for(const p of peaks){
 // marge pédagogique + arrondi propre
 const AMP_MAX  = Math.max(2, Math.ceil(maxAmp * 1.15));
 const AMP_STEP = AMP_MAX <= 6 ? 1 : 2;
-    const minHz = spectrumView.minHz;
-    const maxHz = minHz + spectrumView.spanHz;
-    const scaleX = plotWidth / (maxHz - minHz);
+    const minHz = snapshotMode ? 0 : spectrumView.minHz;
+const maxHz = snapshotMode
+  ? 300
+  : (spectrumView.minHz + spectrumView.spanHz);
+
+const scaleX = plotWidth / (maxHz - minHz);
 
     specCtx.clearRect(0,0,W,H);
     specCtx.fillStyle = "#05080f";
@@ -2072,35 +2080,29 @@ const yFromAmp = (amp) => gridBottom - (amp / AMP_MAX) * gridHeight;
 
 // on dessine A, B, C, D en bandes horizontales
 let prev = 0;
-for(const z of ISO_ZONES){
-  const topAmp = Math.min(z.max, AMP_MAX);
-  const yTop = yFromAmp(topAmp);
-  const yBot = yFromAmp(prev);
+// ===== BANDES ISO =====
+if(!snapshotMode){
 
-  // si la bande dépasse l'échelle actuelle, on coupe
-  const y1 = Math.max(gridTop, Math.min(gridBottom, yTop));
-  const y2 = Math.max(gridTop, Math.min(gridBottom, yBot));
-  const hBand = Math.abs(y2 - y1);
+  for(const z of ISO_ZONES){
+    const topAmp = Math.min(z.max, AMP_MAX);
+    const yTop = yFromAmp(topAmp);
+    const yBot = yFromAmp(prev);
 
-  if(hBand > 0.5){
-    specCtx.fillStyle = z.col;
-    specCtx.fillRect(plotLeft, Math.min(y1,y2), (plotRight - plotLeft), hBand);
+    if(hBand > 0.5){
+      specCtx.fillStyle = z.col;
+      specCtx.fillRect(plotLeft, Math.min(y1,y2), plotWidth, hBand);
 
-    // petit label de zone à gauche
-    specCtx.fillStyle = "rgba(234,241,255,0.85)";
-    specCtx.font = "11px Arial";
-    specCtx.textAlign = "left";
-    specCtx.textBaseline = "middle";
-    specCtx.fillText(
-  `ISO ${ISO_CLASS} ${z.name} (${z.label})`,
-  plotLeft + 6,
-  Math.min(y1,y2) + 12
-);
+      specCtx.fillStyle = "rgba(234,241,255,0.85)";
+      specCtx.fillText(
+        `ISO ${ISO_CLASS} ${z.name}`,
+        plotLeft + 6,
+        Math.min(y1,y2) + 12
+      );
+    }
+    prev = z.max;
   }
 
-  prev = z.max;
-}
-
+} // ⬅️ ICI TU FERMES LE if
     // règle Hz
     specCtx.strokeStyle = "rgba(255,255,255,0.35)";
     specCtx.fillStyle   = "#eaf1ff";
@@ -2175,8 +2177,13 @@ for(const z of ISO_ZONES){
       specCtx.font = "12px Arial";
       specCtx.textAlign = "center";
       specCtx.textBaseline = "bottom";
-      specCtx.fillText(p.label, x, Math.max(yTop - 6, gridTop + 14));
-    }
+      if(!){
+  specCtx.fillText(
+    p.label,
+    x,
+    Math.max(yTop - 6, gridTop + 14)
+  );
+}
 // ===== VERDICT ISO basé sur le pic max (dans la fenêtre affichée) =====
 let maxShown = 0;
 for(const p of peaks){
@@ -2191,18 +2198,22 @@ for(const p of peaks){
 const z = isoVerdict(maxShown);
 
 // bande de titre (en haut à gauche)
-specCtx.fillStyle = "rgba(0,0,0,0.35)";
-specCtx.fillRect(plotLeft, 0, 270, 18);
+if(!snapshotMode){
 
-specCtx.fillStyle = "#eaf1ff";
-specCtx.font = "12px Arial";
-specCtx.textAlign = "left";
-specCtx.textBaseline = "middle";
-specCtx.fillText(
-  `ISO ${ISO_CLASS} : ${z.name} — ${z.label} (max ${maxShown.toFixed(2)} mm/s)`,
-  plotLeft + 6,
-  9
-);
+  specCtx.fillStyle = "rgba(0,0,0,0.35)";
+  specCtx.fillRect(plotLeft, 0, 270, 18);
+
+  specCtx.fillStyle = "#eaf1ff";
+  specCtx.font = "12px Arial";
+  specCtx.textAlign = "left";
+  specCtx.textBaseline = "middle";
+  specCtx.fillText(
+    `ISO ${ISO_CLASS} : ${z.name} — ${z.label} (max ${maxShown.toFixed(2)} mm/s)`,
+    plotLeft + 6,
+    9
+  );
+
+}
     // axe
     specCtx.fillStyle = "#9aa5d6";
     specCtx.font = "12px Arial";
