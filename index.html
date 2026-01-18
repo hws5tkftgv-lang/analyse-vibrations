@@ -1294,6 +1294,27 @@ En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p
 <script>
 (() => {
   "use strict";
+    // ===============================
+  // ÉTAPE 1 – ANGLE MENÉE (BASE)
+  // ===============================
+
+  // angles (radians)
+  let thetaMotor = 0;
+  let thetaDriven = 0;
+
+  // vitesses angulaires (rad/s)
+  let omegaMotor = 0;
+  let omegaDriven = 0;
+
+  // temps (référence stable)
+  let lastTime = performance.now();
+    // ===============================
+  // ÉTAPE 2 – DÉFAUT SUR MENÉE
+  // ===============================
+
+  // position du défaut sur la poulie menée (radians)
+  // 0 = à droite (3h), π/2 = en bas (6h), π = à gauche (9h)
+  const defectAngleDriven = Math.PI / 2;
 
   /* ===================== CONSTANTES ===================== */
   const TAU = Math.PI * 2;
@@ -2129,6 +2150,19 @@ function updateSpectrumModeByOrientation(){
     drawSpectrum(hzMotor, hzBelt, tSpec);
   }
 
+
+function drawDrivenDefect(cx, cy, r){
+  const a = thetaDriven + defectAngleDriven;
+
+  const x = cx + (r - 6) * Math.cos(a);
+  const y = cy + (r - 6) * Math.sin(a);
+
+  ctx.fillStyle = "#ff3333";
+  ctx.beginPath();
+  ctx.arc(x, y, 5, 0, Math.PI * 2);
+  ctx.fill();
+}
+
   /* ===================== DRAW GLOBAL ===================== */
   function draw(){
     const dpr = dprNow();
@@ -2245,7 +2279,7 @@ function updateSpectrumModeByOrientation(){
 
     drawPulley(x1, y, r1, "#00a2ff", ang1);
     drawPulley(x2, y, r2, "#ff9800", ang2);
-
+    drawDrivenDefect(x2, y, r2);
     // point sur courroie
     const w1 = TAU*(inp.rpm/60);
     const v_px_s = Math.abs(w1) * r1;
