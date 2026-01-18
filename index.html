@@ -2723,6 +2723,38 @@ snapshotMode = true;
 renderPeakList();
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+  
+  
+  // ===============================
+// 📸 SNAPSHOT SPECTRE 0–300 Hz
+// ===============================
+
+// Sauvegarde vue actuelle
+const savedMinHz  = spectrumView.minHz;
+const savedSpanHz = spectrumView.spanHz;
+
+// Force vue complète pédagogique
+spectrumView.minHz  = 0;
+spectrumView.spanHz = 300;
+
+// Fige l’état
+running = false;
+snapshotMode = true;
+
+// Redessine AVANT capture
+redrawSpectrumNow();
+
+// Capture image
+const specImg = specCanvas.toDataURL("image/png");
+
+// Restaure la vue utilisateur
+spectrumView.minHz  = savedMinHz;
+spectrumView.spanHz = savedSpanHz;
+
+// Redessine vue normale
+redrawSpectrumNow();
+  
+  
   // 📸 Capture du spectre
 const specImg = specCanvas.toDataURL("image/png"); 
   const keys = Object.keys(peakRecord);
@@ -2747,7 +2779,16 @@ doc.addImage(
   70
 );
 y += 80;
-
+// 🖼️ Image du spectre (réduite pour le PDF)
+doc.addImage(
+  specImg,
+  "PNG",
+  14,   // x
+  y,    // y
+  180,  // largeur (page A4)
+  65    // hauteur réduite
+);
+y += 75;
   doc.setFontSize(11);
   doc.setFont("helvetica","normal");
   doc.text(`Date : ${new Date().toLocaleString()}`, 14, y);
