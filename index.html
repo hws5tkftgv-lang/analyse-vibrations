@@ -2169,7 +2169,7 @@ function updateSpectrumModeByOrientation(){
 
 
 function drawDrivenDefect(cx, cy, r){
-
+if(!tachyEnabled) return;
   // 🔴 Point rouge FIXE à 6h (écran)
   const x = cx + (r - 6) * Math.cos(TACHY_TARGET);
   const y = cy + (r - 6) * Math.sin(TACHY_TARGET);
@@ -2193,6 +2193,7 @@ function drawDrivenDefect(cx, cy, r){
   const currRel = (curr - TACHY_TARGET + TAU) % TAU;
 
   // passage exact sur 6h
+if(tachyEnabled){
   if(prevRel > currRel){
     tachyDriven = true;
 
@@ -2200,7 +2201,7 @@ function drawDrivenDefect(cx, cy, r){
     ctx.fillStyle = "yellow";
     ctx.fillRect(10, 10, 20, 20);
   }
-
+}
   lastAng2 = ang2;
 }
   /* ===================== DRAW GLOBAL ===================== */
