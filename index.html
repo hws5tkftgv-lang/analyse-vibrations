@@ -773,6 +773,13 @@ body{
     /* ================= SNAPSHOT MODE — PC ================= */
 
     
+    
+    /* 🔒 PC — empêcher le doublon du spectre */
+body.snapshot-mode #specStage,
+body.spectrum-mode #specStage {
+  display: none !important;
+}
+    
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
@@ -2652,11 +2659,11 @@ if(window.visualViewport){
 }
 
 playBtn.addEventListener("click", () => {
+  snapshotMode = false;
+  document.body.classList.remove("snapshot-mode"); // 🔑
 
-  snapshotMode = false;   // on quitte le mode photo
-document.body.classList.remove("snapshot-mode"); // 🔑 LIGNE À AJOUTER
-  peakRecord = {};        // on repart un nouvel enregistrement
-  infoEl.innerHTML = "";  // nettoie l’affichage
+  peakRecord = {};
+  infoEl.innerHTML = "";
 
   const inp = readInputs();
   if(!inp){ running = false; draw(); return; }
@@ -2664,7 +2671,7 @@ document.body.classList.remove("snapshot-mode"); // 🔑 LIGNE À AJOUTER
   const geo = validateGeometryOpenBelt(inp);
   if(!geo.ok){ running = false; draw(); return; }
 
-  running = true;         // 🔴 LIVE reprend
+  running = true;
 });
   pauseBtn.addEventListener("click", () => {
   if (!running) return;
@@ -2672,7 +2679,9 @@ document.body.classList.remove("snapshot-mode"); // 🔑 LIGNE À AJOUTER
   running = false;
   snapshotMode = true;
 
-  renderPeakList();   // texte seulement
+  document.body.classList.add("snapshot-mode"); // 🔑 OBLIGATOIRE
+
+  renderPeakList();
 });
   resetBtn.addEventListener("click", () => {
   running = false;
