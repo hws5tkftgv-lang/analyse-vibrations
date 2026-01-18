@@ -762,7 +762,20 @@ body{
   .numpad{ display:none !important; }
 }
     
-    
+    /* ================================================= */
+/* === PC : MODE PHOTO — UNE SEULE VUE ============= */
+/* ================================================= */
+@media (min-width:1024px){
+
+  body.snapshot-mode #specStage{
+    display:none !important;
+  }
+
+  body.snapshot-mode .results{
+    display:block !important;
+  }
+
+}
     
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -2642,6 +2655,7 @@ if(window.visualViewport){
 playBtn.addEventListener("click", () => {
 
   snapshotMode = false;   // on quitte le mode photo
+document.body.classList.remove("snapshot-mode"); // 🔑 LIGNE À AJOUTER
   peakRecord = {};        // on repart un nouvel enregistrement
   infoEl.innerHTML = "";  // nettoie l’affichage
 
