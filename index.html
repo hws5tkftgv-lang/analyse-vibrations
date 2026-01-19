@@ -233,7 +233,7 @@ body.spectrum-mode #specStage{
 .rotate-warning{
   position:fixed;
   inset:0;
-  z-index:9998; /* ⬅️ TOUJOURS SOUS le canvas fullscreen */
+  z-index:9000; /* ⬅️ TOUJOURS SOUS le canvas fullscreen */
   background:rgba(5,8,15,0.85);
 
   display:none;
@@ -775,9 +775,14 @@ body{
     
     
     /* 🔒 PC — empêcher le doublon du spectre */
-body.snapshot-mode #specStage,
-body.spectrum-mode #specStage {
+/* 🔒 Snapshot : cacher le spectre en mode photo SEULEMENT */
+body.snapshot-mode #specStage {
   display: none !important;
+}
+
+/* ✅ Plein écran spectre : ON GARDE specStage */
+body.spectrum-mode #specStage {
+  display: block !important;
 }
     
   </style>
@@ -2648,8 +2653,12 @@ window.addEventListener("resize", () => {
 });
 
 window.addEventListener("orientationchange", () => {
-  updateSpectrumModeByOrientation();
-  draw();
+  setTimeout(() => {
+    updateSpectrumModeByOrientation();
+    resize();
+    redrawSpectrumNow();
+    draw();
+  }, 250);
 });
 
 if(window.visualViewport){
