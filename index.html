@@ -2203,7 +2203,8 @@ const minorStep = snapshotMode ? 5  : 5;
       const yTop = gridBottom - h;
 
       specCtx.strokeStyle = p.col;
-      specCtx.lineWidth = 3;
+      specCtx.lineWidth = snapshotMode ? 0.9 : 1.0;
+specCtx.lineCap   = "butt";
       specCtx.beginPath();
       specCtx.moveTo(x, gridBottom);
       specCtx.lineTo(x, yTop);
