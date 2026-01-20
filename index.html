@@ -2389,9 +2389,14 @@ function updateSpectrumModeByOrientation(){
     specCanvas.style.borderRadius = "0";
     specCanvas.style.zIndex = "9999";
   }else{
-    // 🟢 MODE NORMAL
-    specW = w;
-    specH = Math.max(220, h * 0.95);
+    // 🟢 MODE NORMAL — PC : spectre plus large que la scène
+if (window.innerWidth >= 1024) {
+  specW = Math.min(window.innerWidth - 40, 1400); // ⬅️ LARGEUR PC
+} else {
+  specW = w;
+}
+
+specH = Math.max(260, h * 1.05);
 
     specCanvas.style.position = "relative";
     specCanvas.style.marginTop = "18px";
