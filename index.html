@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Vibration">
-<title>Simulateur analyse de vibration</title>
+<title>Simulateur analyse de vibration — v3 classe</title>
 <style>
 /* ===================== BASE ===================== */
 
@@ -254,6 +254,54 @@ body.spectrum-mode #specStage{
   font-weight:400;
   opacity:.85;
   margin-top:10px;
+}
+
+
+
+/* ===================== DÉFAUTS — CASES À COCHER ===================== */
+.fault-panel{
+  width:100%;
+  background:rgba(255,255,255,0.08);
+  border-radius:12px;
+  padding:10px;
+}
+
+.fault-panel b{
+  color:#cfe2ff;
+}
+
+.fault-hint{
+  font-size:12px;
+  color:var(--muted);
+  margin:2px 0 8px;
+}
+
+.fault-boxes{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:6px 10px;
+}
+
+.fault-item{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:13px;
+  color:var(--text);
+  background:rgba(0,0,0,0.18);
+  border-radius:8px;
+  padding:7px 8px;
+}
+
+.fault-item input{
+  width:auto;
+  accent-color:#00a2ff;
+}
+
+@media (max-width:520px){
+  .fault-boxes{
+    grid-template-columns:1fr;
+  }
 }
 
 /* ===================== SPECTRUM CONTROLS ===================== */
@@ -556,6 +604,7 @@ body{
 
   /* on annule le full-row pour ces deux blocs */
   .controls .outputBox.full,
+  .controls .fault-panel,
   .controls label:has(#faultSelect){
     grid-column:auto;
   }
@@ -785,6 +834,264 @@ body.spectrum-mode #specStage {
   display: block !important;
 }
     
+
+/* ========================================================= */
+/* =============== V3 — MISE EN PAGE CLASSE ================ */
+/* ========================================================= */
+:root{
+  --card:rgba(255,255,255,0.075);
+  --card2:rgba(255,255,255,0.105);
+  --line:rgba(255,255,255,0.14);
+}
+
+body{
+  min-height:100dvh;
+}
+
+.app-header{
+  position:sticky;
+  top:0;
+  z-index:1000;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  background:rgba(11,20,54,0.96);
+  border-bottom:1px solid var(--line);
+  box-shadow:0 8px 24px rgba(0,0,0,0.18);
+}
+
+.app-header .title{
+  letter-spacing:.2px;
+}
+
+.app-header .info-btn{
+  flex:0 0 auto;
+  min-width:44px;
+  padding:8px 10px;
+}
+
+.controls,
+.buttons,
+.spectrum-controls,
+.pc-layout,
+.results{
+  width:100%;
+  max-width:1440px;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+.controls{
+  padding:14px;
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0, 1fr));
+  gap:12px;
+  align-items:start;
+}
+
+.controls > label,
+.controls .slow-wrap,
+.controls .outputBox,
+.controls .fault-panel{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:12px;
+  min-width:0;
+}
+
+.controls label{
+  color:var(--muted);
+  font-size:13px;
+  font-weight:700;
+}
+
+.controls input,
+.controls select{
+  margin-top:7px;
+  min-height:36px;
+  background:rgba(255,255,255,0.96);
+  color:#07112f;
+}
+
+.controls input[type="range"]{
+  padding:0;
+  min-height:22px;
+  background:transparent;
+}
+
+.controls-row{
+  grid-column:1 / -1;
+  display:grid;
+  grid-template-columns:minmax(230px, .7fr) minmax(520px, 1.8fr);
+  gap:12px;
+  align-items:stretch;
+}
+
+.outputBox.full,
+.controls .outputBox.full{
+  grid-column:1 / span 2;
+}
+
+.controls .slow-wrap{
+  grid-column:3 / span 1;
+  padding-top:24px;
+}
+
+.controls > label.full{
+  grid-column:4 / span 1;
+}
+
+.fault-panel{
+  margin:0;
+}
+
+.fault-hint{
+  color:var(--muted);
+}
+
+.fault-boxes{
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+}
+
+.fault-item{
+  min-height:34px;
+  border-radius:10px;
+  background:rgba(255,255,255,0.055);
+}
+
+.buttons{
+  padding:0 14px 8px;
+  display:grid;
+  grid-template-columns:repeat(5, minmax(0, 1fr));
+  gap:10px;
+}
+
+.buttons button,
+.spectrum-controls button{
+  flex:none;
+  min-width:0;
+  font-weight:700;
+}
+
+#snapshotBtn{
+  background:#27457f;
+}
+
+.spectrum-controls{
+  padding:0 14px 12px;
+}
+
+.spectrum-controls button{
+  width:100%;
+  display:block;
+}
+
+.pc-layout{
+  padding:0 14px 14px;
+  display:grid;
+  grid-template-columns:minmax(390px, 1.05fr) minmax(390px, .95fr);
+  gap:14px;
+  align-items:start;
+}
+
+.stage{
+  padding:12px;
+  min-width:0;
+  overflow:hidden;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:18px;
+}
+
+.stage-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:0 0 10px;
+  font-weight:700;
+  color:#cfe2ff;
+  font-size:14px;
+}
+
+.stage-title small{
+  color:var(--muted);
+  font-weight:400;
+}
+
+canvas{
+  border-radius:14px;
+}
+
+.results{
+  padding:0 14px 20px;
+}
+
+.results:not(:empty){
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:14px;
+  margin-bottom:18px;
+}
+
+/* En v3, le mode photo ne cache plus le spectre : il fige seulement les données. */
+body.snapshot-mode #specStage{
+  display:block !important;
+}
+
+body.spectrum-mode .stage-title{
+  display:none !important;
+}
+
+@media (max-width:1200px){
+  .controls{
+    grid-template-columns:repeat(2, minmax(0,1fr));
+  }
+  .controls-row,
+  .outputBox.full,
+  .controls .outputBox.full,
+  .controls .slow-wrap,
+  .controls > label.full{
+    grid-column:1 / -1;
+  }
+  .controls-row{
+    grid-template-columns:1fr;
+  }
+  .fault-boxes{
+    grid-template-columns:repeat(2, minmax(0,1fr));
+  }
+}
+
+@media (max-width:1023px){
+  .pc-layout{
+    grid-template-columns:1fr;
+  }
+  .buttons{
+    grid-template-columns:repeat(2, minmax(0,1fr));
+  }
+  .buttons button:last-child{
+    grid-column:1 / -1;
+  }
+}
+
+@media (max-width:620px){
+  .controls{
+    grid-template-columns:1fr;
+  }
+  .fault-boxes{
+    grid-template-columns:1fr;
+  }
+  .buttons{
+    grid-template-columns:1fr;
+  }
+  header.app-header{
+    align-items:flex-start;
+  }
+}
+
   </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
@@ -819,25 +1126,26 @@ body.spectrum-mode #specStage {
     Entraxe des poulies (C-C)
     <input id="cc" type="number" inputmode="decimal" value="21">
   </label>
-  <label>
-    <b>Défauts simulés</b> (choix multiples)
-    <select id="faultSelect" multiple size="1">
-      <option value="all">Tout</option>
-      <option value="powerline">Hydro-Québec (60 Hz)</option>
-      <option value="unbalance">Balourd (1×)</option>
-      <option value="misalign">Désalignement</option>
-      <option value="looseness">Jeu mécanique</option>
-      <option value="belt">Défaut de courroie</option>
-      <option value="slip">Glissement</option>
-      <option value="bearing">Roulement</option>
-      <option value="resonance">Résonance</option>
-    </select>
-  </label>
+  <div class="fault-panel">
+    <b>Défauts simulés</b>
+    <div class="fault-hint">Coche un ou plusieurs défauts à afficher dans le spectre.</div>
+    <div id="faultSelect" class="fault-boxes" role="group" aria-label="Défauts simulés">
+      <label class="fault-item"><input type="checkbox" value="all"> Tout</label>
+      <label class="fault-item"><input type="checkbox" value="powerline"> Hydro-Québec (60 Hz)</label>
+      <label class="fault-item"><input type="checkbox" value="unbalance"> Balourd (1×)</label>
+      <label class="fault-item"><input type="checkbox" value="misalign"> Désalignement</label>
+      <label class="fault-item"><input type="checkbox" value="looseness"> Jeu mécanique</label>
+      <label class="fault-item"><input type="checkbox" value="belt"> Défaut de courroie</label>
+      <label class="fault-item"><input type="checkbox" value="slip"> Glissement</label>
+      <label class="fault-item"><input type="checkbox" value="bearing"> Roulement</label>
+      <label class="fault-item"><input type="checkbox" value="resonance"> Résonance</label>
+    </div>
+  </div>
 </div>
   <div class="outputBox full half-pc">
     <div><b>Menante</b> : <span id="out-rpm1">—</span> RPM | <span id="out-cpm1">—</span> CPM | <span id="out-hz1">—</span> Hz</div>
     <div><b>Menée</b> : <span id="out-rpm2">—</span> RPM | <span id="out-cpm2">—</span> CPM | <span id="out-hz2">—</span> Hz</div>
-    <div><b>Courroie</b> : <span id="out-hzbelt">—</span> Hz | <span id="out-fpm">—</span> ft/min | <span id="out-strobe">—</span> FPM</div>
+    <div><b>Courroie</b> : <span id="out-hzbelt">—</span> Hz | <span id="out-fpm">—</span> ft/min | strobe : <span id="out-strobe">—</span> flash/min</div>
     <div><b>Longueur courroie</b> : <span id="out-length">—</span></div>
    
   </div>
@@ -865,6 +1173,7 @@ body.spectrum-mode #specStage {
 <div class="buttons">
   <button id="play">Play</button>
   <button id="pause">Pause</button>
+  <button id="snapshotBtn">Photo instantanée</button>
   <button id="reset">Reset</button>
   <button id="exportPDF">PDF</button>
 </div>
@@ -875,16 +1184,18 @@ body.spectrum-mode #specStage {
 <div id="fsHUD">
   <div class="fs-info">
     Pan: glisser ↔ (Hz)<br>
-    Play = spectre live
+    Play = spectre live<br>Photo = pics max
   </div>
   <button id="exitSpectrumFS">❌ Quitter</button>
 </div>
 <div class="pc-layout">
   <div class="stage" id="sceneStage">
+    <div class="stage-title">Simulation mécanique <small>poulies + courroie</small></div>
     <canvas id="scene"></canvas>
   </div>
 
   <div class="stage" id="specStage">
+    <div class="stage-title">Spectre vibratoire <small>Hz / mm/s</small></div>
     <canvas id="spectrum"></canvas>
   </div>
 </div>
@@ -950,9 +1261,9 @@ body.spectrum-mode #specStage {
   border-left:4px solid #00a2ff;
   border-radius:8px;
 ">
-  <b> Classe ISO utilisée dans ce simulateur</b><br><br>
+  <b> Indice pédagogique inspiré ISO</b><br><br>
 
-  Ce simulateur utilise la norme <b>ISO 10816 – Classe I</b>.<br><br>
+  Ce simulateur utilise des seuils inspirés de <b>l’ISO 10816 / 20816 – Classe I</b> pour apprendre à interpréter les zones A-B-C-D.<br><br>
 
   <b>Classe I</b> :
   <ul>
@@ -969,7 +1280,7 @@ body.spectrum-mode #specStage {
     <li>Seuils ISO plus permissifs</li>
   </ul>
 
-  <b> Pour l’apprentissage, la Classe I est la plus réaliste et la plus sécuritaire.</b>
+  <b> Important : les valeurs affichées restent pédagogiques. Elles ne remplacent pas une vraie mesure RMS prise avec un analyseur de vibration.</b>
 </div>
   </section>
 
@@ -1331,6 +1642,7 @@ En pratique, on choisit toujours une courroie <b>standard</b> la plus proche.</p
   "use strict";
   
   let snapshotMode = false;
+  let exportRenderMode = false;
   
   // ===============================
 // GESTION TACHY (SELON DÉFAUT)
@@ -1405,7 +1717,7 @@ function isoVerdict(mm_s_rms){
 }
 
   function dprNow(){
-  return snapshotMode ? 3 : Math.min(3, window.devicePixelRatio || 1);
+  return exportRenderMode ? 3 : Math.min(3, window.devicePixelRatio || 1);
 }
 
 function isMobile(){
@@ -1538,6 +1850,7 @@ btnExitFS.onclick = () => {
 };
   const playBtn  = document.getElementById("play");
   const pauseBtn = document.getElementById("pause");
+  const snapshotBtn = document.getElementById("snapshotBtn");
   const resetBtn = document.getElementById("reset");
   const pdfBtn = document.getElementById("exportPDF");
 pdfBtn.addEventListener("click", exportPDF);
@@ -2021,14 +2334,33 @@ function peaks_looseness(fMotor, _fBelt, t) {
 }
 
 function getDefectSeverity(){
-  const b = balourdEl ? Number(balourdEl.value) : 0;
-  const belt = beltSevEl ? Number(beltSevEl.value) : 0;
-  const mis = misalignEl ? Number(misalignEl.value) : 0;
+  const allMode = isAllFaultsMode();
+
+  function readSlider(el){
+    const v = el ? Number(el.value) : 0;
+    return Number.isFinite(v) ? v : 0;
+  }
+
+  // En mode "Tout", un curseur laissé à 0 affiche quand même le défaut
+  // avec une intensité pédagogique moyenne. Sinon, 0 veut dire aucun défaut.
+  function withAllDefault(v, def = 5){
+    return (allMode && v <= 0) ? def : v;
+  }
+
+  const balourd = withAllDefault(readSlider(balourdEl), 5);
+  const belt    = withAllDefault(readSlider(beltSevEl), 5);
+  const mis     = withAllDefault(readSlider(misalignEl), 5);
+
+  // Pas encore de curseur dédié au jeu mécanique : intensité fixe pédagogique.
+  const selected = getSelectedFaults();
+  const looseness = (allMode || selected.includes("looseness")) ? 6 : 0;
 
   return {
-    balourd: Number.isFinite(b) ? b : 0,
-    belt: Number.isFinite(belt) ? belt : 0,
-    misalign: Number.isFinite(mis) ? mis : 0
+    balourd,
+    unbalance: balourd, // alias de sécurité pour les fonctions existantes
+    belt,
+    misalign: mis,
+    looseness
   };
 }
   /* ===================== DESSIN SPECTRE ===================== */
@@ -2047,11 +2379,11 @@ if(snapshotMode){
     ? (H - hzZoneHeight - 80)
     : (H - hzZoneHeight - 10);
 }
-    const gridTop    = 16;
-    const gridBottom = hzZoneY - 10;
+    const gridTop    = 24; // plus d'air pour éviter le chevauchement en haut
+    const gridBottom = hzZoneY - 12;
     const gridHeight = gridBottom - gridTop;
 
-    const ampLabelWidth = 58;
+    const ampLabelWidth = 72; // colonne Y plus large : valeurs mm/s lisibles
     const plotLeft  = ampLabelWidth;
     const plotRight = W;
     const plotWidth = plotRight - plotLeft;
@@ -2129,12 +2461,17 @@ if(!snapshotMode){
       specCtx.fillStyle = z.col;
       specCtx.fillRect(plotLeft, yTop, plotWidth, hBand);
 
-      specCtx.fillStyle = "rgba(234,241,255,0.85)";
+      // Étiquette ISO placée à droite et centrée dans la bande
+      // pour ne plus chevaucher les valeurs mm/s à gauche.
+      const labelY = Math.max(gridTop + 9, Math.min(gridBottom - 9, yTop + hBand / 2));
+      specCtx.fillStyle = "rgba(234,241,255,0.88)";
       specCtx.font = "11px Arial";
+      specCtx.textAlign = "right";
+      specCtx.textBaseline = "middle";
       specCtx.fillText(
         `ISO ${ISO_CLASS} ${z.name}`,
-        plotLeft + 6,
-        yTop + 12
+        plotRight - 8,
+        labelY
       );
     }
 
@@ -2267,15 +2604,28 @@ if(!snapshotMode){
 
 function getSelectedFaults(){
   const sel = document.getElementById("faultSelect");
-  const values = Array.from(sel.selectedOptions).map(o => o.value);
+  if(!sel) return [];
 
-  // 🟢 Si "Tout" est sélectionné → moteur en mode ALL
-  if(values.includes("all")){
-    return ["all"];
+  // Version finale : cases à cocher.
+  if(sel.querySelectorAll){
+    const checked = Array.from(sel.querySelectorAll('input[type="checkbox"]:checked'));
+    const values = checked.map(o => o.value);
+
+    // 🟢 Si "Tout" est coché → moteur en mode ALL.
+    if(values.includes("all")) return ["all"];
+    return values;
   }
 
+  // Sécurité si on revient un jour à un <select multiple>.
+  const values = Array.from(sel.selectedOptions || []).map(o => o.value);
+  if(values.includes("all")) return ["all"];
   return values;
 }
+
+function isAllFaultsMode(){
+  return getSelectedFaults().includes("all");
+}
+
 function renderPeakList(){
   const keys = Object.keys(peakRecord);
 
@@ -2359,19 +2709,29 @@ function updateSpectrumModeByOrientation(){
   /* ===================== RESIZE ===================== */
   function resize(){
   const dpr = dprNow();
+  const sceneStage = document.getElementById("sceneStage");
+  const specStage  = document.getElementById("specStage");
+  const isPC = window.innerWidth >= 1024 && !spectrumFS;
+
+  function innerWidthOf(el, fallback){
+    if(!el) return fallback;
+    const cs = window.getComputedStyle(el);
+    const pad = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+    const w = el.clientWidth - pad;
+    return (w && w > 120) ? w : fallback;
+  }
 
   /* ========= ANIMATION ========= */
-  const maxW = Math.min(window.innerWidth - 24, 720);
-  if(!lockedWidth) lockedWidth = maxW;
-  lockedWidth = Math.min(lockedWidth, maxW);
+  const fallbackSceneW = Math.min(window.innerWidth - 24, 760);
+  const sceneW = Math.max(280, innerWidthOf(sceneStage, fallbackSceneW));
+  const sceneH = isPC
+    ? Math.max(300, Math.min(430, sceneW * 0.58))
+    : Math.max(230, sceneW * 0.55);
 
-  const w = lockedWidth;
-  const h = w * 0.55;
-
-  canvas.style.width  = w + "px";
-  canvas.style.height = h + "px";
-  canvas.width  = Math.round(w * dpr);
-  canvas.height = Math.round(h * dpr);
+  canvas.style.width  = sceneW + "px";
+  canvas.style.height = sceneH + "px";
+  canvas.width  = Math.round(sceneW * dpr);
+  canvas.height = Math.round(sceneH * dpr);
   ctx.setTransform(dpr,0,0,dpr,0,0);
 
   /* ========= SPECTRE ========= */
@@ -2389,18 +2749,17 @@ function updateSpectrumModeByOrientation(){
     specCanvas.style.borderRadius = "0";
     specCanvas.style.zIndex = "9999";
   }else{
-    // 🟢 MODE NORMAL — PC : spectre plus large que la scène
-if (window.innerWidth >= 1024) {
-  specW = Math.min(window.innerWidth - 40, 1400); // ⬅️ LARGEUR PC
-} else {
-  specW = w;
-}
-
-specH = Math.max(260, h * 1.05);
+    const fallbackSpecW = isPC ? Math.min(window.innerWidth - 40, 700) : sceneW;
+    specW = Math.max(280, innerWidthOf(specStage, fallbackSpecW));
+    specH = isPC
+      ? Math.max(300, Math.min(430, specW * 0.64))
+      : Math.max(260, sceneH * 1.05);
 
     specCanvas.style.position = "relative";
-    specCanvas.style.marginTop = "18px";
-    specCanvas.style.borderRadius = "12px";
+    specCanvas.style.left = "";
+    specCanvas.style.top = "";
+    specCanvas.style.margin = "0";
+    specCanvas.style.borderRadius = "14px";
     specCanvas.style.zIndex = "auto";
   }
 
@@ -2653,7 +3012,10 @@ if (running) {
   /* ===================== EVENTS UI ===================== */
 
 window.addEventListener("resize", () => {
+  lockedWidth = null;
   updateSpectrumModeByOrientation();
+  resize();
+  redrawSpectrumNow();
   draw();
 });
 
@@ -2668,7 +3030,10 @@ window.addEventListener("orientationchange", () => {
 
 if(window.visualViewport){
   window.visualViewport.addEventListener("resize", () => {
+    lockedWidth = null;
     updateSpectrumModeByOrientation();
+    resize();
+    redrawSpectrumNow();
     draw();
   });
 }
@@ -2689,15 +3054,28 @@ playBtn.addEventListener("click", () => {
   running = true;
 });
   pauseBtn.addEventListener("click", () => {
-  if (!running) return;
-
+  // Pause = arrêt de l’animation seulement. Le spectre reste visible à droite sur PC.
   running = false;
-  snapshotMode = true;
+  snapshotMode = false;
+  document.body.classList.remove("snapshot-mode");
 
-  document.body.classList.add("snapshot-mode"); // 🔑 OBLIGATOIRE
-
-  renderPeakList();
+  redrawSpectrumNow();
+  draw();
 });
+
+if(snapshotBtn){
+  snapshotBtn.addEventListener("click", () => {
+    // Photo instantanée = fige la lecture + affiche les pics max enregistrés.
+    running = false;
+    snapshotMode = true;
+    document.body.classList.add("snapshot-mode");
+
+    renderPeakList();
+    resize();
+    redrawSpectrumNow();
+    draw();
+  });
+}
   resetBtn.addEventListener("click", () => {
   running = false;
   tMotion = 0;
@@ -2707,7 +3085,10 @@ playBtn.addEventListener("click", () => {
 
   peakRecord = {};      // ✅ efface la mémoire
   infoEl.innerHTML = ""; // optionnel: efface l'affichage
+  snapshotMode = false;
+  document.body.classList.remove("snapshot-mode");
 
+  redrawSpectrumNow();
   draw();
 });
   
@@ -2765,26 +3146,30 @@ playBtn.addEventListener("click", () => {
   resize();
 updateSpectrumModeByOrientation();
 draw();
-// ===== GESTION DU MENU DÉFAUTS (choix multiples + "Tout") =====
+// ===== GESTION DES DÉFAUTS (cases à cocher + "Tout") =====
 const faultSelect = document.getElementById("faultSelect");
 
 if(faultSelect){
-  faultSelect.addEventListener("change", () => {
-    const values = Array.from(faultSelect.selectedOptions).map(o => o.value);
-    tachyEnabled = (
-  values.includes("unbalance") ||
-  values.includes("all")
-);
-console.log("tachyEnabled =", tachyEnabled);
-    // 🟢 Si "Tout" est sélectionné → il écrase les autres
-    if(values.includes("all")){
-      Array.from(faultSelect.options).forEach(opt => {
-        opt.selected = (opt.value === "all");
-      });
+  faultSelect.addEventListener("change", (e) => {
+    const boxes = Array.from(faultSelect.querySelectorAll('input[type="checkbox"]'));
+    const allBox = boxes.find(b => b.value === "all");
+
+    // 🟢 Si "Tout" est coché, il écrase les autres choix.
+    if(e.target && e.target.value === "all" && e.target.checked){
+      boxes.forEach(b => b.checked = (b.value === "all"));
     }
 
-    // 🔄 Mise à jour immédiate du spectre
+    // Si on coche un défaut individuel, on décoche "Tout".
+    if(e.target && e.target.value !== "all" && e.target.checked && allBox){
+      allBox.checked = false;
+    }
+
+    const values = getSelectedFaults();
+    tachyEnabled = values.includes("unbalance") || values.includes("all");
+
+    // 🔄 Mise à jour immédiate du spectre et de la scène.
     redrawSpectrumNow();
+    draw();
   });
 }
 
@@ -2804,33 +3189,40 @@ function exportPDF(){
 // ===============================
 
 // Sauvegarde état utilisateur
-const savedMinHz   = spectrumView.minHz;
-const savedSpanHz  = spectrumView.spanHz;
+const savedMinHz    = spectrumView.minHz;
+const savedSpanHz   = spectrumView.spanHz;
 const savedSnapshot = snapshotMode;
 const savedRunning  = running;
+const savedExport   = exportRenderMode;
 
 // Figer l’animation
 running = false;
 snapshotMode = true;
+exportRenderMode = true;
 document.body.classList.add("snapshot-mode");
 
 // 🔒 FORÇAGE STRICT POUR LE PDF
 spectrumView.minHz  = 0;
 spectrumView.spanHz = 300;
 
-// Redessin immédiat avec cette vue
+// Redessin immédiat avec cette vue (en haute résolution seulement pour le PDF)
+resize();
 redrawSpectrumNow();
+draw();
 
-// ⏱️ Laisse le canvas finir de se dessiner
 const specImg = specCanvas.toDataURL("image/png");
 
 // Restauration vue utilisateur
-spectrumView.minHz  = savedMinHz;
-spectrumView.spanHz = savedSpanHz;
-snapshotMode = savedSnapshot;
-document.body.classList.remove("snapshot-mode");
-// Redessine vue normale
+spectrumView.minHz   = savedMinHz;
+spectrumView.spanHz  = savedSpanHz;
+snapshotMode         = savedSnapshot;
+running              = savedRunning;
+exportRenderMode     = savedExport;
+document.body.classList.toggle("snapshot-mode", savedSnapshot);
+
+resize();
 redrawSpectrumNow();
+draw();
 
   // ===============================
   // 📄 PDF
@@ -2912,7 +3304,11 @@ document.addEventListener("keydown", (e) => {
 
 if(window.visualViewport){
   window.visualViewport.addEventListener("resize", () => {
+    lockedWidth = null;
     updateSpectrumModeByOrientation();
+    resize();
+    redrawSpectrumNow();
+    draw();
   });
 }
 /* ===================== FULLSCREEN APP (PC) ===================== */
